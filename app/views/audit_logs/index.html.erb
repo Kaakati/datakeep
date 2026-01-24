@@ -1,0 +1,110 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Audit Logs</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Track all backup and restore activities</p>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 flex flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800">Activity History</h3>
+    </div>
+
+    <% if @audit_logs.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100">
+            <tr>
+              <th class="py-3 pr-5 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Timestamp</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Action</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Resource</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">User</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Status</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-right">
+                <p class="text-sm text-gray-500">Actions</p>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @audit_logs.each do |log| %>
+              <tr>
+                <td class="py-3 pr-5 whitespace-nowrap">
+                  <p class="text-sm text-gray-700"><%= log.created_at.strftime("%b %d, %Y") %></p>
+                  <p class="text-xs text-gray-500"><%= log.created_at.strftime("%H:%M:%S") %></p>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <% case log.action %>
+                  <% when /completed|passed/ %>
+                    <span class="bg-green-50 text-green-600 rounded-full px-2 py-0.5 text-xs font-medium"><%= log.action.titleize %></span>
+                  <% when /failed/ %>
+                    <span class="bg-red-50 text-red-600 rounded-full px-2 py-0.5 text-xs font-medium"><%= log.action.titleize %></span>
+                  <% when /started/ %>
+                    <span class="bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 text-xs font-medium"><%= log.action.titleize %></span>
+                  <% else %>
+                    <span class="bg-gray-50 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium"><%= log.action.titleize %></span>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700"><%= log.resource_type&.demodulize || "N/A" %></p>
+                  <% if log.resource_id %>
+                    <p class="text-xs text-gray-500">#<%= log.resource_id %></p>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700"><%= log.user&.email || "System" %></p>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <% if log.action.include?("failed") %>
+                    <span class="inline-flex items-center text-red-600">
+                      <svg class="mr-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                      </svg>
+                      Failed
+                    </span>
+                  <% else %>
+                    <span class="inline-flex items-center text-green-600">
+                      <svg class="mr-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                      </svg>
+                      Success
+                    </span>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap text-right">
+                  <%= link_to "View", audit_log_path(log), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-700">
+            Showing <span class="font-medium"><%= @audit_logs.count %></span> log entries
+          </p>
+        </div>
+      </div>
+    <% else %>
+      <div class="px-5 py-12 text-center sm:px-6">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-semibold text-gray-900">No audit logs</h3>
+        <p class="mt-1 text-sm text-gray-500">Activity will appear here as you use the system.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

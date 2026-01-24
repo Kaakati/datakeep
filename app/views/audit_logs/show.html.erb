@@ -1,0 +1,158 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2">
+          <li>
+            <%= link_to "Audit Logs", audit_logs_path, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <svg class="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml-2 text-sm font-medium text-gray-500">Log Details</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+      <div class="mt-2 flex items-center space-x-3">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= @audit_log.action.titleize %></h1>
+        <% if @audit_log.status == "success" %>
+          <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+            Success
+          </span>
+        <% else %>
+          <span class="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+            Failed
+          </span>
+        <% end %>
+      </div>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= @audit_log.created_at.strftime("%B %d, %Y at %H:%M:%S") %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Event Details</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <dl>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Action</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium <%= action_badge_class(@audit_log.action) %>">
+                <%= @audit_log.action.titleize %>
+              </span>
+            </dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Status</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <% if @audit_log.status == "success" %>
+                <span class="inline-flex items-center text-green-700">
+                  <svg class="mr-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                  </svg>
+                  Success
+                </span>
+              <% else %>
+                <span class="inline-flex items-center text-red-700">
+                  <svg class="mr-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                  </svg>
+                  Failed
+                </span>
+              <% end %>
+            </dd>
+          </div>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Timestamp</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"><%= @audit_log.created_at.strftime("%B %d, %Y at %H:%M:%S %Z") %></dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">User</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <% if @audit_log.user %>
+                <%= @audit_log.user.email %>
+              <% else %>
+                <span class="text-gray-500">System</span>
+              <% end %>
+            </dd>
+          </div>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">IP Address</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-mono"><%= @audit_log.ip_address || "N/A" %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Resource</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <dl>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Type</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"><%= @audit_log.resource_type.demodulize %></dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">ID</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-mono"><%= @audit_log.resource_id %></dd>
+          </div>
+          <% if @audit_log.resource.present? %>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Resource</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <% case @audit_log.resource_type %>
+                <% when "Backup" %>
+                  <%= link_to "View Backup", backup_job_backup_path(@audit_log.resource.backup_job, @audit_log.resource), class: "text-primary-500 hover:text-indigo-500" %>
+                <% when "BackupJob" %>
+                  <%= link_to @audit_log.resource.name, @audit_log.resource, class: "text-primary-500 hover:text-indigo-500" %>
+                <% when "DatabaseConfig" %>
+                  <%= link_to @audit_log.resource.name, @audit_log.resource, class: "text-primary-500 hover:text-indigo-500" %>
+                <% when "StorageBackend" %>
+                  <%= link_to @audit_log.resource.name, @audit_log.resource, class: "text-primary-500 hover:text-indigo-500" %>
+                <% else %>
+                  Resource available
+                <% end %>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <% if @audit_log.details.present? %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Additional Details</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800 px-4 py-5 sm:px-6">
+        <pre class="whitespace-pre-wrap font-mono text-sm text-gray-700 bg-gray-50 p-4 rounded-md overflow-x-auto"><%= JSON.pretty_generate(@audit_log.details) %></pre>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @audit_log.error_message.present? %>
+    <div class="rounded-md bg-red-50 p-4">
+      <div class="flex">
+        <div class="shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">Error Message</h3>
+          <div class="mt-2 text-sm text-red-700">
+            <pre class="whitespace-pre-wrap font-mono text-xs"><%= @audit_log.error_message %></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,131 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2">
+          <li>
+            <%= link_to "Restores", restores_path, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <svg class="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml-2 text-sm font-medium text-gray-500">Details</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+      <div class="mt-2 flex items-center space-x-3">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Restore Details</h1>
+        <%= status_badge(@restore.status) %>
+      </div>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= @restore.created_at.strftime("%B %d, %Y at %H:%M:%S") %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Restore Information</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <dl>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Status</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <%= status_badge(@restore.status) %>
+            </dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Target Database</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <%= link_to @restore.database_config.name, @restore.database_config, class: "text-primary-500 hover:text-indigo-500" %>
+            </dd>
+          </div>
+          <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Started At</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <%= @restore.started_at&.strftime("%B %d, %Y at %H:%M:%S") || "Not started" %>
+            </dd>
+          </div>
+          <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500">Completed At</dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+              <%= @restore.completed_at&.strftime("%B %d, %Y at %H:%M:%S") || "Not completed" %>
+            </dd>
+          </div>
+          <% if @restore.started_at && @restore.completed_at %>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Duration</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <%= distance_of_time_in_words(@restore.started_at, @restore.completed_at) %>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Source</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <dl>
+          <% if @restore.backup %>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Source Type</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">Backup</dd>
+            </div>
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Backup Job</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <%= link_to @restore.backup.backup_job.name, @restore.backup.backup_job, class: "text-primary-500 hover:text-indigo-500" %>
+              </dd>
+            </div>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Backup Date</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <%= link_to @restore.backup.created_at.strftime("%B %d, %Y at %H:%M"), backup_job_backup_path(@restore.backup.backup_job, @restore.backup), class: "text-primary-500 hover:text-indigo-500" %>
+              </dd>
+            </div>
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Backup Size</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"><%= @restore.backup.formatted_size %></dd>
+            </div>
+          <% else %>
+            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Source Type</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">Uploaded File</dd>
+            </div>
+            <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">File Path</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-mono text-xs break-all">
+                <%= @restore.file_path || "Not available" %>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <% if @restore.error_message.present? %>
+    <div class="rounded-md bg-red-50 p-4">
+      <div class="flex">
+        <div class="shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">Error Details</h3>
+          <div class="mt-2 text-sm text-red-700">
+            <pre class="whitespace-pre-wrap font-mono text-xs"><%= @restore.error_message %></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

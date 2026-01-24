@@ -1,0 +1,118 @@
+# frozen_string_literal: true
+
+class BackupJob < ApplicationRecord
+  belongs_to :user
+  belongs_to :database_config
+  belongs_to :storage_backend
+  has_many :backups, dependent: :destroy
+  has_many :backup_job_notification_channels, dependent: :destroy
+  has_many :notification_channels, through: :backup_job_notification_channels
+
+  validates :name, presence: true, uniqueness: { scope: :user_id }
+  validates :schedule_type, presence: true, inclusion: { in: %w[hourly daily weekly monthly custom] }
+  validates :retention_days, numericality: { only_integer: true, greater_than: 0 }
+  validates :cron_expression, presence: true, if: -> { schedule_type == "custom" }
+  validate :validate_cron_expression, if: -> { cron_expression.present? }
+
+  SCHEDULE_TYPES = %w[hourly daily weekly monthly custom].freeze
+  STATUSES = %w[idle running failed].freeze
+
+  scope :enabled, -> { where(enabled: true) }
+  scope :disabled, -> { where(enabled: false) }
+  scope :due, -> { enabled.where("next_run_at <= ?", Time.current) }
+
+  before_create :calculate_next_run
+  after_save :reschedule_job, if: -> { saved_change_to_enabled? || saved_change_to_schedule_type? || saved_change_to_cron_expression? }
+
+  def cron_schedule
+    @cron_schedule ||= case schedule_type
+    when "hourly"
+      "0 * * * *"
+    when "daily"
+      "0 0 * * *"
+    when "weekly"
+      "0 0 * * 0"
+    when "monthly"
+      "0 0 1 * *"
+    when "custom"
+      cron_expression
+    end
+  end
+
+  def calculate_next_run
+    return unless enabled?
+
+    parsed = Fugit.parse(cron_schedule)
+    self.next_run_at = parsed&.next_time&.to_t
+  end
+
+  def run_now!
+    return false if running?
+
+    # Don't set status here - let the job handle it to avoid race condition
+    BackupExecutionJob.perform_later(id)
+    true
+  end
+
+  def running?
+    status == "running"
+  end
+
+  def idle?
+    status == "idle"
+  end
+
+  def failed?
+    status == "failed"
+  end
+
+  def due?
+    enabled? && next_run_at.present? && next_run_at <= Time.current
+  end
+
+  def pause!
+    update!(enabled: false)
+  end
+
+  def resume!
+    update!(enabled: true)
+    calculate_next_run
+    save!
+  end
+
+  def last_successful_backup
+    backups.completed.order(completed_at: :desc).first
+  end
+
+  def success_rate
+    total = backups.count
+    return 0.0 if total.zero?
+
+    completed = backups.completed.count
+    (completed.to_f / total * 100).round(2)
+  end
+
+  def notify_channels(event, backup: nil)
+    notification_channels.enabled.each do |channel|
+      next if event == :success && !channel.notify_on_success?
+      next if event == :failure && !channel.notify_on_failure?
+
+      NotificationJob.perform_later(channel.id, event.to_s, backup&.id)
+    end
+  end
+
+  private
+
+  def validate_cron_expression
+    Fugit.parse(cron_expression)
+  rescue ArgumentError => e
+    errors.add(:cron_expression, "is invalid: #{e.message}")
+  end
+
+  def reschedule_job
+    return unless enabled?
+
+    calculate_next_run
+    save! if next_run_at_changed?
+  end
+end

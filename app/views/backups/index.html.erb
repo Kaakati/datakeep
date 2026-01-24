@@ -1,0 +1,110 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">All Backups</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View all backup records across all jobs</p>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 flex flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800">Backup History</h3>
+    </div>
+
+    <% if @backups.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100">
+            <tr>
+              <th class="py-3 pr-5 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Backup Job</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Date</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Status</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Size</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                <p class="text-sm text-gray-500">Duration</p>
+              </th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-right">
+                <p class="text-sm text-gray-500">Actions</p>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @backups.each do |backup| %>
+              <tr>
+                <td class="py-3 pr-5 whitespace-nowrap">
+                  <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                      <svg class="h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                      </svg>
+                    </div>
+                    <div>
+                      <%= link_to backup.backup_job.name, backup.backup_job, class: "text-sm font-medium text-gray-700 hover:text-primary-600" %>
+                      <p class="text-xs text-gray-500"><%= backup.backup_job.database_config.name %></p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700"><%= backup.created_at.strftime("%b %d, %Y") %></p>
+                  <p class="text-xs text-gray-500"><%= backup.created_at.strftime("%H:%M") %></p>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <% case backup.status %>
+                  <% when "completed" %>
+                    <span class="bg-green-50 text-green-600 rounded-full px-2 py-0.5 text-xs font-medium">Completed</span>
+                  <% when "failed" %>
+                    <span class="bg-red-50 text-red-600 rounded-full px-2 py-0.5 text-xs font-medium">Failed</span>
+                  <% when "running" %>
+                    <span class="bg-yellow-50 text-yellow-600 rounded-full px-2 py-0.5 text-xs font-medium">Running</span>
+                  <% when "pending" %>
+                    <span class="bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 text-xs font-medium">Pending</span>
+                  <% else %>
+                    <span class="bg-gray-50 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium"><%= backup.status.titleize %></span>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700"><%= backup.formatted_size %></p>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700"><%= backup.formatted_duration %></p>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap text-right">
+                  <%= link_to "View", backup_job_backup_path(backup.backup_job, backup), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-700">
+            Showing <span class="font-medium"><%= @backups.count %></span> backups
+          </p>
+        </div>
+      </div>
+    <% else %>
+      <div class="px-5 py-12 text-center sm:px-6">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-semibold text-gray-900">No backups</h3>
+        <p class="mt-1 text-sm text-gray-500">No backups have been created yet.</p>
+        <div class="mt-6">
+          <%= link_to backup_jobs_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
+            View Backup Jobs
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

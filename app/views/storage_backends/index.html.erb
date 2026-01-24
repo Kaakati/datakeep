@@ -1,0 +1,82 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Storage Backends</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage where your backups are stored</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <%= link_to new_storage_backend_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors" do %>
+        <svg class="-ml-0.5 mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        Add Storage
+      <% end %>
+    </div>
+  </div>
+
+  <% if @storage_backends.any? %>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <% @storage_backends.each do |storage| %>
+        <%= link_to storage_backend_path(storage), class: "group block rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 transition-all hover:border-primary-300 hover:shadow-sm" do %>
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-5">
+              <% if storage.is_a?(StorageBackends::S3Storage) %>
+                <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
+                  <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                  </svg>
+                </div>
+              <% else %>
+                <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+                  <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
+                  </svg>
+                </div>
+              <% end %>
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900 group-hover:text-primary-600"><%= storage.name %></h3>
+                <p class="text-xs text-gray-500 mt-0.5">
+                  <% if storage.is_a?(StorageBackends::S3Storage) %>
+                    S3: <%= storage.config&.dig(:bucket) || storage.config&.dig("bucket") %>
+                  <% else %>
+                    Local: <%= storage.config&.dig(:path) || storage.config&.dig("path") %>
+                  <% end %>
+                </p>
+              </div>
+            </div>
+            <% if storage.is_default? %>
+              <span class="bg-green-50 text-green-600 rounded-full px-2 py-0.5 text-xs font-medium">Default</span>
+            <% end %>
+          </div>
+          <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+            <div class="flex items-center text-sm text-gray-500">
+              <svg class="mr-1.5 h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M5.5 17a4.5 4.5 0 01-1.44-8.765 4.5 4.5 0 018.302-3.046 3.5 3.5 0 014.504 4.272A4 4 0 0115 17H5.5zm3.75-2.75a.75.75 0 001.5 0V9.66l1.95 2.1a.75.75 0 101.1-1.02l-3.25-3.5a.75.75 0 00-1.1 0l-3.25 3.5a.75.75 0 101.1 1.02l1.95-2.1v4.59z" />
+              </svg>
+              <%= storage.backup_jobs.count %> job<%= storage.backup_jobs.count == 1 ? "" : "s" %>
+            </div>
+            <svg class="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] px-5 py-12 text-center sm:px-6">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+      </svg>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900">No storage backends</h3>
+      <p class="mt-1 text-sm text-gray-500">Get started by adding a storage location for your backups.</p>
+      <div class="mt-4">
+        <%= link_to new_storage_backend_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
+          <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+          </svg>
+          Add Storage
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

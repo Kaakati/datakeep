@@ -1,0 +1,347 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Dashboard</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Overview of your database backup operations</p>
+    </div>
+    <div class="mt-4 flex gap-3 sm:mt-0">
+      <%= link_to new_backup_job_path, class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" do %>
+        <svg class="-ml-0.5 mr-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        New Backup Job
+      <% end %>
+      <%= link_to new_database_config_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors" do %>
+        <svg class="-ml-0.5 mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        Add Database
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <!-- Total Databases -->
+    <article class="flex items-center gap-5 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5">
+      <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-primary-50 text-primary-500">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Total Databases</p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-semibold text-gray-800"><%= @stats[:total_databases] %></span>
+          <span class="inline-flex items-center justify-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-600"><%= @stats[:healthy_databases] %> healthy</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Backup Jobs -->
+    <article class="flex items-center gap-5 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5">
+      <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Backup Jobs</p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-semibold text-gray-800"><%= @stats[:total_backup_jobs] %></span>
+          <span class="inline-flex items-center justify-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-600"><%= @stats[:active_backup_jobs] %> active</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Total Backups -->
+    <article class="flex items-center gap-5 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5">
+      <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-green-50 text-green-500">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Total Backups</p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-semibold text-gray-800"><%= @stats[:total_backups] %></span>
+          <span class="inline-flex items-center justify-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-600"><%= @stats[:successful_backups] %> successful</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Storage Used -->
+    <article class="flex items-center gap-5 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5">
+      <div class="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-gray-500 text-sm">Storage Used</p>
+        <span class="text-2xl font-semibold text-gray-800"><%= format_bytes(@stats[:total_storage_size]) %></span>
+      </div>
+    </article>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+    <!-- Recent Backups -->
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+      <div class="mb-4 flex items-center justify-between px-5 sm:px-6">
+        <h3 class="text-lg font-semibold text-gray-800">Recent Backups</h3>
+        <%= link_to "View All", backups_path, class: "text-sm font-medium text-primary-500 hover:text-primary-700" %>
+      </div>
+
+      <% if @recent_backups.any? %>
+        <div class="overflow-x-auto px-5 sm:px-6">
+          <table class="min-w-full">
+            <thead class="border-y border-gray-100">
+              <tr>
+                <th class="py-3 pr-4 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Database</p>
+                </th>
+                <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Size</p>
+                </th>
+                <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Status</p>
+                </th>
+                <th class="py-3 pl-4 text-right font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Time</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% @recent_backups.each do |backup| %>
+                <tr class="hover:bg-gray-50/50">
+                  <td class="py-3 pr-4 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <% if backup.completed? %>
+                        <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      <% elsif backup.failed? %>
+                        <div class="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.28 4.22a.75.75 0 00-1.06 1.06L8.94 10l-5.72 5.72a.75.75 0 101.06 1.06L10 11.06l5.72 5.72a.75.75 0 101.06-1.06L11.06 10l5.72-5.72a.75.75 0 00-1.06-1.06L10 8.94 4.28 4.22z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      <% else %>
+                        <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-yellow-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </div>
+                      <% end %>
+                      <p class="text-sm font-medium text-gray-700"><%= backup.database_name %></p>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700"><%= backup.formatted_file_size %></p>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <% case backup.status %>
+                    <% when "completed" %>
+                      <span class="bg-green-50 text-green-600 rounded-full px-2 py-0.5 text-xs font-medium">Completed</span>
+                    <% when "failed" %>
+                      <span class="bg-red-50 text-red-600 rounded-full px-2 py-0.5 text-xs font-medium">Failed</span>
+                    <% when "running" %>
+                      <span class="bg-yellow-50 text-yellow-600 rounded-full px-2 py-0.5 text-xs font-medium">Running</span>
+                    <% else %>
+                      <span class="bg-gray-50 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium"><%= backup.status.titleize %></span>
+                    <% end %>
+                  </td>
+                  <td class="py-3 pl-4 whitespace-nowrap text-right">
+                    <p class="text-sm text-gray-500"><%= time_ago_or_never(backup.created_at) %></p>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="border-t border-gray-100 px-5 py-3 sm:px-6">
+          <p class="text-sm text-gray-500">
+            Showing <%= @recent_backups.count %> most recent backups
+          </p>
+        </div>
+      <% else %>
+        <div class="px-5 py-12 text-center sm:px-6">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+          <h3 class="mt-2 text-sm font-semibold text-gray-900">No backups yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Create a backup job to get started.</p>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Backup Jobs -->
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+      <div class="mb-4 flex items-center justify-between px-5 sm:px-6">
+        <h3 class="text-lg font-semibold text-gray-800">Backup Jobs</h3>
+        <%= link_to "View All", backup_jobs_path, class: "text-sm font-medium text-primary-500 hover:text-primary-700" %>
+      </div>
+
+      <% if @backup_jobs.any? %>
+        <div class="overflow-x-auto px-5 sm:px-6">
+          <table class="min-w-full">
+            <thead class="border-y border-gray-100">
+              <tr>
+                <th class="py-3 pr-4 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Job Name</p>
+                </th>
+                <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Schedule</p>
+                </th>
+                <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Status</p>
+                </th>
+                <th class="py-3 pl-4 text-right font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Next Run</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <% @backup_jobs.limit(5).each do |job| %>
+                <tr class="hover:bg-gray-50/50">
+                  <td class="py-3 pr-4 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <% if job.enabled? %>
+                        <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                      <% else %>
+                        <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                      <% end %>
+                      <div>
+                        <%= link_to job.name, job, class: "text-sm font-medium text-gray-700 hover:text-primary-600" %>
+                        <p class="text-xs text-gray-500"><%= job.database_config.database_name %></p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700"><%= job.schedule_type.titleize %></p>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <% if job.enabled? %>
+                      <span class="bg-green-50 text-green-600 rounded-full px-2 py-0.5 text-xs font-medium">Enabled</span>
+                    <% else %>
+                      <span class="bg-gray-50 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium">Disabled</span>
+                    <% end %>
+                  </td>
+                  <td class="py-3 pl-4 whitespace-nowrap text-right">
+                    <% if job.next_run_at %>
+                      <p class="text-sm text-gray-700"><%= job.next_run_at.strftime("%b %d") %></p>
+                      <p class="text-xs text-gray-500"><%= job.next_run_at.strftime("%H:%M") %></p>
+                    <% else %>
+                      <p class="text-sm text-gray-400">Not scheduled</p>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="border-t border-gray-100 px-5 py-3 sm:px-6">
+          <p class="text-sm text-gray-500">
+            Showing <%= [@backup_jobs.count, 5].min %> of <%= @backup_jobs.count %> jobs
+          </p>
+        </div>
+      <% else %>
+        <div class="px-5 py-12 text-center sm:px-6">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-semibold text-gray-900">No backup jobs</h3>
+          <p class="mt-1 text-sm text-gray-500">Get started by creating your first backup job.</p>
+          <div class="mt-4">
+            <%= link_to new_backup_job_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
+              <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+              </svg>
+              New Backup Job
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Databases Overview -->
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 flex items-center justify-between px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800">Databases</h3>
+      <%= link_to "View All", database_configs_path, class: "text-sm font-medium text-primary-500 hover:text-primary-700" %>
+    </div>
+
+    <% if @database_configs.any? %>
+      <div class="grid grid-cols-1 gap-4 px-5 pb-5 sm:grid-cols-2 lg:grid-cols-3 sm:px-6 sm:pb-6">
+        <% @database_configs.each do |db| %>
+          <%= link_to db, class: "group block rounded-xl border border-gray-200 p-4 transition-all hover:border-primary-300 hover:shadow-sm" do %>
+            <div class="flex items-center gap-4">
+              <% if db.healthy? %>
+                <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                  </svg>
+                </div>
+              <% elsif db.unhealthy? %>
+                <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                </div>
+              <% else %>
+                <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                  </svg>
+                </div>
+              <% end %>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 group-hover:text-primary-600"><%= db.name %></p>
+                <p class="truncate text-sm text-gray-500"><%= db.host %>:<%= db.port %></p>
+              </div>
+              <% if db.healthy? %>
+                <span class="bg-green-50 text-green-600 rounded-full px-2 py-0.5 text-xs font-medium">Healthy</span>
+              <% elsif db.unhealthy? %>
+                <span class="bg-red-50 text-red-600 rounded-full px-2 py-0.5 text-xs font-medium">Unhealthy</span>
+              <% else %>
+                <span class="bg-gray-50 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium">Unknown</span>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-5 py-12 text-center sm:px-6">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-semibold text-gray-900">No databases</h3>
+        <p class="mt-1 text-sm text-gray-500">Add your first database to get started.</p>
+        <div class="mt-4">
+          <%= link_to new_database_config_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
+            <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+            Add Database
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

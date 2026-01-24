@@ -1,0 +1,108 @@
+# frozen_string_literal: true
+
+class RestoreExecutionJob < ApplicationJob
+  queue_as :restores
+
+  retry_on StandardError, wait: 5.seconds, attempts: 2
+  discard_on ActiveJob::DeserializationError
+
+  def perform(restore_id, options = {})
+    restore = Restore.find(restore_id)
+    target_config = restore.database_config
+
+    Rails.logger.info "[RestoreExecutionJob] Starting restore #{restore_id} to #{target_config.database_name}"
+
+    restore.update!(status: :running, started_at: Time.current)
+
+    # Determine the source - either from a backup or from uploaded file
+    if restore.backup.present?
+      service = PostgresRestoreService.new(
+        backup: restore.backup,
+        target_database_config: target_config,
+        options: options.symbolize_keys
+      )
+    elsif restore.file_path.present?
+      service = PostgresRestoreService.new(
+        backup: OpenStruct.new(
+          id: 0,
+          file_path: restore.file_path,
+          encrypted?: restore.file_path.end_with?(".enc"),
+          compressed?: restore.file_path.end_with?(".gz") || restore.file_path.include?(".gz."),
+          storage_backend: OpenStruct.new(
+            exists?: ->(_) { File.exist?(restore.file_path) },
+            retrieve: ->(_, dest) { FileUtils.cp(restore.file_path, dest); dest }
+          )
+        ),
+        target_database_config: target_config,
+        options: options.symbolize_keys
+      )
+    else
+      raise "Restore has no backup or file path"
+    end
+
+    result = service.execute
+
+    restore.update!(status: :completed, completed_at: Time.current)
+
+    AuditLog.log(
+      action: "restore_completed",
+      user: restore.user,
+      resource: restore,
+      details: {
+        target_database: target_config.database_name,
+        source_backup_id: restore.backup_id,
+        source_file: restore.file_path
+      }
+    )
+
+    # Send notification on success
+    if restore.backup&.backup_job&.notification_channels&.any?
+      NotificationJob.perform_later(
+        restore.backup.backup_job.id,
+        "restore_completed",
+        {
+          restore_id: restore.id,
+          target_database: target_config.name
+        }
+      )
+    end
+
+    result
+  rescue StandardError => e
+    Rails.logger.error "[RestoreExecutionJob] Failed: #{e.message}"
+    Rails.logger.error e.backtrace.first(10).join("\n")
+
+    if restore
+      restore.update!(
+        status: :failed,
+        completed_at: Time.current,
+        error_message: e.message
+      )
+
+      AuditLog.log(
+        action: "restore_failed",
+        user: restore.user,
+        resource: restore,
+        details: {
+          target_database: restore.database_config&.database_name,
+          error: e.message
+        }
+      )
+
+      # Send notification on failure
+      if restore.backup&.backup_job&.notification_channels&.any?
+        NotificationJob.perform_later(
+          restore.backup.backup_job.id,
+          "restore_failed",
+          {
+            restore_id: restore.id,
+            target_database: restore.database_config&.name,
+            error: e.message
+          }
+        )
+      end
+    end
+
+    raise
+  end
+end

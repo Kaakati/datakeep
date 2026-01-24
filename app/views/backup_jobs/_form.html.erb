@@ -1,0 +1,201 @@
+<%= form_with model: backup_job, class: "space-y-6" do |f| %>
+  <% if backup_job.errors.any? %>
+    <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+      <div class="flex">
+        <div class="shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">There were errors with your submission</h3>
+          <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+            <ul class="list-disc space-y-1 pl-5">
+              <% backup_job.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Basic Information</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure the name and target for this backup job</p>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <%= f.label :name, "Job Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :name, placeholder: "Daily Production Backup", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :database_config_id, "Database", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <div class="relative">
+            <%= f.collection_select :database_config_id, current_user.database_configs, :id, :name, { prompt: "Select a database" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <%= f.label :storage_backend_id, "Storage", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <div class="relative">
+            <%= f.collection_select :storage_backend_id, current_user.storage_backends, :id, :name, { prompt: "Select storage" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Schedule</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure when backups should run</p>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :schedule_type, "Frequency", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <div class="relative">
+            <%= f.select :schedule_type, BackupJob::SCHEDULE_TYPES.map { |t| [t.titleize, t] }, {}, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90", data: { action: "change->backup-job-form#toggleCronField" } %>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <div id="cron-field" class="<%= backup_job.schedule_type != 'custom' ? 'hidden' : '' %>">
+          <%= f.label :cron_expression, "Cron Expression", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :cron_expression, placeholder: "0 2 * * *", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Example: 0 2 * * * (daily at 2 AM)</p>
+        </div>
+
+        <div>
+          <%= f.label :retention_days, "Retention (days)", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.number_field :retention_days, min: 1, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Backups older than this will be automatically deleted</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Options</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure compression, encryption, and scheduling</p>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="space-y-5">
+        <div x-data="{ checked: <%= backup_job.compression? ? 'true' : 'false' %> }">
+          <label for="backup_job_compression" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+            <div class="relative">
+              <%= f.check_box :compression, { class: "sr-only", "x-model": "checked" } %>
+              <div :class="checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
+                <span :class="checked ? '' : 'opacity-0'">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-800 dark:text-white/90">Enable Compression</span>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Compress backups using gzip (typically 4-8x size reduction)</p>
+            </div>
+          </label>
+        </div>
+
+        <div x-data="{ checked: <%= backup_job.encryption? ? 'true' : 'false' %> }">
+          <label for="backup_job_encryption" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+            <div class="relative">
+              <%= f.check_box :encryption, { class: "sr-only", "x-model": "checked" } %>
+              <div :class="checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
+                <span :class="checked ? '' : 'opacity-0'">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-800 dark:text-white/90">Enable Encryption</span>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Encrypt backup files using AES-256-GCM</p>
+            </div>
+          </label>
+        </div>
+
+        <div x-data="{ checked: <%= backup_job.enabled? ? 'true' : 'false' %> }">
+          <label for="backup_job_enabled" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+            <div class="relative">
+              <%= f.check_box :enabled, { class: "sr-only", "x-model": "checked" } %>
+              <div :class="checked ? 'border-success-500 bg-success-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-success-500 dark:hover:border-success-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
+                <span :class="checked ? '' : 'opacity-0'">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-800 dark:text-white/90">Enabled</span>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Enable scheduled execution of this backup job</p>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if current_user.notification_channels.any? %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div class="px-5 py-4 sm:px-6 sm:py-5">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Notifications</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Select notification channels to alert on backup completion or failure</p>
+      </div>
+      <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+        <div class="space-y-5">
+          <% current_user.notification_channels.each do |channel| %>
+            <div x-data="{ checked: <%= backup_job.notification_channel_ids.include?(channel.id) ? 'true' : 'false' %> }">
+              <label for="notification_channel_<%= channel.id %>" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                <div class="relative">
+                  <%= check_box_tag "backup_job[notification_channel_ids][]", channel.id, backup_job.notification_channel_ids.include?(channel.id), id: "notification_channel_#{channel.id}", class: "sr-only", "x-model": "checked" %>
+                  <div :class="checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
+                    <span :class="checked ? '' : 'opacity-0'">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-sm font-medium text-gray-800 dark:text-white/90"><%= channel.name %></span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= channel.channel_type.titleize %></p>
+                </div>
+              </label>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="flex justify-end space-x-3">
+    <%= link_to "Cancel", backup_jobs_path, class: "inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]" %>
+    <%= f.submit backup_job.persisted? ? "Update Backup Job" : "Create Backup Job", class: "inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 cursor-pointer" %>
+  </div>
+<% end %>

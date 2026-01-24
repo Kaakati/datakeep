@@ -1,0 +1,120 @@
+# Database-Ops Development Environment
+#
+# Start with: docker compose up
+# For production: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Services:
+# - web: Rails application (port 3000)
+# - db: PostgreSQL database for the app itself (port 5432)
+# - redis: Cache and background job queue (port 6379)
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/database_ops_development
+      - REDIS_URL=redis://redis:6379/0
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+    volumes:
+      # Application code for live reloading
+      - .:/rails:cached
+      # Persistent storage for backups
+      - database_ops_storage:/rails/storage
+      - database_ops_backups:/rails/backups
+      # Local backup storage - mounts /var/backups so any subdirectory users configure will work
+      - local_backups:/var/backups
+      # Bundle cache to avoid reinstalling gems
+      - bundle_cache:/usr/local/bundle
+      # Node modules (if using)
+      - node_modules:/rails/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
+
+  # Background job processor
+  jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - RAILS_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/database_ops_development
+      - REDIS_URL=redis://redis:6379/0
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+    volumes:
+      - .:/rails:cached
+      - database_ops_storage:/rails/storage
+      - database_ops_backups:/rails/backups
+      # Local backup storage - shared with web container
+      - local_backups:/var/backups
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["bundle", "exec", "sidekiq"]
+
+  # PostgreSQL database for the application
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: database_ops_development
+    ports:
+      - "5432:5432"
+    volumes:
+      # PostgreSQL 18+ requires mounting at /var/lib/postgresql (not /data subdirectory)
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching, Action Cable, and Sidekiq
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  # PostgreSQL data persistence
+  postgres_data:
+
+  # Redis data persistence
+  redis_data:
+
+  # Ruby gem cache
+  bundle_cache:
+
+  # Node modules (if using JavaScript dependencies)
+  node_modules:
+
+  # Application storage (Active Storage, uploaded files)
+  database_ops_storage:
+
+  # Backup files storage (for /rails/backups)
+  database_ops_backups:
+
+  # Local backup storage (for /var/backups and any subdirectories)
+  local_backups:

@@ -1,0 +1,85 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Restore History</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">View all database restore operations</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <%= link_to new_restore_path, class: "inline-flex items-center rounded-md bg-primary-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-600" do %>
+        <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clip-rule="evenodd" />
+        </svg>
+        New Restore
+      <% end %>
+    </div>
+  </div>
+
+  <% if @restores.any? %>
+    <div class="overflow-hidden bg-white shadow sm:rounded-lg dark:bg-white/[0.03]">
+      <table class="min-w-full divide-y divide-gray-300">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Date</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Database</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Source</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Duration</th>
+            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+              <span class="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 bg-white">
+          <% @restores.each do |restore| %>
+            <tr>
+              <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
+                <%= restore.created_at.strftime("%b %d, %Y %H:%M") %>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm">
+                <%= link_to restore.database_config.name, restore.database_config, class: "text-primary-500 hover:text-indigo-500" %>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <% if restore.backup %>
+                  <%= link_to "Backup from #{restore.backup.created_at.strftime('%b %d')}", backup_job_backup_path(restore.backup.backup_job, restore.backup), class: "text-primary-500 hover:text-indigo-500" %>
+                <% else %>
+                  <span class="text-gray-500">Uploaded file</span>
+                <% end %>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm">
+                <%= status_badge(restore.status) %>
+              </td>
+              <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <% if restore.started_at && restore.completed_at %>
+                  <%= distance_of_time_in_words(restore.started_at, restore.completed_at) %>
+                <% elsif restore.started_at %>
+                  In progress...
+                <% else %>
+                  -
+                <% end %>
+              </td>
+              <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                <%= link_to "View", restore, class: "text-primary-500 hover:text-primary-700" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="text-center py-12 bg-white rounded-lg shadow dark:bg-white/[0.03]">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900">No restore operations</h3>
+      <p class="mt-1 text-sm text-gray-500">No database restore operations have been performed yet.</p>
+      <div class="mt-6">
+        <%= link_to new_restore_path, class: "inline-flex items-center rounded-md bg-primary-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-600" do %>
+          <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clip-rule="evenodd" />
+          </svg>
+          New Restore
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
