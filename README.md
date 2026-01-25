@@ -48,12 +48,12 @@ DataKeep provides automated backup scheduling, health monitoring, and backup man
 
 ## Requirements
 
-- Ruby 3.4.2+
-- PostgreSQL 14+
-- Redis 7.0+
-- Node.js 18+ (for asset compilation)
+- Docker & Docker Compose (recommended)
+- Or: Ruby 3.4.2+, PostgreSQL 14+, Redis 7.0+
 
-## Installation
+## Quick Start with Docker
+
+The easiest way to run DataKeep is with Docker Compose:
 
 ### 1. Clone the repository
 
@@ -62,25 +62,74 @@ git clone https://github.com/Kaakati/datakeep.git
 cd datakeep
 ```
 
-### 2. Install dependencies
+### 2. Start the application
+
+```bash
+docker compose up
+```
+
+This starts all services:
+- **web** - Rails application on [http://localhost:3000](http://localhost:3000)
+- **jobs** - Sidekiq background worker
+- **db** - PostgreSQL database
+- **redis** - Redis for caching and job queues
+
+### 3. Setup the database (first run only)
+
+```bash
+docker compose exec web bin/rails db:create db:migrate
+```
+
+### 4. Visit the application
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Docker Commands
+
+```bash
+# Start in background
+docker compose up -d
+
+# View logs
+docker compose logs -f web
+
+# Stop services
+docker compose down
+
+# Reset database
+docker compose exec web bin/rails db:reset
+
+# Run tests
+docker compose exec web bin/rails test
+
+# Access Rails console
+docker compose exec web bin/rails console
+```
+
+## Manual Installation (without Docker)
+
+<details>
+<summary>Click to expand manual installation steps</summary>
+
+### 1. Install dependencies
 
 ```bash
 bundle install
 ```
 
-### 3. Setup database
+### 2. Setup database
 
 ```bash
 bin/rails db:create db:migrate
 ```
 
-### 4. Start Redis (required for Sidekiq)
+### 3. Start Redis (required for Sidekiq)
 
 ```bash
 redis-server
 ```
 
-### 5. Start the application
+### 4. Start the application
 
 ```bash
 # Terminal 1: Rails server
@@ -90,9 +139,7 @@ bin/rails server
 bundle exec sidekiq
 ```
 
-### 6. Visit the application
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+</details>
 
 ## Configuration
 
