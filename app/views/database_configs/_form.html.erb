@@ -1,4 +1,4 @@
-<%= form_with model: database_config, class: "space-y-6" do |f| %>
+<%= form_with model: database_config, class: "space-y-6", data: { controller: "database-url" } do |f| %>
   <% if database_config.errors.any? %>
     <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
       <div class="flex">
@@ -21,6 +21,47 @@
     </div>
   <% end %>
 
+  <%# Quick Connect URL Section %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <div class="flex items-center gap-2">
+        <svg class="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+        </svg>
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Quick Connect</h3>
+      </div>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Paste a connection URL to auto-fill all fields below</p>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div>
+        <label for="connection_url" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Connection URL</label>
+        <div class="flex gap-3">
+          <input
+            type="text"
+            id="connection_url"
+            placeholder="postgresql://username:password@host:port/database?sslmode=prefer"
+            data-database-url-target="url"
+            data-action="input->database-url#parse"
+            class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 transition-colors"
+          />
+          <button
+            type="button"
+            data-action="click->database-url#clear"
+            class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
+            title="Clear URL"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+          Supports PostgreSQL URLs: <code class="rounded bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-gray-800">postgresql://user:pass@host:port/db</code>
+        </p>
+      </div>
+    </div>
+  </div>
+
   <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="px-5 py-4 sm:px-6 sm:py-5">
       <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Database Connection</h3>
@@ -30,28 +71,28 @@
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <%= f.label :name, "Configuration Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :name, placeholder: "My Production Database", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.text_field :name, placeholder: "My Production Database", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
           <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">A friendly name to identify this database configuration</p>
         </div>
 
         <div>
           <%= f.label :host, "Host", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :host, placeholder: "localhost or db.example.com", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.text_field :host, placeholder: "localhost or db.example.com", data: { database_url_target: "host" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
         <div>
           <%= f.label :port, "Port", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.number_field :port, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.number_field :port, data: { database_url_target: "port" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
         <div>
           <%= f.label :database_name, "Database Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :database_name, placeholder: "myapp_production", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.text_field :database_name, placeholder: "myapp_production", data: { database_url_target: "database" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
         <div>
           <%= f.label :username, "Username", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :username, autocomplete: "off", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.text_field :username, autocomplete: "off", data: { database_url_target: "username" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
         <div x-data="{ showPassword: false }">
@@ -64,7 +105,8 @@
               autocomplete="new-password"
               placeholder="<%= database_config.persisted? ? "Leave blank to keep current" : "" %>"
               :type="showPassword ? 'text' : 'password'"
-              class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+              data-database-url-target="password"
+              class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
             />
             <button
               type="button"
@@ -88,7 +130,7 @@
         <div>
           <%= f.label :ssl_mode, "SSL Mode", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <div class="relative">
-            <%= f.select :ssl_mode, DatabaseConfig::SSL_MODES.map { |m| [m.titleize, m] }, {}, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
+            <%= f.select :ssl_mode, DatabaseConfig::SSL_MODES.map { |m| [m.titleize, m] }, {}, data: { database_url_target: "sslMode" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
             <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
               <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -102,6 +144,6 @@
 
   <div class="flex justify-end space-x-3">
     <%= link_to "Cancel", database_configs_path, class: "inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]" %>
-    <%= f.submit database_config.persisted? ? "Update Database" : "Create Database", class: "inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 cursor-pointer" %>
+    <%= f.submit database_config.persisted? ? "Update Database" : "Create Database", class: "inline-flex items-center justify-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-primary-600 cursor-pointer" %>
   </div>
 <% end %>

@@ -1,22 +1,22 @@
 <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+  <div class="sm:mx-auto sm:w-full sm:max-w-lg">
     <div class="flex justify-center">
-      <svg class="h-12 w-12 text-brand-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <svg class="h-14 w-14 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
       </svg>
     </div>
-    <h2 class="mt-6 text-center text-2xl font-bold tracking-tight text-gray-800 dark:text-white/90">
+    <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-800 dark:text-white/90">
       Create your account
     </h2>
-    <p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+    <p class="mt-3 text-center text-base text-gray-600 dark:text-gray-400">
       Already have an account?
-      <%= link_to "Sign in", login_path, class: "font-medium text-brand-500 hover:text-brand-600 dark:hover:text-brand-400" %>
+      <%= link_to "Sign in", login_path, class: "font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" %>
     </p>
   </div>
 
-  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-    <div class="rounded-2xl border border-gray-200 bg-white py-8 px-6 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:px-10">
-      <%= form_with model: @user, url: signup_path, class: "space-y-5" do |f| %>
+  <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-lg">
+    <div class="rounded-2xl border border-gray-200 bg-white py-10 px-8 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:px-12">
+      <%= form_with model: @user, url: signup_path, class: "space-y-6" do |f| %>
         <% if @user.errors.any? %>
           <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
             <div class="flex">
@@ -40,17 +40,17 @@
         <% end %>
 
         <div>
-          <%= f.label :name, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Your name", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.label :name, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+          <%= f.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Your name", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
         <div>
-          <%= f.label :email, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.email_field :email, required: true, autocomplete: "email", placeholder: "you@example.com", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= f.label :email, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+          <%= f.email_field :email, required: true, autocomplete: "email", placeholder: "you@example.com", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
         <div x-data="{ showPassword: false }">
-          <%= f.label :password, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.label :password, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
           <div class="relative">
             <input
               type="password"
@@ -60,12 +60,12 @@
               autocomplete="new-password"
               placeholder="Create a password"
               :type="showPassword ? 'text' : 'password'"
-              class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+              class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
             />
             <button
               type="button"
               @click="showPassword = !showPassword"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               <svg x-show="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -80,7 +80,7 @@
         </div>
 
         <div x-data="{ showPassword: false }">
-          <%= f.label :password_confirmation, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.label :password_confirmation, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
           <div class="relative">
             <input
               type="password"
@@ -90,12 +90,12 @@
               autocomplete="new-password"
               placeholder="Confirm your password"
               :type="showPassword ? 'text' : 'password'"
-              class="shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+              class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
             />
             <button
               type="button"
               @click="showPassword = !showPassword"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               <svg x-show="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -109,7 +109,7 @@
         </div>
 
         <div>
-          <%= f.submit "Create account", class: "flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 cursor-pointer" %>
+          <%= f.submit "Create account", class: "flex w-full justify-center rounded-lg bg-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-theme-xs hover:bg-primary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 cursor-pointer transition-colors duration-150" %>
         </div>
       <% end %>
     </div>

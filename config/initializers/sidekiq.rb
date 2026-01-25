@@ -12,6 +12,13 @@ Sidekiq.configure_server do |config|
         "cron" => "*/5 * * * *", # Every 5 minutes
         "queue" => "maintenance",
         "description" => "Check health of all database connections"
+      },
+      {
+        "name" => "scheduler_check",
+        "class" => "SchedulerJob",
+        "cron" => "* * * * *", # Every minute
+        "queue" => "scheduler",
+        "description" => "Check for due backup jobs and schedule them"
       }
     ]
 

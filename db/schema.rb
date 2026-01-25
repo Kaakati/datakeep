@@ -22,7 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.integer "resource_id"
     t.string "resource_type"
     t.datetime "updated_at", null: false
-    t.integer "user_id"
+    t.bigint "user_id"
     t.index ["action"], name: "index_audit_logs_on_action"
     t.index ["created_at"], name: "index_audit_logs_on_created_at"
     t.index ["resource_type", "resource_id"], name: "index_audit_logs_on_resource_type_and_resource_id"
@@ -30,9 +30,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
   end
 
   create_table "backup_job_notification_channels", force: :cascade do |t|
-    t.integer "backup_job_id", null: false
+    t.bigint "backup_job_id", null: false
     t.datetime "created_at", null: false
-    t.integer "notification_channel_id", null: false
+    t.bigint "notification_channel_id", null: false
     t.datetime "updated_at", null: false
     t.index ["backup_job_id", "notification_channel_id"], name: "idx_backup_job_notification_channel_unique", unique: true
     t.index ["backup_job_id"], name: "index_backup_job_notification_channels_on_backup_job_id"
@@ -43,7 +43,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.boolean "compression", default: true, null: false
     t.datetime "created_at", null: false
     t.string "cron_expression"
-    t.integer "database_config_id", null: false
+    t.bigint "database_config_id", null: false
     t.boolean "enabled", default: true, null: false
     t.boolean "encryption", default: false, null: false
     t.datetime "last_run_at"
@@ -52,9 +52,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.integer "retention_days", default: 30, null: false
     t.string "schedule_type", default: "daily", null: false
     t.string "status", default: "idle", null: false
-    t.integer "storage_backend_id", null: false
+    t.bigint "storage_backend_id", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["database_config_id"], name: "index_backup_jobs_on_database_config_id"
     t.index ["enabled"], name: "index_backup_jobs_on_enabled"
     t.index ["next_run_at"], name: "index_backup_jobs_on_next_run_at"
@@ -64,7 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
   end
 
   create_table "backups", force: :cascade do |t|
-    t.integer "backup_job_id", null: false
+    t.bigint "backup_job_id", null: false
     t.string "checksum"
     t.datetime "completed_at"
     t.boolean "compressed", default: false, null: false
@@ -78,7 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.string "pg_version"
     t.datetime "started_at"
     t.string "status", default: "pending", null: false
-    t.integer "storage_backend_id", null: false
+    t.bigint "storage_backend_id", null: false
     t.datetime "updated_at", null: false
     t.index ["backup_job_id"], name: "index_backups_on_backup_job_id"
     t.index ["created_at"], name: "index_backups_on_created_at"
@@ -98,7 +98,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.integer "port", default: 5432, null: false
     t.string "ssl_mode", default: "prefer"
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "username", null: false
     t.index ["user_id", "name"], name: "index_database_configs_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_database_configs_on_user_id"
@@ -127,22 +127,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.boolean "notify_on_success", default: false, null: false
     t.string "type", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["user_id", "name"], name: "index_notification_channels_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_notification_channels_on_user_id"
   end
 
   create_table "restores", force: :cascade do |t|
-    t.integer "backup_id"
+    t.bigint "backup_id"
     t.datetime "completed_at"
     t.datetime "created_at", null: false
-    t.integer "database_config_id", null: false
+    t.bigint "database_config_id", null: false
     t.text "error_message"
     t.string "file_path"
     t.datetime "started_at"
     t.string "status", default: "pending"
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["backup_id"], name: "index_restores_on_backup_id"
     t.index ["database_config_id"], name: "index_restores_on_database_config_id"
     t.index ["status"], name: "index_restores_on_status"
@@ -156,7 +156,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.string "name", null: false
     t.string "type", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["user_id", "name"], name: "index_storage_backends_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_storage_backends_on_user_id"
   end

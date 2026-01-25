@@ -21,6 +21,18 @@ class DatabaseConfig < ApplicationRecord
   scope :healthy, -> { where(health_status: "healthy") }
   scope :unhealthy, -> { where(health_status: "unhealthy") }
 
+  # Get the most recent backup for this database config
+  def last_backup
+    @last_backup ||= Backup.joins(:backup_job)
+                           .where(backup_jobs: { database_config_id: id })
+                           .order(created_at: :desc)
+                           .first
+  end
+
+  def last_backup_at
+    last_backup&.created_at
+  end
+
   def password
     encrypted_password
   end
@@ -233,5 +245,63 @@ class DatabaseConfig < ApplicationRecord
     exp = (Math.log(bytes) / Math.log(1024)).to_i
     exp = units.length - 1 if exp > units.length - 1
     "%.1f %s" % [ bytes.to_f / (1024 ** exp), units[exp] ]
+  end
+
+  def run_vacuum_analyze
+    require "pg"
+    conn = PG.connect(connection_params)
+    # VACUUM ANALYZE cannot run inside a transaction block
+    conn.exec("VACUUM ANALYZE")
+    { success: true }
+  rescue PG::Error => e
+    { success: false, error: e.message }
+  ensure
+    conn&.close
+  end
+
+  def terminate_backend(pid)
+    require "pg"
+    conn = PG.connect(connection_params)
+    result = conn.exec_params("SELECT pg_terminate_backend($1)", [ pid ])
+    terminated = result.first["pg_terminate_backend"] == "t"
+    { success: terminated, terminated: terminated }
+  rescue PG::Error => e
+    { success: false, error: e.message }
+  ensure
+    conn&.close
+  end
+
+  def long_running_queries(min_duration_seconds = 300)
+    require "pg"
+    conn = PG.connect(connection_params)
+    result = conn.exec_params(<<~SQL, [ min_duration_seconds ])
+      SELECT
+        pid,
+        usename,
+        state,
+        query,
+        EXTRACT(EPOCH FROM (now() - query_start))::integer as duration_seconds,
+        query_start
+      FROM pg_stat_activity
+      WHERE datname = current_database()
+        AND state != 'idle'
+        AND query NOT ILIKE '%pg_stat_activity%'
+        AND EXTRACT(EPOCH FROM (now() - query_start)) > $1
+      ORDER BY query_start ASC
+    SQL
+    result.map do |row|
+      {
+        pid: row["pid"].to_i,
+        username: row["usename"],
+        state: row["state"],
+        query: row["query"],
+        duration_seconds: row["duration_seconds"].to_i,
+        query_start: row["query_start"]
+      }
+    end
+  rescue PG::Error => e
+    []
+  ensure
+    conn&.close
   end
 end

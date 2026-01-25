@@ -234,4 +234,49 @@ class BackupTest < ActiveSupport::TestCase
     @backup_job.update!(compression: false)
     assert_not @backup.compressed?
   end
+
+  # ============================================================================
+  # Deletable Tests
+  # ============================================================================
+
+  test "deletable? returns true for completed backups" do
+    @backup.save!
+    @backup.update!(status: "completed")
+    assert @backup.deletable?
+  end
+
+  test "deletable? returns true for failed backups" do
+    @backup.save!
+    @backup.update!(status: "failed")
+    assert @backup.deletable?
+  end
+
+  test "deletable? returns false for running backups" do
+    @backup.save!
+    @backup.update!(status: "running")
+    assert_not @backup.deletable?
+  end
+
+  test "deletable? returns false for pending backups" do
+    @backup.save!
+    # @backup starts as pending
+    assert_not @backup.deletable?
+  end
+
+  test "deletion_prevented_reason returns nil for deletable backups" do
+    @backup.save!
+    @backup.update!(status: "completed")
+    assert_nil @backup.deletion_prevented_reason
+  end
+
+  test "deletion_prevented_reason returns message for running backups" do
+    @backup.save!
+    @backup.update!(status: "running")
+    assert_match(/running/i, @backup.deletion_prevented_reason)
+  end
+
+  test "deletion_prevented_reason returns message for pending backups" do
+    @backup.save!
+    assert_match(/pending/i, @backup.deletion_prevented_reason)
+  end
 end

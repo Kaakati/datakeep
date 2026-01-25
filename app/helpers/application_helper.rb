@@ -17,6 +17,19 @@ module ApplicationHelper
     end
   end
 
+  def sidebar_link_class(path)
+    base_classes = "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+    if current_page?(path)
+      "#{base_classes} bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400"
+    else
+      "#{base_classes} text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+    end
+  end
+
+  def sidebar_group_heading_class
+    "px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+  end
+
   def status_badge(status)
     classes = case status.to_s
     when "healthy", "completed", "idle", "enabled"

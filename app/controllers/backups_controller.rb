@@ -21,6 +21,13 @@ class BackupsController < ApplicationController
   end
 
   def destroy
+    # Prevent deletion of running or pending backups
+    unless @backup.deletable?
+      redirect_to backup_job_backup_path(@backup_job, @backup),
+        alert: @backup.deletion_prevented_reason
+      return
+    end
+
     if @backup.completed?
       # Delete from storage first
       begin

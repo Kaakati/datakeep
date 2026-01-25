@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   resources :database_configs do
     member do
       post :test_connection
+      post :vacuum
+      post :kill_query
     end
     resources :health_checks, only: [ :index ]
   end

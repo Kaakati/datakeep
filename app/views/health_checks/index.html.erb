@@ -67,7 +67,7 @@
                 <% checks.each do |check| %>
                   <div class="relative group">
                     <div
-                      class="w-3 h-8 rounded-sm cursor-pointer transition-transform hover:scale-110 <%= check.healthy? ? 'bg-green-500' : 'bg-red-500' %>"
+                      class="w-3 h-3 rounded-sm cursor-pointer transition-transform hover:scale-110 <%= check.healthy? ? 'bg-green-500' : 'bg-red-500' %>"
                     ></div>
                     <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                       <div class="font-medium"><%= check.checked_at.strftime("%b %d, %Y %H:%M:%S") %></div>

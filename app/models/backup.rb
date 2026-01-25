@@ -116,4 +116,25 @@ class Backup < ApplicationRecord
   def compressed?
     backup_job&.compression?
   end
+
+  # Determines if this backup can be safely deleted.
+  # Running and pending backups cannot be deleted to prevent data corruption.
+  #
+  # @return [Boolean] true if the backup can be deleted
+  def deletable?
+    completed? || failed?
+  end
+
+  # Returns the reason why this backup cannot be deleted, or nil if it can.
+  #
+  # @return [String, nil] the reason deletion is prevented, or nil if deletable
+  def deletion_prevented_reason
+    return nil if deletable?
+
+    if running?
+      "This backup cannot be deleted while it is running."
+    elsif pending?
+      "This backup cannot be deleted while it is pending."
+    end
+  end
 end
