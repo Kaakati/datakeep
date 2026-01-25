@@ -1,0 +1,53 @@
+<%# Tabs Navigation %>
+<div class="border-b border-gray-200 dark:border-gray-800">
+  <nav class="flex -mb-px px-5" role="tablist" aria-label="Database details">
+    <button type="button"
+            role="tab"
+            id="tab-performance"
+            aria-selected="true"
+            aria-controls="panel-performance"
+            tabindex="0"
+            data-tabs-target="tab"
+            data-tab="performance"
+            data-action="click->tabs#switch keydown->tabs#handleKeydown"
+            class="whitespace-nowrap border-b-2 px-4 py-4 text-sm font-medium border-primary-500 text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset dark:text-primary-400">
+      Performance
+    </button>
+    <button type="button"
+            role="tab"
+            id="tab-backups"
+            aria-selected="false"
+            aria-controls="panel-backups"
+            tabindex="-1"
+            data-tabs-target="tab"
+            data-tab="backups"
+            data-action="click->tabs#switch keydown->tabs#handleKeydown"
+            class="whitespace-nowrap border-b-2 px-4 py-4 text-sm font-medium border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset dark:text-gray-400 dark:hover:text-gray-300">
+      Backups (<%= backup_jobs.count %> jobs, <%= backups.count %> backups)
+    </button>
+    <button type="button"
+            role="tab"
+            id="tab-health"
+            aria-selected="false"
+            aria-controls="panel-health"
+            tabindex="-1"
+            data-tabs-target="tab"
+            data-tab="health"
+            data-action="click->tabs#switch keydown->tabs#handleKeydown"
+            class="whitespace-nowrap border-b-2 px-4 py-4 text-sm font-medium border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset dark:text-gray-400 dark:hover:text-gray-300">
+      Health History
+    </button>
+    <button type="button"
+            role="tab"
+            id="tab-connection"
+            aria-selected="false"
+            aria-controls="panel-connection"
+            tabindex="-1"
+            data-tabs-target="tab"
+            data-tab="connection"
+            data-action="click->tabs#switch keydown->tabs#handleKeydown"
+            class="whitespace-nowrap border-b-2 px-4 py-4 text-sm font-medium border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset dark:text-gray-400 dark:hover:text-gray-300">
+      Connection
+    </button>
+  </nav>
+</div>

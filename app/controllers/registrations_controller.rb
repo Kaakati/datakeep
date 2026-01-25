@@ -13,7 +13,7 @@ class RegistrationsController < ApplicationController
 
     if @user.save
       log_in(@user)
-      redirect_to root_path, notice: "Welcome to Database-Ops! Your account has been created."
+      redirect_to root_path, notice: "Welcome to DataKeep! Your account has been created."
     else
       render :new, status: :unprocessable_entity
     end

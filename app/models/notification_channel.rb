@@ -47,7 +47,7 @@ class NotificationChannel < ApplicationRecord
     when "test"
       test_message
     else
-      "Database-Ops notification: #{event}"
+      "DataKeep notification: #{event}"
     end
   end
 
@@ -69,6 +69,6 @@ class NotificationChannel < ApplicationRecord
   end
 
   def test_message
-    "This is a test notification from Database-Ops"
+    "This is a test notification from DataKeep"
   end
 end

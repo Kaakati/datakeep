@@ -1,0 +1,91 @@
+<%# Health Summary Cards %>
+<section aria-label="Health summary" class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+  <%# Status Card %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center gap-4">
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= database_config.healthy? ? 'bg-green-50 text-green-500 dark:bg-green-900/20 dark:text-green-400' : database_config.unhealthy? ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' %>">
+        <% if database_config.healthy? %>
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        <% elsif database_config.unhealthy? %>
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        <% else %>
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+          </svg>
+        <% end %>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Status</p>
+        <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= database_config.health_status.titleize %></span>
+      </div>
+    </div>
+  </article>
+
+  <%# Cache Hit Ratio Card %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center gap-4">
+      <% cache_ratio = db_stats && !db_stats[:error] ? db_stats[:cache_hit_ratio] : nil %>
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= cache_ratio && cache_ratio >= 99 ? 'bg-green-50 text-green-500 dark:bg-green-900/20 dark:text-green-400' : cache_ratio && cache_ratio >= 95 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : cache_ratio ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' %>">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Cache Hit Ratio</p>
+        <span class="text-lg font-semibold text-gray-800 dark:text-white/90">
+          <% if cache_ratio %>
+            <%= cache_ratio %>%
+          <% else %>
+            <span class="text-gray-400">-</span>
+          <% end %>
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <%# Connections Card with Progress Bar %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center gap-4">
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary-50 text-primary-500 dark:bg-primary-900/20 dark:text-primary-400">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+        </svg>
+      </div>
+      <div class="flex-1">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Connections</p>
+        <% if db_stats && !db_stats[:error] %>
+          <% conn_percent = (db_stats[:active_connections].to_f / db_stats[:max_connections] * 100).round(1) %>
+          <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= db_stats[:active_connections] %> / <%= db_stats[:max_connections] %></span>
+          <div class="mt-1 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700" role="progressbar" aria-valuenow="<%= conn_percent %>" aria-valuemin="0" aria-valuemax="100" aria-label="Connection usage">
+            <div class="h-1.5 rounded-full <%= conn_percent > 80 ? 'bg-red-500' : conn_percent > 60 ? 'bg-yellow-500' : 'bg-green-500' %>" style="width: <%= conn_percent %>%"></div>
+          </div>
+        <% else %>
+          <span class="text-lg font-semibold text-gray-400">-</span>
+        <% end %>
+      </div>
+    </div>
+  </article>
+
+  <%# Uptime Card %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center gap-4">
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-teal-50 text-teal-500 dark:bg-teal-900/20 dark:text-teal-400">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Server Uptime</p>
+        <% if db_stats && !db_stats[:error] && db_stats[:server_start_time] %>
+          <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= time_ago_in_words(Time.parse(db_stats[:server_start_time])) %></span>
+        <% else %>
+          <span class="text-lg font-semibold text-gray-400">-</span>
+        <% end %>
+      </div>
+    </div>
+  </article>
+</section>

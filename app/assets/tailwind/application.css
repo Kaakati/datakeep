@@ -1,7 +1,11 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode instead of media query */
+@variant dark (&:where(.dark, .dark *));
+
 /* Custom theme colors */
 @theme {
+  /* Primary (Purple) */
   --color-primary-50: #faf5ff;
   --color-primary-100: #f3e8ff;
   --color-primary-200: #e9d5ff;
@@ -13,4 +17,121 @@
   --color-primary-800: #691dae;
   --color-primary-900: #581c87;
   --color-primary-950: #3b0764;
+
+  /* Gray */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+}
+
+/* ==========================================
+   TailAdmin Sidebar Menu Utilities
+   ========================================== */
+
+/* Menu item base styles */
+@utility menu-item {
+  @apply text-sm relative flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium transition-colors duration-200;
+}
+
+@utility menu-item-active {
+  @apply bg-primary-50 text-primary-600 dark:bg-primary-500/[0.12] dark:text-primary-400;
+}
+
+@utility menu-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300;
+}
+
+/* Menu item icons */
+@utility menu-item-icon-active {
+  @apply text-primary-600 dark:text-primary-400;
+}
+
+@utility menu-item-icon-inactive {
+  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+}
+
+/* Menu item arrow for dropdowns */
+@utility menu-item-arrow {
+  @apply absolute top-1/2 right-2.5 -translate-y-1/2 transition-transform duration-200;
+}
+
+@utility menu-item-arrow-active {
+  @apply text-primary-600 dark:text-primary-400 rotate-180;
+}
+
+@utility menu-item-arrow-inactive {
+  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+}
+
+/* Dropdown menu items */
+@utility menu-dropdown-item {
+  @apply text-sm relative flex items-center gap-3 rounded-lg px-3 py-2 font-medium transition-colors duration-200;
+}
+
+@utility menu-dropdown-item-active {
+  @apply text-primary-600 dark:text-primary-400;
+}
+
+@utility menu-dropdown-item-inactive {
+  @apply text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200;
+}
+
+/* Sidebar collapse behavior - show tooltips and hide text when collapsed */
+.sidebar-collapsed .menu-item-text {
+  @apply lg:hidden;
+}
+
+.sidebar-collapsed .menu-group-title {
+  @apply lg:hidden;
+}
+
+.sidebar-collapsed .menu-group-icon {
+  @apply lg:block;
+}
+
+.sidebar-collapsed .menu-item-arrow {
+  @apply lg:hidden;
+}
+
+.sidebar-collapsed .menu-dropdown {
+  @apply lg:hidden;
+}
+
+/* On hover when collapsed, show content */
+.sidebar-collapsed:hover .menu-item-text {
+  @apply lg:inline;
+}
+
+.sidebar-collapsed:hover .menu-group-title {
+  @apply lg:block;
+}
+
+.sidebar-collapsed:hover .menu-group-icon {
+  @apply lg:hidden;
+}
+
+.sidebar-collapsed:hover .menu-item-arrow {
+  @apply lg:block;
+}
+
+.sidebar-collapsed:hover .menu-dropdown {
+  @apply lg:flex;
+}
+
+/* Custom scrollbar for sidebar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

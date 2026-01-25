@@ -12,7 +12,7 @@ default: &default
 # Use DATABASE_URL or configure manually below
 development:
   <<: *default
-  database: database_ops_development
+  database: datakeep_development
   username: postgres
   password: password
   host: <%= ENV.fetch("DB_HOST", "localhost") %>
@@ -21,7 +21,7 @@ development:
 # Test environment
 test:
   <<: *default
-  database: database_ops_test
+  database: datakeep_test
   username: postgres
   password: password
   host: <%= ENV.fetch("DB_HOST", "localhost") %>
@@ -30,8 +30,8 @@ test:
 # Production uses DATABASE_URL environment variable
 production:
   <<: *default
-  database: database_ops_production
-  username: database_ops
+  database: datakeep_production
+  username: datakeep
   password: <%= ENV["DATABASE_PASSWORD"] %>
   host: <%= ENV["DATABASE_HOST"] %>
   port: <%= ENV.fetch("DATABASE_PORT", 5432) %>

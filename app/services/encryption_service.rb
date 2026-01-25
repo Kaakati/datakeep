@@ -117,7 +117,7 @@ class EncryptionService
     def normalize_key(key)
       if key.is_a?(String) && key.bytesize != KEY_LENGTH
         # If key is not the right size, derive it using PBKDF2
-        derived_key, = derive_key(key, "database-ops-salt")
+        derived_key, = derive_key(key, "datakeep-salt")
         derived_key
       else
         key

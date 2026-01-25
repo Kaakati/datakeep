@@ -33,7 +33,7 @@ module NotificationChannels
 
     def build_discord_payload(event, backup)
       {
-        username: "Database-Ops",
+        username: "DataKeep",
         embeds: [
           {
             title: event_title(event, backup),
@@ -41,7 +41,7 @@ module NotificationChannels
             color: event_color(event),
             timestamp: Time.current.iso8601,
             footer: {
-              text: "Database-Ops"
+              text: "DataKeep"
             }
           }
         ]

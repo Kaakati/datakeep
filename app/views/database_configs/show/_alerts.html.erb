@@ -1,0 +1,63 @@
+<%# Alert Banner - Conditional based on issues %>
+<% alerts = [] %>
+<% if database_config.unhealthy? %>
+  <% alerts << { type: :critical, message: "Connection failed. Database is unreachable.", action: :test_connection } %>
+<% end %>
+<% if db_stats && !db_stats[:error] %>
+  <% if db_stats[:dead_tuples] && db_stats[:dead_tuples] > 10_000 %>
+    <% alerts << { type: :warning, message: "High dead tuple count (#{number_with_delimiter(db_stats[:dead_tuples])}). Consider running VACUUM.", action: :vacuum } %>
+  <% end %>
+  <% if db_stats[:xid_percent] && db_stats[:xid_percent] > 50 %>
+    <% severity = db_stats[:xid_percent] > 75 ? :critical : :warning %>
+    <% alerts << { type: severity, message: "XID wraparound risk at #{db_stats[:xid_percent]}%. Run VACUUM to prevent transaction ID exhaustion.", action: :vacuum } %>
+  <% end %>
+<% end %>
+<% if long_running_queries&.any? %>
+  <% long_running_queries.each do |query| %>
+    <% alerts << { type: :warning, message: "Long running query (PID: #{query[:pid]}) running for #{query[:duration_seconds] / 60} minutes.", action: :kill_query, pid: query[:pid] } %>
+  <% end %>
+<% end %>
+
+<% if alerts.any? %>
+  <section aria-label="Alerts" class="space-y-3">
+    <% alerts.each do |alert| %>
+      <div role="alert" class="rounded-lg border p-4 flex items-center justify-between gap-4 <%= alert[:type] == :critical ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20' : 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20' %>">
+        <div class="flex items-center gap-3">
+          <% if alert[:type] == :critical %>
+            <svg class="h-5 w-5 text-red-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+            </svg>
+            <p class="text-sm font-medium text-red-800 dark:text-red-200"><%= alert[:message] %></p>
+          <% else %>
+            <svg class="h-5 w-5 text-yellow-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+            </svg>
+            <p class="text-sm font-medium text-yellow-800 dark:text-yellow-200"><%= alert[:message] %></p>
+          <% end %>
+        </div>
+        <% case alert[:action] %>
+        <% when :test_connection %>
+          <%= button_to test_connection_database_config_path(database_config),
+              method: :post,
+              class: "inline-flex items-center justify-center min-h-[44px] rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+            Test Connection
+          <% end %>
+        <% when :vacuum %>
+          <%= button_to vacuum_database_config_path(database_config),
+              method: :post,
+              data: { turbo_confirm: "Run VACUUM ANALYZE now?" },
+              class: "inline-flex items-center justify-center min-h-[44px] rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+            Vacuum Now
+          <% end %>
+        <% when :kill_query %>
+          <%= button_to kill_query_database_config_path(database_config, pid: alert[:pid]),
+              method: :post,
+              data: { turbo_confirm: "Terminate this query (PID: #{alert[:pid]})? This will cancel the query." },
+              class: "inline-flex items-center justify-center min-h-[44px] rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+            Kill Query
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

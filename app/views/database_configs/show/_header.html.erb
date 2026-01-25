@@ -1,0 +1,32 @@
+<%# Header %>
+<header class="flex items-start justify-between gap-4">
+  <div class="min-w-0 flex-1">
+    <div class="flex items-center gap-3 flex-wrap">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= database_config.name %></h1>
+      <%= status_badge(database_config.health_status) %>
+    </div>
+    <div class="mt-2 flex items-center gap-2 max-w-xl">
+      <code class="flex-1 min-w-0 text-sm text-gray-500 dark:text-gray-400 font-mono truncate"
+            title="<%= database_config.connection_string %>">
+        <%= database_config.connection_string %>
+      </code>
+      <button type="button"
+              onclick="navigator.clipboard.writeText('<%= j database_config.connection_string %>').then(() => { this.querySelector('svg').classList.add('text-green-500'); setTimeout(() => this.querySelector('svg').classList.remove('text-green-500'), 1500); })"
+              class="flex-shrink-0 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors"
+              title="Copy connection string"
+              aria-label="Copy connection string to clipboard">
+        <svg class="w-4 h-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  <%= link_to edit_database_config_path(database_config),
+      class: "flex-shrink-0 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors",
+      aria: { label: "Edit database configuration" } do %>
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+    Edit
+  <% end %>
+</header>

@@ -1,4 +1,4 @@
-# Database-Ops Development Environment
+# DataKeep Development Environment
 #
 # Start with: docker compose up
 # For production: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -17,15 +17,15 @@ services:
       - "3000:3000"
     environment:
       - RAILS_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/database_ops_development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/datakeep_development
       - REDIS_URL=redis://redis:6379/0
       - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
     volumes:
       # Application code for live reloading
       - .:/rails:cached
       # Persistent storage for backups
-      - database_ops_storage:/rails/storage
-      - database_ops_backups:/rails/backups
+      - datakeep_storage:/rails/storage
+      - datakeep_backups:/rails/backups
       # Local backup storage - mounts /var/backups so any subdirectory users configure will work
       - local_backups:/var/backups
       # Bundle cache to avoid reinstalling gems
@@ -48,13 +48,13 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       - RAILS_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/database_ops_development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/datakeep_development
       - REDIS_URL=redis://redis:6379/0
       - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
     volumes:
       - .:/rails:cached
-      - database_ops_storage:/rails/storage
-      - database_ops_backups:/rails/backups
+      - datakeep_storage:/rails/storage
+      - datakeep_backups:/rails/backups
       # Local backup storage - shared with web container
       - local_backups:/var/backups
       - bundle_cache:/usr/local/bundle
@@ -71,7 +71,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: database_ops_development
+      POSTGRES_DB: datakeep_development
     ports:
       - "5432:5432"
     volumes:
@@ -111,10 +111,10 @@ volumes:
   node_modules:
 
   # Application storage (Active Storage, uploaded files)
-  database_ops_storage:
+  datakeep_storage:
 
   # Backup files storage (for /rails/backups)
-  database_ops_backups:
+  datakeep_backups:
 
   # Local backup storage (for /var/backups and any subdirectories)
   local_backups:

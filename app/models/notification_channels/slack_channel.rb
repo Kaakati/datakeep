@@ -38,14 +38,14 @@ module NotificationChannels
     def build_slack_payload(event, backup)
       {
         channel: channel,
-        username: "Database-Ops",
+        username: "DataKeep",
         icon_emoji: event_emoji(event),
         attachments: [
           {
             color: event_color(event),
             title: event_title(event, backup),
             text: build_message(event, backup),
-            footer: "Database-Ops",
+            footer: "DataKeep",
             ts: Time.current.to_i
           }
         ]

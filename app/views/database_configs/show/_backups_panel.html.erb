@@ -1,0 +1,241 @@
+<%# Backups Panel %>
+<div data-tabs-target="panel"
+     data-tab="backups"
+     id="panel-backups"
+     role="tabpanel"
+     aria-labelledby="tab-backups"
+     tabindex="0"
+     class="hidden p-5 sm:p-6 space-y-6">
+
+  <%# Backup Jobs Section %>
+  <section aria-labelledby="backup-jobs-heading">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+      <div class="mb-4 flex flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <h3 id="backup-jobs-heading" class="text-lg font-semibold text-gray-800 dark:text-white/90">Backup Jobs</h3>
+        <%= link_to new_backup_job_path(database_config_id: database_config.id),
+            class: "inline-flex items-center justify-center min-h-[44px] rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+          <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+          </svg>
+          New Backup Job
+        <% end %>
+      </div>
+
+      <% if backup_jobs.any? %>
+        <div class="overflow-x-auto px-5 sm:px-6">
+          <table class="min-w-full">
+            <thead class="border-y border-gray-100 dark:border-gray-700">
+              <tr>
+                <th scope="col" class="py-3 pr-5 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Name</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Schedule</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Next Run</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Stats</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-right">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Actions</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+              <% backup_jobs.each do |job| %>
+                <tr>
+                  <td class="py-3 pr-5 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <% if job.enabled? %>
+                        <div class="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                      <% else %>
+                        <div class="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                      <% end %>
+                      <div>
+                        <%= link_to job.name, job, class: "text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400" %>
+                        <p class="text-xs text-gray-500 dark:text-gray-400"><%= job.storage_backend.name %></p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700 dark:text-gray-300"><%= job.schedule_type.titleize %></p>
+                    <% if job.schedule_type == "custom" && job.cron_expression.present? %>
+                      <p class="text-xs text-gray-500 dark:text-gray-400"><%= job.cron_expression %></p>
+                    <% end %>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <% if job.next_run_at %>
+                      <p class="text-sm text-gray-700 dark:text-gray-300"><%= job.next_run_at.strftime("%b %d, %Y") %></p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400"><%= job.next_run_at.strftime("%H:%M") %></p>
+                    <% else %>
+                      <p class="text-sm text-gray-400 dark:text-gray-500">Not scheduled</p>
+                    <% end %>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700 dark:text-gray-300"><%= job.backups.count %> backup<%= job.backups.count == 1 ? '' : 's' %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400"><%= job.success_rate %>% success</p>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <% if job.enabled? %>
+                      <span class="bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 rounded-full px-2 py-0.5 text-xs font-medium">Enabled</span>
+                    <% else %>
+                      <span class="bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded-full px-2 py-0.5 text-xs font-medium">Disabled</span>
+                    <% end %>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap text-right">
+                    <%= link_to "View", job, class: "text-sm text-primary-500 hover:text-primary-700 dark:text-primary-400" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+          <p class="text-sm text-gray-700 dark:text-gray-300">
+            Showing <span class="font-medium"><%= backup_jobs.count %></span> backup job<%= backup_jobs.count == 1 ? '' : 's' %>
+          </p>
+        </div>
+      <% else %>
+        <div class="px-5 py-12 text-center sm:px-6">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h4 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white/90">No backup jobs</h4>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create a backup job to start scheduling backups for this database.</p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <%# Recent Backups Section %>
+  <section aria-labelledby="recent-backups-heading">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+      <div class="mb-4 flex flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <h3 id="recent-backups-heading" class="text-lg font-semibold text-gray-800 dark:text-white/90">Recent Backups</h3>
+      </div>
+
+      <% if backups.any? %>
+        <div class="overflow-x-auto px-5 sm:px-6">
+          <table class="min-w-full">
+            <thead class="border-y border-gray-100 dark:border-gray-700">
+              <tr>
+                <th scope="col" class="py-3 pr-5 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Backup Job</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Date</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Size</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-left">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Duration</p>
+                </th>
+                <th scope="col" class="px-5 py-3 font-normal whitespace-nowrap text-right">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Actions</p>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+              <% backups.limit(10).each do |backup| %>
+                <tr>
+                  <td class="py-3 pr-5 whitespace-nowrap">
+                    <div class="flex items-center gap-3">
+                      <% case backup.status %>
+                      <% when "completed" %>
+                        <div class="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                      <% when "failed" %>
+                        <div class="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                          </svg>
+                        </div>
+                      <% when "running" %>
+                        <div class="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-yellow-600 dark:text-yellow-400 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                          </svg>
+                        </div>
+                      <% else %>
+                        <div class="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                          <svg class="h-4 w-4 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                          </svg>
+                        </div>
+                      <% end %>
+                      <div>
+                        <%= link_to backup.backup_job.name, backup.backup_job, class: "text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400" %>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700 dark:text-gray-300"><%= backup.created_at.strftime("%b %d, %Y") %></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400"><%= backup.created_at.strftime("%H:%M") %></p>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <% case backup.status %>
+                    <% when "completed" %>
+                      <span class="bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 rounded-full px-2 py-0.5 text-xs font-medium">Completed</span>
+                    <% when "failed" %>
+                      <span class="bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 rounded-full px-2 py-0.5 text-xs font-medium">Failed</span>
+                    <% when "running" %>
+                      <span class="bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400 rounded-full px-2 py-0.5 text-xs font-medium">Running</span>
+                    <% when "pending" %>
+                      <span class="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-full px-2 py-0.5 text-xs font-medium">Pending</span>
+                    <% else %>
+                      <span class="bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded-full px-2 py-0.5 text-xs font-medium"><%= backup.status.titleize %></span>
+                    <% end %>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700 dark:text-gray-300"><%= backup.formatted_size %></p>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap">
+                    <p class="text-sm text-gray-700 dark:text-gray-300"><%= backup.formatted_duration %></p>
+                  </td>
+                  <td class="px-5 py-3 whitespace-nowrap text-right">
+                    <%= link_to "View", backup_job_backup_path(backup.backup_job, backup), class: "text-sm text-primary-500 hover:text-primary-700 dark:text-primary-400" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+          <p class="text-sm text-gray-700 dark:text-gray-300">
+            Showing <span class="font-medium"><%= [backups.count, 10].min %></span> of <span class="font-medium"><%= backups.count %></span> backup<%= backups.count == 1 ? '' : 's' %>
+          </p>
+        </div>
+      <% else %>
+        <div class="px-5 py-12 text-center sm:px-6">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+          <h4 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white/90">No backups</h4>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No backups have been created for this database yet.</p>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-gray-50">
   <head>
-    <title><%= content_for(:title) || "Database Ops" %></title>
+    <title><%= content_for(:title) || "DataKeep" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Database Ops">
+    <meta name="application-name" content="DataKeep">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -19,17 +19,34 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="h-full">
+  <body class="h-full bg-gray-50 dark:bg-gray-900">
     <% if logged_in? %>
-      <div class="min-h-full">
-        <%= render "layouts/navigation" %>
+      <%# Page Wrapper - TailAdmin flex container %>
+      <div class="flex h-screen overflow-hidden" data-controller="sidebar">
+        <%# Sidebar %>
+        <%= render "layouts/sidebar" %>
 
-        <main>
-          <div class="mx-auto max-w-screen-2xl p-4 pb-20 md:p-6 md:pb-6">
-            <%= render "layouts/flash" %>
-            <%= yield %>
-          </div>
-        </main>
+        <%# Content Area Wrapper %>
+        <div class="relative flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+          <%# Backdrop for mobile sidebar %>
+          <div
+            data-sidebar-target="backdrop"
+            data-action="click->sidebar#backdropClick"
+            class="fixed inset-0 z-30 bg-gray-900/50 hidden lg:hidden"
+            aria-hidden="true"
+          ></div>
+
+          <%# Mobile header %>
+          <%= render "layouts/mobile_header" %>
+
+          <%# Main content area %>
+          <main class="flex-1">
+            <div class="mx-auto max-w-screen-2xl p-4 pb-20 md:p-6 2xl:p-10">
+              <%= render "layouts/flash" %>
+              <%= yield %>
+            </div>
+          </main>
+        </div>
       </div>
     <% else %>
       <main class="min-h-full">

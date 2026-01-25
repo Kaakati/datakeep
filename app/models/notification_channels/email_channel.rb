@@ -9,7 +9,7 @@ module NotificationChannels
     end
 
     def from_address
-      config[:from_address] || "noreply@database-ops.local"
+      config[:from_address] || "noreply@datakeep.ai"
     end
 
     def send_notification(event, backup = nil)
@@ -34,13 +34,13 @@ module NotificationChannels
       db_name = backup&.database_name || "Database"
       case event.to_s
       when "success"
-        "[Database-Ops] Backup completed: #{db_name}"
+        "[DataKeep] Backup completed: #{db_name}"
       when "failure"
-        "[Database-Ops] Backup failed: #{db_name}"
+        "[DataKeep] Backup failed: #{db_name}"
       when "test"
-        "[Database-Ops] Test notification"
+        "[DataKeep] Test notification"
       else
-        "[Database-Ops] #{event}"
+        "[DataKeep] #{event}"
       end
     end
   end

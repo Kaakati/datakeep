@@ -1,0 +1,34 @@
+<%# Connection Summary Cards %>
+<section aria-label="Connection details" class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+  <%# Host %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <p class="text-xs text-gray-500 dark:text-gray-400">Host</p>
+    <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90 font-mono truncate" title="<%= database_config.host %>">
+      <%= database_config.host %>
+    </p>
+  </article>
+
+  <%# Port %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <p class="text-xs text-gray-500 dark:text-gray-400">Port</p>
+    <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90 font-mono">
+      <%= database_config.port %>
+    </p>
+  </article>
+
+  <%# Database %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <p class="text-xs text-gray-500 dark:text-gray-400">Database</p>
+    <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90 font-mono truncate" title="<%= database_config.database_name %>">
+      <%= database_config.database_name %>
+    </p>
+  </article>
+
+  <%# PostgreSQL Version %>
+  <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+    <p class="text-xs text-gray-500 dark:text-gray-400">PostgreSQL</p>
+    <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
+      <%= database_config.pg_version || "—" %>
+    </p>
+  </article>
+</section>
