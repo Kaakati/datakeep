@@ -40,7 +40,7 @@ DataKeep provides automated backup scheduling, health monitoring, and backup man
 ## Tech Stack
 
 - **Framework**: Ruby on Rails 8.1
-- **Database**: SQLite (app data) + PostgreSQL (target databases)
+- **Database**: PostgreSQL
 - **Background Jobs**: Sidekiq with Redis
 - **Frontend**: Hotwire (Turbo + Stimulus), Tailwind CSS
 - **UI Theme**: TailAdmin Dashboard
@@ -49,9 +49,9 @@ DataKeep provides automated backup scheduling, health monitoring, and backup man
 ## Requirements
 
 - Ruby 3.4.2+
+- PostgreSQL 14+
 - Redis 7.0+
 - Node.js 18+ (for asset compilation)
-- PostgreSQL client libraries (`libpq-dev`)
 
 ## Installation
 
