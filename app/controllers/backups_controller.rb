@@ -92,6 +92,12 @@ class BackupsController < ApplicationController
       return
     end
 
+    # Check if file exists using storage backend's exists? method
+    unless @backup.storage_backend.exists?(@backup.file_path)
+      redirect_to @backup, alert: "Backup file not found in storage."
+      return
+    end
+
     AuditLog.log(
       action: "download_backup",
       user: current_user,
@@ -101,18 +107,21 @@ class BackupsController < ApplicationController
 
     case @backup.storage_backend
     when StorageBackends::LocalStorage
-      file_path = @backup.file_path
-      if File.exist?(file_path)
-        send_file file_path, filename: @backup.file_name, type: "application/octet-stream"
-      else
-        redirect_to @backup, alert: "Backup file not found."
-      end
+      # Use storage backend to get the full resolved path
+      base_path = @backup.storage_backend.base_path
+      file_path = @backup.file_path.start_with?(base_path) ? @backup.file_path : File.join(base_path, @backup.file_path)
+
+      send_file file_path, filename: @backup.file_name, type: "application/octet-stream"
     when StorageBackends::S3Storage
-      # Generate presigned URL and redirect
-      # For now, we'll download to temp and serve
-      temp_file = File.join(Dir.tmpdir, @backup.file_name)
-      @backup.storage_backend.retrieve(@backup.file_path, temp_file)
-      send_file temp_file, filename: @backup.file_name, type: "application/octet-stream"
+      # Download to temp file and serve
+      temp_file = File.join(Dir.tmpdir, "#{SecureRandom.hex(8)}_#{@backup.file_name}")
+      begin
+        @backup.storage_backend.retrieve(@backup.file_path, temp_file)
+        send_file temp_file, filename: @backup.file_name, type: "application/octet-stream"
+      ensure
+        # Clean up temp file after sending (Rails handles this via X-Sendfile or after response)
+        File.delete(temp_file) if File.exist?(temp_file) && !response.sending?
+      end
     else
       redirect_to @backup, alert: "Download not supported for this storage type."
     end
