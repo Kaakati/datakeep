@@ -53,12 +53,12 @@
       </div>
 
       <%# Enabled Checkbox %>
-      <div x-data="{ checked: <%= notification_channel.enabled? ? 'true' : 'false' %> }">
-        <label for="notification_channel_enabled" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+      <div data-controller="checkbox" data-checkbox-checked-value="<%= notification_channel.enabled? %>" data-checkbox-checked-class="border-brand-500 bg-brand-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
+        <label for="notification_channel_enabled" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400" >
           <div class="relative">
-            <%= f.check_box :enabled, { class: "sr-only", "x-model": "checked" } %>
-            <div :class="checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
-              <span :class="checked ? '' : 'opacity-0'">
+            <%= f.check_box :enabled, { class: "sr-only", data: { checkbox_target: "input" } } %>
+            <div data-checkbox-target="box" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] <%= notification_channel.enabled? ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700' %>">
+              <span data-checkmark class="<%= notification_channel.enabled? ? '' : 'opacity-0' %>">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
@@ -82,12 +82,12 @@
     </div>
     <div class="space-y-5 border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
       <%# Notify on Success %>
-      <div x-data="{ checked: <%= notification_channel.notify_on_success? ? 'true' : 'false' %> }">
-        <label for="notification_channel_notify_on_success" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+      <div data-controller="checkbox" data-checkbox-checked-value="<%= notification_channel.notify_on_success? %>" data-checkbox-checked-class="border-success-500 bg-success-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
+        <label for="notification_channel_notify_on_success" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400" >
           <div class="relative">
-            <%= f.check_box :notify_on_success, { class: "sr-only", "x-model": "checked" } %>
-            <div :class="checked ? 'border-success-500 bg-success-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-success-500 dark:hover:border-success-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
-              <span :class="checked ? '' : 'opacity-0'">
+            <%= f.check_box :notify_on_success, { class: "sr-only", data: { checkbox_target: "input" } } %>
+            <div data-checkbox-target="box" class="hover:border-success-500 dark:hover:border-success-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] <%= notification_channel.notify_on_success? ? 'border-success-500 bg-success-500' : 'bg-transparent border-gray-300 dark:border-gray-700' %>">
+              <span data-checkmark class="<%= notification_channel.notify_on_success? ? '' : 'opacity-0' %>">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>
@@ -102,12 +102,12 @@
       </div>
 
       <%# Notify on Failure %>
-      <div x-data="{ checked: <%= notification_channel.notify_on_failure? ? 'true' : 'false' %> }">
-        <label for="notification_channel_notify_on_failure" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+      <div data-controller="checkbox" data-checkbox-checked-value="<%= notification_channel.notify_on_failure? %>" data-checkbox-checked-class="border-error-500 bg-error-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
+        <label for="notification_channel_notify_on_failure" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400" >
           <div class="relative">
-            <%= f.check_box :notify_on_failure, { class: "sr-only", "x-model": "checked" } %>
-            <div :class="checked ? 'border-error-500 bg-error-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-error-500 dark:hover:border-error-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
-              <span :class="checked ? '' : 'opacity-0'">
+            <%= f.check_box :notify_on_failure, { class: "sr-only", data: { checkbox_target: "input" } } %>
+            <div data-checkbox-target="box" class="hover:border-error-500 dark:hover:border-error-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] <%= notification_channel.notify_on_failure? ? 'border-error-500 bg-error-500' : 'bg-transparent border-gray-300 dark:border-gray-700' %>">
+              <span data-checkmark class="<%= notification_channel.notify_on_failure? ? '' : 'opacity-0' %>">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
                 </svg>

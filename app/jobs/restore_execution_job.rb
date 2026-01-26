@@ -16,18 +16,19 @@ class RestoreExecutionJob < ApplicationJob
 
     # Determine the source - either from a backup or from uploaded file
     if restore.backup.present?
-      service = PostgresRestoreService.new(
+      service = RestoreService.new(
         backup: restore.backup,
         target_database_config: target_config,
         options: options.symbolize_keys
       )
     elsif restore.file_path.present?
-      service = PostgresRestoreService.new(
+      service = RestoreService.new(
         backup: OpenStruct.new(
           id: 0,
           file_path: restore.file_path,
           encrypted?: restore.file_path.end_with?(".enc"),
           compressed?: restore.file_path.end_with?(".gz") || restore.file_path.include?(".gz."),
+          backup_job: OpenStruct.new(database_config: target_config),
           storage_backend: OpenStruct.new(
             exists?: ->(_) { File.exist?(restore.file_path) },
             retrieve: ->(_, dest) { FileUtils.cp(restore.file_path, dest); dest }
@@ -40,7 +41,8 @@ class RestoreExecutionJob < ApplicationJob
       raise "Restore has no backup or file path"
     end
 
-    result = service.execute
+    result = service.call
+    raise result.error unless result.success?
 
     restore.update!(status: :completed, completed_at: Time.current)
 

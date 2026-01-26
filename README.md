@@ -177,6 +177,70 @@ bundle exec sidekiq
 RAILS_ENV=test bin/rails test
 ```
 
+## Architecture
+
+### Database Adapter Pattern
+
+DataKeep uses a **Factory Pattern** with pluggable database adapters to support multiple database types. This architecture enables easy extension for new database engines (MySQL, MSSQL, MongoDB, etc.).
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DatabaseAdapterFactory                        │
+│  - Registers adapters by database type                          │
+│  - Creates appropriate adapter instance for each DatabaseConfig │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   DatabaseAdapters::Base                         │
+│  - Abstract interface defining all database operations          │
+│  - Connection testing, backup, restore, statistics              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│   Postgresql     │ │     MySQL        │ │    MongoDB       │
+│   (Implemented)  │ │   (Future)       │ │   (Future)       │
+└──────────────────┘ └──────────────────┘ └──────────────────┘
+```
+
+**Key Components:**
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `DatabaseAdapterFactory` | `app/services/database_adapter_factory.rb` | Creates adapters based on database type |
+| `DatabaseAdapters::Base` | `app/services/database_adapters/base.rb` | Abstract interface for all adapters |
+| `DatabaseAdapters::Postgresql` | `app/services/database_adapters/postgresql.rb` | PostgreSQL implementation |
+| `BackupService` | `app/services/backup_service.rb` | Unified backup orchestration |
+| `RestoreService` | `app/services/restore_service.rb` | Unified restore orchestration |
+
+**Adding a New Database Type:**
+
+1. Create adapter class extending `DatabaseAdapters::Base`
+2. Implement all required methods (backup, restore, test_connection, etc.)
+3. Register with factory: `DatabaseAdapterFactory.register(:mysql, DatabaseAdapters::Mysql)`
+
+Example:
+```ruby
+# app/services/database_adapters/mysql.rb
+module DatabaseAdapters
+  class Mysql < Base
+    def backup(output_path:, format: :sql, options: {})
+      # mysqldump implementation
+    end
+
+    def restore(backup_path:, options: {})
+      # mysql import implementation
+    end
+
+    # ... implement other required methods
+  end
+end
+
+DatabaseAdapterFactory.register(:mysql, DatabaseAdapters::Mysql)
+```
+
 ## Project Structure
 
 ```
@@ -192,12 +256,19 @@ app/
 │   ├── backup_job.rb              # Scheduled jobs
 │   ├── database_config.rb         # Database connections
 │   ├── health_check.rb            # Health check results
-│   ├── storage_backend.rb         # Base storage class
+│   ├── storage_backend.rb         # Base storage class (STI)
 │   └── storage_backends/
 │       ├── local_storage.rb       # Local filesystem
 │       └── s3_storage.rb          # AWS S3
+├── services/
+│   ├── database_adapter_factory.rb    # Factory for database adapters
+│   ├── backup_service.rb              # Unified backup orchestration
+│   ├── restore_service.rb             # Unified restore orchestration
+│   └── database_adapters/
+│       ├── base.rb                    # Abstract adapter interface
+│       └── postgresql.rb              # PostgreSQL implementation
 ├── jobs/
-│   ├── backup_job.rb              # Execute backups
+│   ├── backup_execution_job.rb    # Execute backups via adapter
 │   └── health_check_job.rb        # Execute health checks
 └── views/
     └── ...                        # ERB templates with TailAdmin

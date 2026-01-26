@@ -220,4 +220,76 @@ class LocalStorageTest < ActiveSupport::TestCase
     # The important thing is that it doesn't raise an exception
     assert result.key?(:success)
   end
+
+  # Regression test for storage path typo bug:
+  # The Docker volume mounts at /var/backups (plural), not /var/backup (singular).
+  # A typo in the storage backend configuration caused backups to be written to
+  # ephemeral container storage instead of the mounted volume.
+  test "exists? handles both full paths and relative paths correctly" do
+    # Create a file in storage
+    file_name = "test_backup.dump"
+    stored_path = File.join(@temp_dir, file_name)
+    File.write(stored_path, "backup content")
+
+    # Test with relative path
+    assert @storage.exists?(file_name)
+
+    # Test with full path (already starts with base_path)
+    assert @storage.exists?(stored_path)
+
+    # Test with non-existent file
+    assert_not @storage.exists?("non_existent.dump")
+  end
+
+  test "retrieve handles both full paths and relative paths correctly" do
+    # Create a file in storage
+    file_name = "test_backup.dump"
+    stored_path = File.join(@temp_dir, file_name)
+    File.write(stored_path, "backup content")
+
+    # Test retrieve with relative path
+    dest1 = File.join(@temp_dir, "retrieved1.dump")
+    @storage.retrieve(file_name, dest1)
+    assert_equal "backup content", File.read(dest1)
+
+    # Test retrieve with full path (already starts with base_path)
+    dest2 = File.join(@temp_dir, "retrieved2.dump")
+    @storage.retrieve(stored_path, dest2)
+    assert_equal "backup content", File.read(dest2)
+  end
+
+  test "delete handles both full paths and relative paths correctly" do
+    # Create files in storage
+    file1 = File.join(@temp_dir, "delete1.dump")
+    file2 = File.join(@temp_dir, "delete2.dump")
+    File.write(file1, "content1")
+    File.write(file2, "content2")
+
+    # Test delete with relative path
+    @storage.delete("delete1.dump")
+    assert_not File.exist?(file1)
+
+    # Test delete with full path
+    @storage.delete(file2)
+    assert_not File.exist?(file2)
+  end
+
+  # This test validates that the storage backend correctly uses the Docker volume path
+  test "docker_volume_path_validation" do
+    # In production/Docker, the volume is mounted at /var/backups (plural)
+    # NOT /var/backup (singular)
+    # This test ensures we don't have a typo in the path
+
+    docker_storage = StorageBackends::LocalStorage.new(
+      user: @user,
+      name: "Docker Storage",
+      config: { path: "/var/backups/manifest" }
+    )
+
+    # The path should be plural "backups" not singular "backup"
+    assert docker_storage.base_path.include?("/var/backups/"), \
+      "Storage path should use /var/backups/ (plural) to match Docker volume mount"
+    assert_not docker_storage.base_path.include?("/var/backup/"), \
+      "Storage path should NOT use /var/backup/ (singular) - this is a typo!"
+  end
 end

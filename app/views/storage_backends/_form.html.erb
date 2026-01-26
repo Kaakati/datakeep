@@ -45,12 +45,12 @@
           </div>
         </div>
 
-        <div class="sm:col-span-2" x-data="{ checked: <%= storage_backend.is_default? ? 'true' : 'false' %> }">
-          <label for="storage_backend_is_default" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+        <div class="sm:col-span-2" data-controller="checkbox" data-checkbox-checked-value="<%= storage_backend.is_default? %>" data-checkbox-checked-class="border-brand-500 bg-brand-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
+          <label for="storage_backend_is_default" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400" >
             <div class="relative">
-              <%= f.check_box :is_default, { class: "sr-only", "x-model": "checked" } %>
-              <div :class="checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px]">
-                <span :class="checked ? '' : 'opacity-0'">
+              <%= f.check_box :is_default, { class: "sr-only", data: { checkbox_target: "input" } } %>
+              <div data-checkbox-target="box" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] <%= storage_backend.is_default? ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700' %>">
+                <span data-checkmark class="<%= storage_backend.is_default? ? '' : 'opacity-0' %>">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
                   </svg>

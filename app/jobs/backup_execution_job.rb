@@ -30,21 +30,23 @@ class BackupExecutionJob < ApplicationJob
     begin
       backup.start!
 
-      service = PostgresBackupService.new(
+      service = BackupService.new(
         database_config: backup_job.database_config,
         storage_backend: backup_job.storage_backend,
         options: {
           compression: backup_job.compression,
-          encryption: backup_job.encryption
+          encryption: backup_job.encryption,
+          format: :custom
         }
       )
 
-      result = service.execute
+      result = service.call
+      raise result.error unless result.success?
 
       backup.complete!(
-        file_path: result[:file_path],
-        file_size: result[:file_size],
-        checksum: result[:checksum]
+        file_path: result.file_path,
+        file_size: result.file_size,
+        checksum: result.checksum
       )
 
       backup_job.update!(
@@ -59,7 +61,7 @@ class BackupExecutionJob < ApplicationJob
         action: "backup_completed",
         user: backup_job.user,
         resource: backup,
-        details: { file_size: result[:file_size], duration: backup.duration }
+        details: { file_size: result.file_size, duration: backup.duration }
       )
 
       backup
@@ -105,9 +107,10 @@ class BackupExecutionJob < ApplicationJob
   def generate_file_name(backup_job)
     timestamp = Time.current.strftime("%Y%m%d_%H%M%S")
     db_name = backup_job.database_config.database_name
+    db_type = backup_job.database_config.database_type || "postgresql"
     # pg_dump custom format has built-in compression, no need for .gz extension
     extension = ".dump"
     extension += ".enc" if backup_job.encryption
-    "#{db_name}_#{timestamp}#{extension}"
+    "#{db_name}_#{db_type}_#{timestamp}#{extension}"
   end
 end

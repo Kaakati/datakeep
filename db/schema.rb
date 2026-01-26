@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_26_224407) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
   create_table "database_configs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "database_name", null: false
+    t.string "database_type", default: "postgresql", null: false
     t.text "encrypted_password"
     t.string "health_status", default: "unknown"
     t.string "host", null: false
@@ -100,6 +101,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_22_210820) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "username", null: false
+    t.index ["database_type"], name: "index_database_configs_on_database_type"
     t.index ["user_id", "name"], name: "index_database_configs_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_database_configs_on_user_id"
   end
