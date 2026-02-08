@@ -32,7 +32,7 @@ gem "aws-sdk-s3", "~> 1.143"
 gem "fugit", "~> 1.9"
 
 # HTTP client for webhook notifications
-gem "faraday", "~> 2.9"
+gem "faraday", "~> 2.14"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
