@@ -55,6 +55,15 @@ Rails.application.routes.draw do
   # Standalone backups listing (all backups)
   resources :backups, only: [ :index, :show ]
 
+  # Sync jobs (auto-sync from primary to target servers)
+  resources :sync_jobs do
+    member do
+      post :run_now
+      post :pause
+      post :resume
+    end
+  end
+
   # Restores
   resources :restores, only: [ :index, :show, :new, :create ]
   post "upload_restore", to: "restores#upload"

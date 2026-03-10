@@ -7,6 +7,7 @@
 :queues:
   - [critical, 3]
   - [backups, 2]
+  - [sync, 2]
   - [restores, 2]
   - [scheduler, 2]
   - [notifications, 2]

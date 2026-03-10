@@ -7,44 +7,37 @@
 # - Development dependencies included
 # - Volume mounts for live code reloading
 
-ARG RUBY_VERSION=3.4.2
+ARG RUBY_VERSION=3.4.7
 FROM docker.io/library/ruby:$RUBY_VERSION-slim
 
 # Rails app lives here
 WORKDIR /rails
 
-# Install system dependencies including PostgreSQL client tools
-# Add PostgreSQL APT repository for latest client tools
+# Switch default repos to HTTPS and add PostgreSQL APT repository
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-      ca-certificates \
-      gnupg \
-      lsb-release \
-      wget && \
-    echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+      ca-certificates gnupg lsb-release wget && \
+    sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/*.sources 2>/dev/null; \
+    sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list 2>/dev/null; \
+    echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
     apt-get update -qq && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install build essentials and PostgreSQL client tools
+RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-      # Build essentials for native gem extensions
-      build-essential \
-      git \
-      libyaml-dev \
-      pkg-config \
-      # PostgreSQL development libraries and client tools
-      libpq-dev \
-      postgresql-client-18 \
-      # Compression utilities
-      gzip \
-      bzip2 \
-      xz-utils \
-      # Process management
-      curl \
-      # Image processing
-      libvips \
-      # Node.js for JavaScript tooling (optional)
-      nodejs \
-      npm && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+      build-essential git libyaml-dev pkg-config curl \
+      libpq-dev postgresql-client-17 \
+      gzip bzip2 xz-utils \
+      libvips nodejs npm && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install VPN client tools (separate layer to isolate potential conflicts)
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      openvpn strongswan strongswan-swanctl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set development environment
 ENV RAILS_ENV=development \

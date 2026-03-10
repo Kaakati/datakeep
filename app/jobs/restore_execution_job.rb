@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class RestoreExecutionJob < ApplicationJob
+  include VpnConnectable
+
   queue_as :restores
 
   retry_on StandardError, wait: 5.seconds, attempts: 2
@@ -14,35 +16,37 @@ class RestoreExecutionJob < ApplicationJob
 
     restore.update!(status: :running, started_at: Time.current)
 
-    # Determine the source - either from a backup or from uploaded file
-    if restore.backup.present?
-      service = RestoreService.new(
-        backup: restore.backup,
-        target_database_config: target_config,
-        options: options.symbolize_keys
-      )
-    elsif restore.file_path.present?
-      service = RestoreService.new(
-        backup: OpenStruct.new(
-          id: 0,
-          file_path: restore.file_path,
-          encrypted?: restore.file_path.end_with?(".enc"),
-          compressed?: restore.file_path.end_with?(".gz") || restore.file_path.include?(".gz."),
-          backup_job: OpenStruct.new(database_config: target_config),
-          storage_backend: OpenStruct.new(
-            exists?: ->(_) { File.exist?(restore.file_path) },
-            retrieve: ->(_, dest) { FileUtils.cp(restore.file_path, dest); dest }
-          )
-        ),
-        target_database_config: target_config,
-        options: options.symbolize_keys
-      )
-    else
-      raise "Restore has no backup or file path"
-    end
+    with_vpn_for(target_config) do
+      # Determine the source - either from a backup or from uploaded file
+      if restore.backup.present?
+        service = RestoreService.new(
+          backup: restore.backup,
+          target_database_config: target_config,
+          options: options.symbolize_keys
+        )
+      elsif restore.file_path.present?
+        service = RestoreService.new(
+          backup: OpenStruct.new(
+            id: 0,
+            file_path: restore.file_path,
+            encrypted?: restore.file_path.end_with?(".enc"),
+            compressed?: restore.file_path.end_with?(".gz") || restore.file_path.include?(".gz."),
+            backup_job: OpenStruct.new(database_config: target_config),
+            storage_backend: OpenStruct.new(
+              exists?: ->(_) { File.exist?(restore.file_path) },
+              retrieve: ->(_, dest) { FileUtils.cp(restore.file_path, dest); dest }
+            )
+          ),
+          target_database_config: target_config,
+          options: options.symbolize_keys
+        )
+      else
+        raise "Restore has no backup or file path"
+      end
 
-    result = service.call
-    raise result.error unless result.success?
+      result = service.call
+      raise result.error unless result.success?
+    end
 
     restore.update!(status: :completed, completed_at: Time.current)
 

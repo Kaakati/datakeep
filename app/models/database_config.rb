@@ -4,8 +4,11 @@ class DatabaseConfig < ApplicationRecord
   belongs_to :user
   has_many :backup_jobs, dependent: :restrict_with_error
   has_many :health_checks, dependent: :delete_all
+  has_many :sync_jobs_as_source, class_name: "SyncJob", foreign_key: :source_database_config_id, dependent: :restrict_with_error
+  has_many :sync_job_targets, dependent: :destroy
 
   encrypts :encrypted_password
+  encrypts :vpn_config_data
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :host, presence: true
@@ -13,8 +16,15 @@ class DatabaseConfig < ApplicationRecord
   validates :database_name, presence: true
   validates :username, presence: true
   validates :ssl_mode, inclusion: { in: %w[disable allow prefer require verify-ca verify-full] }, allow_blank: true
+  validates :vpn_type, inclusion: { in: %w[openvpn ipsec] }, if: :vpn_enabled?
+  validates :vpn_config_data, presence: true, if: :vpn_enabled?
+  validates :vpn_gateway_ip, presence: true, if: :vpn_enabled?
+  validates :vpn_tunnel_name, presence: true, if: :vpn_enabled?
+
+  before_validation :generate_vpn_tunnel_name, if: -> { vpn_enabled? && vpn_tunnel_name.blank? && name.present? }
 
   SSL_MODES = %w[disable allow prefer require verify-ca verify-full].freeze
+  VPN_TYPES = %w[openvpn ipsec].freeze
   PG_VERSIONS = %w[12 13 14 15 16 17].freeze
   HEALTH_STATUSES = %w[unknown healthy unhealthy].freeze
 
@@ -81,6 +91,10 @@ class DatabaseConfig < ApplicationRecord
 
   def unhealthy?
     health_status == "unhealthy"
+  end
+
+  def vpn_configured?
+    vpn_enabled? && vpn_type.present? && vpn_config_data.present?
   end
 
   def fetch_statistics
@@ -303,5 +317,12 @@ class DatabaseConfig < ApplicationRecord
     []
   ensure
     conn&.close
+  end
+
+  private
+
+  def generate_vpn_tunnel_name
+    base = "tun_#{name.parameterize(separator: '_')}"
+    self.vpn_tunnel_name = base[0..14] # Linux tun name max 15 chars
   end
 end

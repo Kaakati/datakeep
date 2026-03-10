@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_26_224407) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,6 +87,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_224407) do
   end
 
   create_table "database_configs", force: :cascade do |t|
+    t.jsonb "cached_statistics"
     t.datetime "created_at", null: false
     t.string "database_name", null: false
     t.string "database_type", default: "postgresql", null: false
@@ -98,12 +99,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_224407) do
     t.string "pg_version"
     t.integer "port", default: 5432, null: false
     t.string "ssl_mode", default: "prefer"
+    t.datetime "statistics_updated_at"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "username", null: false
+    t.text "vpn_config_data"
+    t.boolean "vpn_enabled", default: false, null: false
+    t.string "vpn_gateway_ip"
+    t.string "vpn_tunnel_name"
+    t.string "vpn_type"
     t.index ["database_type"], name: "index_database_configs_on_database_type"
     t.index ["user_id", "name"], name: "index_database_configs_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_database_configs_on_user_id"
+    t.index ["vpn_enabled"], name: "index_database_configs_on_vpn_enabled"
   end
 
   create_table "health_checks", force: :cascade do |t|
@@ -163,6 +171,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_224407) do
     t.index ["user_id"], name: "index_storage_backends_on_user_id"
   end
 
+  create_table "sync_executions", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.bigint "sync_job_id", null: false
+    t.integer "targets_count", default: 0
+    t.integer "targets_succeeded", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_sync_executions_on_created_at"
+    t.index ["status"], name: "index_sync_executions_on_status"
+    t.index ["sync_job_id"], name: "index_sync_executions_on_sync_job_id"
+  end
+
+  create_table "sync_job_targets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "database_config_id", null: false
+    t.bigint "sync_job_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["database_config_id"], name: "index_sync_job_targets_on_database_config_id"
+    t.index ["sync_job_id", "database_config_id"], name: "index_sync_job_targets_on_sync_job_id_and_database_config_id", unique: true
+    t.index ["sync_job_id"], name: "index_sync_job_targets_on_sync_job_id"
+  end
+
+  create_table "sync_jobs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.integer "interval_minutes", default: 60, null: false
+    t.datetime "last_run_at"
+    t.string "name", null: false
+    t.datetime "next_run_at"
+    t.bigint "source_database_config_id", null: false
+    t.string "status", default: "idle", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["enabled"], name: "index_sync_jobs_on_enabled"
+    t.index ["next_run_at"], name: "index_sync_jobs_on_next_run_at"
+    t.index ["source_database_config_id"], name: "index_sync_jobs_on_source_database_config_id"
+    t.index ["user_id", "name"], name: "index_sync_jobs_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_sync_jobs_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -187,4 +238,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_224407) do
   add_foreign_key "restores", "database_configs"
   add_foreign_key "restores", "users"
   add_foreign_key "storage_backends", "users"
+  add_foreign_key "sync_executions", "sync_jobs"
+  add_foreign_key "sync_job_targets", "database_configs"
+  add_foreign_key "sync_job_targets", "sync_jobs"
+  add_foreign_key "sync_jobs", "database_configs", column: "source_database_config_id"
+  add_foreign_key "sync_jobs", "users"
 end

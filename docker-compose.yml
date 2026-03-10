@@ -39,13 +39,22 @@ services:
         condition: service_healthy
     stdin_open: true
     tty: true
-    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: bash -c "rm -f tmp/pids/server.pid && ./bin/rails server -b 0.0.0.0"
 
   # Background job processor
   jobs:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
     environment:
       - RAILS_ENV=development
       - DATABASE_URL=postgresql://postgres:password@db:5432/datakeep_development
@@ -73,9 +82,9 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: datakeep_development
     ports:
-      - "5432:5432"
+      - "5430:5432"
     volumes:
-      # PostgreSQL 18+ requires mounting at /var/lib/postgresql (not /data subdirectory)
+      # PostgreSQL requires mounting at /var/lib/postgresql (not /data subdirectory)
       - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -87,7 +96,7 @@ services:
   redis:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "6370:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes

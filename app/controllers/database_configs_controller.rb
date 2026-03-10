@@ -15,8 +15,16 @@ class DatabaseConfigsController < ApplicationController
                      .order(created_at: :desc)
                      .limit(50)
     @health_checks = @database_config.health_checks.recent.limit(100)
-    @db_stats = @database_config.fetch_statistics if @database_config.healthy?
-    @long_running_queries = @database_config.long_running_queries(300) if @database_config.healthy?
+
+    if @database_config.healthy?
+      if @database_config.vpn_enabled?
+        # VPN tunnel only active during background jobs — use cached stats
+        @db_stats = @database_config.cached_statistics&.deep_symbolize_keys
+      else
+        @db_stats = @database_config.fetch_statistics
+        @long_running_queries = @database_config.long_running_queries(300)
+      end
+    end
   end
 
   def new
@@ -152,11 +160,18 @@ class DatabaseConfigsController < ApplicationController
 
   def database_config_params
     params.require(:database_config).permit(
-      :name, :host, :port, :database_name, :username, :password, :ssl_mode
+      :name, :host, :port, :database_name, :username, :password, :ssl_mode,
+      :vpn_enabled, :vpn_type, :vpn_config_data, :vpn_gateway_ip, :vpn_tunnel_name
     )
   end
 
   def test_connection_after_save
+    # VPN-enabled databases need async connection test — tunnel setup is too slow for HTTP
+    if @database_config.vpn_enabled?
+      HealthCheckJob.perform_later(@database_config.id)
+      return { notice: "Database saved. Connection test queued (VPN tunnel setup required).", alert: nil }
+    end
+
     result = @database_config.test_connection
 
     AuditLog.log(

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class BackupExecutionJob < ApplicationJob
+  include VpnConnectable
+
   queue_as :backups
 
   retry_on StandardError, wait: :polynomially_longer, attempts: 3
@@ -30,18 +32,21 @@ class BackupExecutionJob < ApplicationJob
     begin
       backup.start!
 
-      service = BackupService.new(
-        database_config: backup_job.database_config,
-        storage_backend: backup_job.storage_backend,
-        options: {
-          compression: backup_job.compression,
-          encryption: backup_job.encryption,
-          format: :custom
-        }
-      )
+      result = with_vpn_for(backup_job.database_config) do
+        service = BackupService.new(
+          database_config: backup_job.database_config,
+          storage_backend: backup_job.storage_backend,
+          options: {
+            compression: backup_job.compression,
+            encryption: backup_job.encryption,
+            format: :custom
+          }
+        )
 
-      result = service.call
-      raise result.error unless result.success?
+        res = service.call
+        raise res.error unless res.success?
+        res
+      end
 
       backup.complete!(
         file_path: result.file_path,

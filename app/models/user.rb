@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_many :database_configs, dependent: :destroy
   has_many :storage_backends, dependent: :destroy
   has_many :backup_jobs, dependent: :destroy
+  has_many :sync_jobs, dependent: :destroy
   has_many :notification_channels, dependent: :destroy
   has_many :audit_logs, dependent: :nullify
 

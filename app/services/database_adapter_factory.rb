@@ -17,66 +17,65 @@ class DatabaseAdapterFactory
     end
   end
 
-  # Registry of database type to adapter class mappings
-  @adapters = {}
+  # Built-in adapters — always available regardless of load order
+  BUILT_IN_ADAPTERS = {
+    postgresql: "DatabaseAdapters::Postgresql",
+    postgres: "DatabaseAdapters::Postgresql"
+  }.freeze
 
   class << self
     # Register an adapter class for a database type
-    # @param type [Symbol, String] Database type (e.g., :postgresql, :mysql)
-    # @param adapter_class [Class] Adapter class that inherits from DatabaseAdapters::Base
     def register(type, adapter_class)
-      @adapters[type.to_sym] = adapter_class
+      extra_adapters[type.to_sym] = adapter_class
     end
 
     # Get an adapter instance for a database configuration
-    # @param database_config [DatabaseConfig] The database configuration record
-    # @return [DatabaseAdapters::Base] An adapter instance
-    # @raise [UnsupportedDatabaseError] If the database type is not supported
     def for(database_config)
       type = database_config.database_type&.to_sym || :postgresql
-      adapter_class = @adapters[type]
+      adapter_class = extra_adapters[type] || resolve_built_in(type)
 
       raise UnsupportedDatabaseError, type unless adapter_class
 
       adapter_class.new(database_config)
     end
 
-    # Alias for #for method
     alias_method :build, :for
     alias_method :create, :for
 
-    # List all supported database types
-    # @return [Array<Symbol>]
     def supported_types
-      @adapters.keys
+      (BUILT_IN_ADAPTERS.keys + extra_adapters.keys).uniq
     end
 
-    # Check if a database type is supported
-    # @param type [Symbol, String] Database type
-    # @return [Boolean]
     def supports?(type)
-      @adapters.key?(type.to_sym)
+      BUILT_IN_ADAPTERS.key?(type.to_sym) || extra_adapters.key?(type.to_sym)
     end
 
-    # Get the adapter class for a database type (without instantiating)
-    # @param type [Symbol, String] Database type
-    # @return [Class, nil]
     def adapter_class_for(type)
-      @adapters[type.to_sym]
+      extra_adapters[type.to_sym] || resolve_built_in(type)
     end
 
-    # Clear all registered adapters (mainly for testing)
     def reset!
-      @adapters = {}
+      @extra_adapters = {}
     end
 
-    # Get all registered adapters
-    # @return [Hash<Symbol, Class>]
     def registered_adapters
-      @adapters.dup
+      built = BUILT_IN_ADAPTERS.transform_values { |name| name.constantize rescue nil }.compact
+      built.merge(extra_adapters)
+    end
+
+    private
+
+    def extra_adapters
+      @extra_adapters ||= {}
+    end
+
+    def resolve_built_in(type)
+      class_name = BUILT_IN_ADAPTERS[type.to_sym]
+      return nil unless class_name
+
+      class_name.constantize
+    rescue NameError
+      nil
     end
   end
 end
-
-# Register built-in adapters
-# PostgreSQL adapter is registered after it's defined (see postgresql.rb)

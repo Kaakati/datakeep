@@ -27,7 +27,9 @@ class HealthCheckService
     end
   end
 
-  # Performs check and records it in the database for historical tracking
+  # Performs check and records it in the database for historical tracking.
+  # When healthy, also caches live statistics (useful for VPN-enabled DBs
+  # where the tunnel is only active during background jobs).
   def check_and_record!
     start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     result = check
@@ -40,6 +42,11 @@ class HealthCheckService
       response_time_ms: response_time_ms,
       error_message: result[:error]
     )
+
+    # Cache live stats while the connection (and VPN tunnel) is active
+    if result[:status] == "healthy"
+      cache_statistics!
+    end
 
     {
       health_check: health_check,
@@ -55,6 +62,18 @@ class HealthCheckService
         **HealthCheckService.new(config).check
       }
     end
+  end
+
+  private
+
+  def cache_statistics!
+    stats = database_config.fetch_statistics
+    database_config.update_columns(
+      cached_statistics: stats,
+      statistics_updated_at: Time.current
+    )
+  rescue StandardError => e
+    Rails.logger.warn "[HealthCheck] Failed to cache statistics for #{database_config.name}: #{e.message}"
   end
 
   class << self
