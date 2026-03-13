@@ -1,0 +1,42 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Pricing Configuration</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage pricing rates and fees for enterprise quotes</p>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="overflow-x-auto px-5 sm:px-6">
+      <table class="min-w-full">
+        <thead class="border-y border-gray-100 dark:border-gray-800">
+          <tr>
+            <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Key</p></th>
+            <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Value</p></th>
+            <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Description</p></th>
+            <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Actions</p></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <% @pricing_configs.each do |config| %>
+            <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+              <td class="py-3 pr-4 whitespace-nowrap">
+                <span class="text-sm font-medium text-gray-700 dark:text-white/90"><%= config.key %></span>
+              </td>
+              <td class="px-4 py-3">
+                <code class="text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded"><%= config.value.to_json %></code>
+              </td>
+              <td class="px-4 py-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400"><%= config.description %></p>
+              </td>
+              <td class="py-3 pl-4 whitespace-nowrap text-right">
+                <%= link_to "Edit", edit_admin_pricing_config_path(config), class: "text-sm text-primary-500 hover:text-primary-700" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6">
+      <p class="text-sm text-gray-500 dark:text-gray-400"><%= @pricing_configs.count %> config<%= @pricing_configs.count == 1 ? '' : 's' %></p>
+    </div>
+  </div>
+</div>

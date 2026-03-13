@@ -67,7 +67,7 @@
                     <% end %>
                     <div>
                       <%= link_to job.name, job, class: "text-sm font-medium text-gray-700 hover:text-primary-600" %>
-                      <p class="text-xs text-gray-500"><%= job.storage_backend.name %></p>
+                      <p class="text-xs text-gray-500"><%= job.effective_storage_backends.map(&:name).join(", ") %></p>
                     </div>
                   </div>
                 </td>

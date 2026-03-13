@@ -1,0 +1,84 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= @backup_job.name %></h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Owned by <%= link_to @backup_job.user.name, admin_user_path(@backup_job.user), class: "text-primary-500 hover:text-primary-700" %>
+      </p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <%= link_to "Back to Backup Jobs", admin_backup_jobs_path, class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Database</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
+          <%= link_to @backup_job.database_config.name, admin_database_config_path(@backup_job.database_config), class: "text-primary-500 hover:text-primary-700" %>
+        </p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Schedule</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @backup_job.schedule_type.titleize %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
+        <div class="mt-1"><%= status_badge(@backup_job.enabled? ? "enabled" : "disabled") %></div>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Last Run</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= time_ago_or_never(@backup_job.last_run_at) %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Next Run</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @backup_job.next_run_at ? @backup_job.next_run_at.strftime("%b %d, %Y %H:%M") : "Not scheduled" %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Storage</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @backup_job.storage_backend&.name || "N/A" %></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Backups -->
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Recent Backups</h3>
+    </div>
+    <% if @recent_backups.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Filename</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Status</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Size</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Created</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @recent_backups.each do |backup| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <%= link_to (backup.file_name || "backup-#{backup.id}"), admin_backup_path(backup), class: "text-sm font-medium text-gray-700 dark:text-white/90 hover:text-primary-600" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap"><%= status_badge(backup.status) %></td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= backup.formatted_file_size %></p></td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right">
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= time_ago_or_never(backup.created_at) %></p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6"></div>
+    <% else %>
+      <div class="px-5 py-8 text-center sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No backups yet.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -26,7 +26,7 @@ class BackupService
 
   attr_reader :database_config, :storage_backend, :options
 
-  def initialize(database_config:, storage_backend:, options: {})
+  def initialize(database_config:, storage_backend: nil, options: {})
     @database_config = database_config
     @storage_backend = storage_backend
     @options = default_options.merge(options)
@@ -49,6 +49,39 @@ class BackupService
       cleanup_temp_files(temp_file)
     end
   end
+
+  # Runs the dump phase only (backup + compress + encrypt) without uploading.
+  # Returns a DumpResult with the temp file path and metadata.
+  # Caller is responsible for cleanup via cleanup_temp_files.
+  def dump
+    raise BackupError, "Database config is required" unless database_config
+
+    temp_file = generate_temp_path
+    run_backup(temp_file)
+    compress_if_needed(temp_file)
+    encrypt_if_needed(temp_file)
+
+    file_name = generate_file_name
+    file_size = File.size(temp_file)
+    checksum = Digest::SHA256.file(temp_file).hexdigest
+
+    DumpResult.new(
+      temp_file: temp_file,
+      file_name: file_name,
+      file_size: file_size,
+      checksum: checksum
+    )
+  end
+
+  # Uploads a temp file to a single storage backend.
+  def self.upload(storage_backend:, temp_file:, file_name:)
+    stored_path = storage_backend.store(temp_file, file_name)
+    { success: true, file_path: stored_path }
+  rescue StandardError => e
+    { success: false, error: e.message }
+  end
+
+  DumpResult = Struct.new(:temp_file, :file_name, :file_size, :checksum, keyword_init: true)
 
   private
 

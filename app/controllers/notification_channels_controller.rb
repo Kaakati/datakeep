@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class NotificationChannelsController < ApplicationController
+  include PlanEnforcement
+
   before_action :set_notification_channel, only: [ :show, :edit, :update, :destroy, :test ]
+  enforce_plan_limit :notification_channel, only: [ :new, :create ]
 
   def index
     @notification_channels = current_user.notification_channels.order(created_at: :desc)

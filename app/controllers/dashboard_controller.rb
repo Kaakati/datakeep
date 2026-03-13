@@ -2,6 +2,8 @@
 
 class DashboardController < ApplicationController
   def index
+    redirect_to admin_root_path and return if current_user.admin?
+
     @database_configs = current_user.database_configs.includes(:backup_jobs)
     @backup_jobs = current_user.backup_jobs.includes(:database_config, :storage_backend)
     @recent_backups = Backup.joins(backup_job: :user)

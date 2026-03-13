@@ -1,0 +1,86 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2">
+          <li><%= link_to "Audit Logs", admin_audit_logs_path, class: "text-sm font-medium text-gray-500 hover:text-gray-700" %></li>
+          <li>
+            <div class="flex items-center">
+              <svg class="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+              </svg>
+              <span class="ml-2 text-sm font-medium text-gray-500">Log Details</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+      <h1 class="mt-2 text-2xl font-bold text-gray-800 dark:text-white/90"><%= @audit_log.action.titleize %></h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400"><%= @audit_log.created_at.strftime("%B %d, %Y at %H:%M:%S") %></p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Event Details</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <dl>
+          <div class="bg-gray-50 dark:bg-gray-800/50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Action</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 sm:col-span-2 sm:mt-0">
+              <span class="<%= action_badge_class(@audit_log.action) %> rounded-full px-2 py-1 text-xs font-medium"><%= @audit_log.action.titleize %></span>
+            </dd>
+          </div>
+          <div class="bg-white dark:bg-transparent px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">User</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 sm:col-span-2 sm:mt-0">
+              <% if @audit_log.user %>
+                <%= link_to @audit_log.user.email, admin_user_path(@audit_log.user), class: "text-primary-500 hover:text-primary-700" %>
+              <% else %>
+                <span class="text-gray-500">System</span>
+              <% end %>
+            </dd>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-800/50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">IP Address</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 sm:col-span-2 sm:mt-0 font-mono"><%= @audit_log.ip_address || "N/A" %></dd>
+          </div>
+          <div class="bg-white dark:bg-transparent px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Timestamp</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 sm:col-span-2 sm:mt-0"><%= @audit_log.created_at.strftime("%B %d, %Y at %H:%M:%S %Z") %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Resource</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800">
+        <dl>
+          <div class="bg-gray-50 dark:bg-gray-800/50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 sm:col-span-2 sm:mt-0"><%= @audit_log.resource_type&.demodulize || "N/A" %></dd>
+          </div>
+          <div class="bg-white dark:bg-transparent px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 sm:col-span-2 sm:mt-0 font-mono"><%= @audit_log.resource_id || "N/A" %></dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <% if @audit_log.details.present? %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Additional Details</h3>
+      </div>
+      <div class="border-t border-gray-200 dark:border-gray-800 px-4 py-5 sm:px-6">
+        <pre class="whitespace-pre-wrap font-mono text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-4 rounded-md overflow-x-auto"><%= @audit_log.details.is_a?(String) ? @audit_log.details : JSON.pretty_generate(@audit_log.details) %></pre>
+      </div>
+    </div>
+  <% end %>
+</div>

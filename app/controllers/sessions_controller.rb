@@ -4,12 +4,16 @@ class SessionsController < ApplicationController
   allow_unauthenticated_access only: [ :new, :create ]
 
   def new
-    redirect_to root_path if logged_in?
+    if logged_in?
+      redirect_to current_user.admin? ? admin_root_path : root_path
+      return
+    end
   end
 
   def create
     if user = authenticate_user!(email: params[:email], password: params[:password])
-      redirect_to root_path, notice: "Welcome back, #{user.name}!"
+      path = user.admin? ? admin_root_path : root_path
+      redirect_to path, notice: "Welcome back, #{user.name}!"
     else
       flash.now[:alert] = "Invalid email or password."
       render :new, status: :unprocessable_entity

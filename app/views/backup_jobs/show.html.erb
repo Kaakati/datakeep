@@ -6,7 +6,7 @@
         <%= status_badge(@backup_job.enabled? ? "enabled" : "disabled") %>
       </div>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        <%= @backup_job.database_config.name %> &rarr; <%= @backup_job.storage_backend.name %>
+        <%= @backup_job.database_config.name %> &rarr; <%= @backup_job.effective_storage_backends.map(&:name).join(", ") %>
       </p>
     </div>
     <div class="mt-4 flex flex-wrap gap-3 sm:mt-0">
@@ -63,7 +63,14 @@
             <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt class="text-sm font-medium text-gray-500">Storage</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <%= link_to @backup_job.storage_backend.name, storage_backend_path(@backup_job.storage_backend), class: "text-primary-500 hover:text-indigo-500" %>
+                <% @backup_job.effective_storage_backends.each_with_index do |backend, i| %>
+                  <% if backend.managed? %>
+                    <span class="text-gray-900"><%= backend.name %></span>
+                  <% else %>
+                    <%= link_to backend.name, storage_backend_path(backend), class: "text-primary-500 hover:text-indigo-500" %>
+                  <% end %>
+                  <% unless i == @backup_job.effective_storage_backends.size - 1 %><span class="text-gray-400">, </span><% end %>
+                <% end %>
               </dd>
             </div>
             <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

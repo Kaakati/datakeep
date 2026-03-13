@@ -1,9 +1,39 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
-  # Sidekiq Web UI for monitoring background jobs
-  # TODO: Add authentication for production
-  mount Sidekiq::Web => "/sidekiq"
+  # Stripe webhook (no auth, no CSRF)
+  namespace :webhooks do
+    post "stripe", to: "stripe#create"
+  end
+
+  # Admin namespace
+  namespace :admin do
+    root "dashboard#index"
+    resources :users
+    resources :database_configs, only: [ :index, :show ]
+    resources :storage_backends do
+      member do
+        post :test_connection
+      end
+    end
+    resources :backup_jobs, only: [ :index, :show ]
+    resources :backups, only: [ :index, :show ]
+    resources :audit_logs, only: [ :index, :show ]
+    resources :pricing_configs, only: [ :index, :edit, :update ]
+    namespace :enterprise do
+      resource :quote, only: [ :show, :create ], controller: "quote_calculator", as: :quote_calculator
+      resources :quotes, only: [ :index, :show, :create ] do
+        member do
+          post :send_invoice
+        end
+      end
+    end
+  end
+
+  # Sidekiq Web UI — admin-only
+  constraints ->(req) { User.find_by(id: req.session[:user_id])&.admin? } do
+    mount Sidekiq::Web => "/sidekiq"
+  end
 
   # Root path
   root "dashboard#index"
@@ -74,6 +104,9 @@ Rails.application.routes.draw do
       post :test
     end
   end
+
+  # Billing
+  get "billing", to: "billing#show"
 
   # Audit logs
   resources :audit_logs, only: [ :index, :show ]

@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class StorageBackendsController < ApplicationController
+  include PlanEnforcement
+
   before_action :set_storage_backend, only: [ :show, :edit, :update, :destroy, :test_connection ]
+  enforce_plan_limit :storage_backend, only: [ :new, :create ]
 
   def index
     @storage_backends = current_user.storage_backends.order(created_at: :desc)
@@ -18,7 +21,14 @@ class StorageBackendsController < ApplicationController
   end
 
   def create
-    storage_class = storage_class_for(params[:storage_backend][:storage_type])
+    storage_type = params[:storage_backend][:storage_type]
+    if storage_type == "s3" && !current_user.admin? && !current_user.plan_limits[:s3_allowed]
+      flash[:alert] = "S3 storage is available on the Enterprise plan. Upgrade to use cloud storage."
+      redirect_to billing_path
+      return
+    end
+
+    storage_class = storage_class_for(storage_type)
     @storage_backend = storage_class.new(storage_backend_params)
     @storage_backend.user = current_user
 

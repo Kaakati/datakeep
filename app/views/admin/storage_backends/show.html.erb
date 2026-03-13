@@ -1,0 +1,43 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= @storage_backend.name %></h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <% if @storage_backend.managed? %>
+          DataKeep Managed Storage
+        <% else %>
+          Owned by <%= link_to @storage_backend.user.name, admin_user_path(@storage_backend.user), class: "text-primary-500 hover:text-primary-700" %>
+        <% end %>
+      </p>
+    </div>
+    <div class="mt-4 sm:mt-0 flex gap-2">
+      <% if @storage_backend.managed? %>
+        <%= link_to "Edit", edit_admin_storage_backend_path(@storage_backend), class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+      <% end %>
+      <%= link_to "Back to Storage", admin_storage_backends_path, class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Type</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @storage_backend.type.demodulize.titleize %></p>
+      </div>
+      <% if @storage_backend.managed? %>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Region</p>
+          <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @storage_backend.config&.dig(:region) || "—" %></p>
+        </div>
+      <% end %>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Created</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @storage_backend.created_at.strftime("%b %d, %Y at %H:%M") %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @storage_backend.updated_at.strftime("%b %d, %Y at %H:%M") %></p>
+      </div>
+    </div>
+  </div>
+</div>

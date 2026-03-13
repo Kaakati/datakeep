@@ -3,14 +3,18 @@
 class BackupJob < ApplicationRecord
   belongs_to :user
   belongs_to :database_config
-  belongs_to :storage_backend
+  belongs_to :storage_backend, optional: true
   has_many :backups, dependent: :destroy
   has_many :backup_job_notification_channels, dependent: :destroy
   has_many :notification_channels, through: :backup_job_notification_channels
+  has_many :backup_job_storage_backends, dependent: :destroy
+  has_many :storage_backends, through: :backup_job_storage_backends
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
+  validate :at_least_one_storage_backend
   validates :schedule_type, presence: true, inclusion: { in: %w[hourly daily weekly monthly custom] }
   validates :retention_days, numericality: { only_integer: true, greater_than: 0 }
+  validate :retention_within_plan_limit
   validates :cron_expression, presence: true, if: -> { schedule_type == "custom" }
   validate :validate_cron_expression, if: -> { cron_expression.present? }
 
@@ -70,6 +74,19 @@ class BackupJob < ApplicationRecord
     enabled? && next_run_at.present? && next_run_at <= Time.current
   end
 
+  # Returns the storage backends for this job.
+  # Uses the join table if populated, falls back to legacy single storage_backend.
+  def effective_storage_backends
+    backends = storage_backends.to_a
+    if backends.any?
+      backends
+    elsif storage_backend.present?
+      [ storage_backend ]
+    else
+      []
+    end
+  end
+
   def pause!
     update!(enabled: false)
   end
@@ -102,6 +119,22 @@ class BackupJob < ApplicationRecord
   end
 
   private
+
+  def retention_within_plan_limit
+    return unless user && retention_days
+    max = user.plan_limits[:max_retention_days]
+    return unless max
+    return if retention_days <= max
+
+    errors.add(:retention_days, "exceeds your plan limit of #{max} days. Upgrade your plan to use longer retention periods.")
+  end
+
+  def at_least_one_storage_backend
+    return if storage_backend_id.present?
+    return if backup_job_storage_backends.any? { |bjsb| !bjsb.marked_for_destruction? }
+
+    errors.add(:base, "At least one storage backend is required")
+  end
 
   def validate_cron_expression
     Fugit.parse(cron_expression)

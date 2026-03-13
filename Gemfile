@@ -34,6 +34,9 @@ gem "fugit", "~> 1.9"
 # HTTP client for webhook notifications
 gem "faraday", "~> 2.9"
 
+# Stripe billing and invoicing
+gem "stripe", "~> 13.0"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
@@ -79,6 +82,8 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "rspec-rails", "~> 7.0"
 end
 
 group :development do

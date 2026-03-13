@@ -1,16 +1,22 @@
 # frozen_string_literal: true
 
 class StorageBackend < ApplicationRecord
-  belongs_to :user
-  has_many :backup_jobs, dependent: :restrict_with_error
+  belongs_to :user, optional: true
+  has_many :backup_jobs, dependent: :restrict_with_error, foreign_key: :storage_backend_id
+  has_many :backup_job_storage_backends, dependent: :restrict_with_error
   has_many :backups, dependent: :restrict_with_error
 
   encrypts :encrypted_config
 
-  validates :name, presence: true, uniqueness: { scope: :user_id }
+  validates :name, presence: true
+  validates :name, uniqueness: { scope: :user_id }, unless: :managed?
+  validates :name, uniqueness: true, if: :managed?
   validates :type, presence: true
+  validates :user, presence: true, unless: :managed?
 
   scope :default_storage, -> { where(is_default: true) }
+  scope :managed, -> { where(managed: true) }
+  scope :user_owned, -> { where(managed: false) }
 
   before_save :ensure_single_default
 
@@ -53,6 +59,7 @@ class StorageBackend < ApplicationRecord
 
   def ensure_single_default
     return unless is_default? && is_default_changed?
+    return unless user.present?
 
     user.storage_backends.where(is_default: true).where.not(id: id).update_all(is_default: false)
   end

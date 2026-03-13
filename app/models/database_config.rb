@@ -2,6 +2,7 @@
 
 class DatabaseConfig < ApplicationRecord
   belongs_to :user
+  belongs_to :enterprise_quote, optional: true
   has_many :backup_jobs, dependent: :restrict_with_error
   has_many :health_checks, dependent: :delete_all
   has_many :sync_jobs_as_source, class_name: "SyncJob", foreign_key: :source_database_config_id, dependent: :restrict_with_error
@@ -20,6 +21,8 @@ class DatabaseConfig < ApplicationRecord
   validates :vpn_config_data, presence: true, if: :vpn_enabled?
   validates :vpn_gateway_ip, presence: true, if: :vpn_enabled?
   validates :vpn_tunnel_name, presence: true, if: :vpn_enabled?
+  validates :quote_database_index, uniqueness: { scope: :enterprise_quote_id, message: "slot already assigned" },
+            if: -> { enterprise_quote_id.present? }
 
   before_validation :generate_vpn_tunnel_name, if: -> { vpn_enabled? && vpn_tunnel_name.blank? && name.present? }
 
@@ -91,6 +94,17 @@ class DatabaseConfig < ApplicationRecord
 
   def unhealthy?
     health_status == "unhealthy"
+  end
+
+  def quote_slot
+    return nil unless enterprise_quote_id && quote_database_index
+    databases = enterprise_quote&.quote_params&.dig("databases")
+    databases&.at(quote_database_index)
+  end
+
+  def purchased_size_gb
+    slot_size = quote_slot&.dig("size_gb")
+    slot_size ? slot_size.to_f : user.plan_limits[:default_size_gb]
   end
 
   def vpn_configured?

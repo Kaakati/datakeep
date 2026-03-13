@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class DatabaseConfigsController < ApplicationController
+  include PlanEnforcement
+
   before_action :set_database_config, only: [ :show, :edit, :update, :destroy, :test_connection, :vacuum, :kill_query ]
+  enforce_plan_limit :database_config, only: [ :new, :create ]
 
   def index
     @database_configs = current_user.database_configs.order(created_at: :desc)
@@ -32,10 +35,12 @@ class DatabaseConfigsController < ApplicationController
       port: 5432,
       ssl_mode: "prefer"
     )
+    @available_slots = current_user.available_quote_slots
   end
 
   def create
     @database_config = current_user.database_configs.build(database_config_params)
+    assign_quote_slot(@database_config)
 
     if @database_config.save
       AuditLog.log(
@@ -50,6 +55,7 @@ class DatabaseConfigsController < ApplicationController
 
       redirect_to @database_config, notice: connection_result[:notice], alert: connection_result[:alert]
     else
+      @available_slots = current_user.available_quote_slots
       render :new, status: :unprocessable_entity
     end
   end
@@ -163,6 +169,15 @@ class DatabaseConfigsController < ApplicationController
       :name, :host, :port, :database_name, :username, :password, :ssl_mode,
       :vpn_enabled, :vpn_type, :vpn_config_data, :vpn_gateway_ip, :vpn_tunnel_name
     )
+  end
+
+  def assign_quote_slot(database_config)
+    slot_index = params.dig(:database_config, :quote_database_index)
+    return unless slot_index.present? && current_user.enterprise_plan?
+
+    quote = current_user.active_enterprise_quote
+    database_config.enterprise_quote = quote
+    database_config.quote_database_index = slot_index.to_i
   end
 
   def test_connection_after_save

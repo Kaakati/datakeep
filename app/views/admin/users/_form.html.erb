@@ -1,0 +1,53 @@
+<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+  <%= form_with(model: [:admin, @user], class: "space-y-6") do |f| %>
+    <% if @user.errors.any? %>
+      <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+        <div class="flex">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+          </svg>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800 dark:text-red-400"><%= pluralize(@user.errors.count, "error") %> prevented this user from being saved:</h3>
+            <ul class="mt-2 list-disc pl-5 text-sm text-red-700 dark:text-red-300 space-y-1">
+              <% @user.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div>
+        <%= f.label :name, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.text_field :name, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300", placeholder: "Full name" %>
+      </div>
+
+      <div>
+        <%= f.label :email, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.email_field :email, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300", placeholder: "email@example.com" %>
+      </div>
+
+      <div>
+        <%= f.label :password, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.password_field :password, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300", placeholder: @user.persisted? ? "Leave blank to keep current" : "Minimum 8 characters" %>
+      </div>
+
+      <div>
+        <%= f.label :password_confirmation, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.password_field :password_confirmation, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300", placeholder: "Confirm password" %>
+      </div>
+
+      <div>
+        <%= f.label :role, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, {}, class: "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" %>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+      <%= f.submit @user.persisted? ? "Update User" : "Create User", class: "inline-flex items-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors cursor-pointer" %>
+      <%= link_to "Cancel", @user.persisted? ? admin_user_path(@user) : admin_users_path, class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+    </div>
+  <% end %>
+</div>

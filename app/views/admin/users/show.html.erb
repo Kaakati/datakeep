@@ -1,0 +1,155 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div class="flex items-center gap-4">
+      <div class="h-14 w-14 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shrink-0 ring-2 ring-white dark:ring-gray-800 shadow-sm">
+        <span class="text-xl font-semibold text-white"><%= @user.name.first.upcase %></span>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= @user.name %></h1>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400"><%= @user.email %></p>
+      </div>
+    </div>
+    <div class="mt-4 flex gap-3 sm:mt-0">
+      <%= link_to edit_admin_user_path(@user), class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" do %>
+        Edit User
+      <% end %>
+      <% unless @user == current_user %>
+        <%= button_to admin_user_path(@user), method: :delete,
+            class: "inline-flex items-center rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors dark:border-red-800 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-red-900/20",
+            data: { turbo_confirm: "Are you sure you want to delete this user? This action cannot be undone." } do %>
+          Delete User
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- User Info Card -->
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Role</p>
+        <% if @user.admin? %>
+          <span class="mt-1 inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Admin</span>
+        <% else %>
+          <span class="mt-1 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">User</span>
+        <% end %>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Joined</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @user.created_at.strftime("%b %d, %Y at %H:%M") %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @user.updated_at.strftime("%b %d, %Y at %H:%M") %></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Databases -->
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Databases (<%= @database_configs.count %>)</h3>
+    </div>
+    <% if @database_configs.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Name</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Host</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Type</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Health</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @database_configs.each do |db| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <%= link_to db.name, admin_database_config_path(db), class: "text-sm font-medium text-gray-700 dark:text-white/90 hover:text-primary-600" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= db.host %></p></td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= db.database_type %></p></td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right"><%= status_badge(db.health_status) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6"></div>
+    <% else %>
+      <div class="px-5 py-8 text-center sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No databases configured.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Backup Jobs -->
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Backup Jobs (<%= @backup_jobs.count %>)</h3>
+    </div>
+    <% if @backup_jobs.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Name</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Database</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Status</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @backup_jobs.each do |job| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <%= link_to job.name, admin_backup_job_path(job), class: "text-sm font-medium text-gray-700 dark:text-white/90 hover:text-primary-600" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= job.database_config.name %></p></td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right"><%= status_badge(job.enabled? ? "enabled" : "disabled") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6"></div>
+    <% else %>
+      <div class="px-5 py-8 text-center sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No backup jobs.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Storage Backends -->
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Storage Backends (<%= @storage_backends.count %>)</h3>
+    </div>
+    <% if @storage_backends.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Name</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Type</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @storage_backends.each do |sb| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <%= link_to sb.name, admin_storage_backend_path(sb), class: "text-sm font-medium text-gray-700 dark:text-white/90 hover:text-primary-600" %>
+                </td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right"><p class="text-sm text-gray-700 dark:text-gray-300"><%= sb.type.demodulize.titleize %></p></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6"></div>
+    <% else %>
+      <div class="px-5 py-8 text-center sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No storage backends.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

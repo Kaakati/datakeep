@@ -1,0 +1,120 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Storage Backends</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Managed and user storage configurations</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <%= link_to new_admin_storage_backend_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
+        <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+        </svg>
+        New Managed Backend
+      <% end %>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">DataKeep Managed Backends</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">S3 storage regions available to all users</p>
+    </div>
+
+    <% if @managed_backends.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Name</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Region</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Bucket</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Created</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Actions</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @managed_backends.each do |sb| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <span class="text-sm font-medium text-gray-700 dark:text-white/90"><%= sb.name %></span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= sb.config&.dig(:region) || "—" %></p>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= sb.config&.dig(:bucket) || "—" %></p>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= sb.created_at.strftime("%b %d, %Y") %></p>
+                </td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <%= button_to test_connection_admin_storage_backend_path(sb), method: :post, class: "text-sm text-green-600 hover:text-green-800" do %>
+                      Test
+                    <% end %>
+                    <%= link_to "Edit", edit_admin_storage_backend_path(sb), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                    <%= button_to admin_storage_backend_path(sb), method: :delete, data: { turbo_confirm: "Delete this managed storage backend?" }, class: "text-sm text-red-600 hover:text-red-800" do %>
+                      Delete
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400"><%= @managed_backends.count %> managed backend<%= @managed_backends.count == 1 ? '' : 's' %></p>
+      </div>
+    <% else %>
+      <div class="px-5 py-8 text-center sm:px-6 border-t border-gray-100 dark:border-gray-800">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No managed backends yet. Create one to offer shared storage to all users.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 px-5 sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">User Storage Backends</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Storage configurations owned by individual users</p>
+    </div>
+
+    <% if @storage_backends.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Name</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Type</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Owner</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Created</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @storage_backends.each do |sb| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <%= link_to sb.name, admin_storage_backend_path(sb), class: "text-sm font-medium text-gray-700 dark:text-white/90 hover:text-primary-600" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= sb.type.demodulize.titleize %></p></td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <%= link_to sb.user.name, admin_user_path(sb.user), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                </td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right">
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= sb.created_at.strftime("%b %d, %Y") %></p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Showing <%= @storage_backends.count %> user storage backend<%= @storage_backends.count == 1 ? '' : 's' %></p>
+      </div>
+    <% else %>
+      <div class="px-5 py-8 text-center sm:px-6 border-t border-gray-100 dark:border-gray-800">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No user storage backends configured.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

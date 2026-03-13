@@ -45,18 +45,81 @@
           </div>
         </div>
 
-        <div>
-          <%= f.label :storage_backend_id, "Storage", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <div class="relative">
-            <%= f.collection_select :storage_backend_id, current_user.storage_backends, :id, :name, { prompt: "Select storage" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
-            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Storage Backends</h3>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Select one or more storage destinations for this backup. The dump runs once and uploads to all selected backends.</p>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <% user_backends = current_user.storage_backends %>
+      <% managed_backends = StorageBackend.managed %>
+      <% selected_ids = backup_job.storage_backend_ids %>
+
+      <% if user_backends.any? %>
+        <div class="mb-4">
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Your Storage Backends</h4>
+          <div class="space-y-3">
+            <% user_backends.each do |backend| %>
+              <% backend_checked = selected_ids.include?(backend.id) %>
+              <div data-controller="checkbox" data-checkbox-checked-value="<%= backend_checked %>" data-checkbox-checked-class="border-brand-500 bg-brand-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
+                <label for="storage_backend_<%= backend.id %>" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                  <div class="relative">
+                    <%= check_box_tag "backup_job[storage_backend_ids][]", backend.id, backend_checked, id: "storage_backend_#{backend.id}", class: "sr-only", data: { checkbox_target: "input" } %>
+                    <div data-checkbox-target="box" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] <%= backend_checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700' %>">
+                      <span data-checkmark class="<%= backend_checked ? '' : 'opacity-0' %>">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-sm font-medium text-gray-800 dark:text-white/90"><%= backend.name %></span>
+                    <p class="text-sm text-gray-500 dark:text-gray-400"><%= backend.storage_type.titleize %></p>
+                  </div>
+                </label>
+              </div>
+            <% end %>
           </div>
         </div>
-      </div>
+      <% end %>
+
+      <% if managed_backends.any? %>
+        <div>
+          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">DataKeep Managed Regions</h4>
+          <div class="space-y-3">
+            <% managed_backends.each do |backend| %>
+              <% backend_checked = selected_ids.include?(backend.id) %>
+              <div data-controller="checkbox" data-checkbox-checked-value="<%= backend_checked %>" data-checkbox-checked-class="border-brand-500 bg-brand-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
+                <label for="storage_backend_<%= backend.id %>" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400">
+                  <div class="relative">
+                    <%= check_box_tag "backup_job[storage_backend_ids][]", backend.id, backend_checked, id: "storage_backend_#{backend.id}", class: "sr-only", data: { checkbox_target: "input" } %>
+                    <div data-checkbox-target="box" class="hover:border-brand-500 dark:hover:border-brand-500 mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] <%= backend_checked ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700' %>">
+                      <span data-checkmark class="<%= backend_checked ? '' : 'opacity-0' %>">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" stroke-width="1.94437" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-sm font-medium text-gray-800 dark:text-white/90"><%= backend.name %></span>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">S3 &mdash; <%= backend.config&.dig(:region) || "unknown region" %></p>
+                  </div>
+                </label>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if user_backends.empty? && managed_backends.empty? %>
+        <p class="text-sm text-gray-500 dark:text-gray-400">No storage backends available. <%= link_to "Create one", new_storage_backend_path, class: "text-primary-500 hover:text-primary-700" %>.</p>
+      <% end %>
     </div>
   </div>
 

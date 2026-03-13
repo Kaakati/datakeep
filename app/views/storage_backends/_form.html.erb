@@ -99,19 +99,10 @@
           <div>
             <%= label_tag "storage_backend_config_region", "Region", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
             <div class="relative">
-              <%= select_tag "storage_backend[config][region]", options_for_select([
-                ["Select a region", ""],
-                ["US East (N. Virginia)", "us-east-1"],
-                ["US East (Ohio)", "us-east-2"],
-                ["US West (N. California)", "us-west-1"],
-                ["US West (Oregon)", "us-west-2"],
-                ["EU (Ireland)", "eu-west-1"],
-                ["EU (London)", "eu-west-2"],
-                ["EU (Frankfurt)", "eu-central-1"],
-                ["Asia Pacific (Tokyo)", "ap-northeast-1"],
-                ["Asia Pacific (Singapore)", "ap-southeast-1"],
-                ["Asia Pacific (Sydney)", "ap-southeast-2"]
-              ], storage_backend.config&.dig(:region)), id: "storage_backend_config_region", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
+              <%= select_tag "storage_backend[config][region]", options_for_select(
+                [["Select a region", ""]] + StorageBackends::S3Storage::AWS_REGIONS,
+                storage_backend.config&.dig(:region)
+              ), id: "storage_backend_config_region", class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
               <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />

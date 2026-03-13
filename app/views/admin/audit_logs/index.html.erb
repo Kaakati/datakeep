@@ -1,0 +1,73 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">System Audit Logs</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">System-wide activity trail</p>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <div class="mb-4 flex flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Activity History</h3>
+      <%= form_tag admin_audit_logs_path, method: :get, class: "flex gap-2" do %>
+        <input type="text" name="search" value="<%= params[:search] %>" placeholder="Search actions or resources..."
+               class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500">
+        <button type="submit" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">Search</button>
+      <% end %>
+    </div>
+
+    <% if @audit_logs.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-5 font-normal whitespace-nowrap text-left"><p class="text-sm text-gray-500 dark:text-gray-400">Timestamp</p></th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left"><p class="text-sm text-gray-500 dark:text-gray-400">Action</p></th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left"><p class="text-sm text-gray-500 dark:text-gray-400">Resource</p></th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left"><p class="text-sm text-gray-500 dark:text-gray-400">User</p></th>
+              <th class="px-5 py-3 font-normal whitespace-nowrap text-left"><p class="text-sm text-gray-500 dark:text-gray-400">IP Address</p></th>
+              <th class="py-3 pl-5 font-normal whitespace-nowrap text-right"><p class="text-sm text-gray-500 dark:text-gray-400">Details</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @audit_logs.each do |log| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-5 whitespace-nowrap">
+                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= log.created_at.strftime("%b %d, %Y") %></p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400"><%= log.created_at.strftime("%H:%M:%S") %></p>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <span class="<%= action_badge_class(log.action) %> rounded-full px-2 py-0.5 text-xs font-medium"><%= log.action.titleize %></span>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= log.resource_type&.demodulize || "N/A" %></p>
+                  <% if log.resource_id %>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">#<%= log.resource_id %></p>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <% if log.user %>
+                    <%= link_to log.user.name, admin_user_path(log.user), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                  <% else %>
+                    <p class="text-sm text-gray-400">System</p>
+                  <% end %>
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= log.ip_address || "N/A" %></p>
+                </td>
+                <td class="py-3 pl-5 whitespace-nowrap text-right">
+                  <%= link_to "View", admin_audit_log_path(log), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Showing <%= @audit_logs.count %> log entries</p>
+      </div>
+    <% else %>
+      <div class="px-5 py-12 text-center sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No audit logs recorded.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

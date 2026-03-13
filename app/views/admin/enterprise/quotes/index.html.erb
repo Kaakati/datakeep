@@ -1,0 +1,60 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Quote History</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Saved enterprise quotes and invoice status</p>
+    </div>
+    <%= link_to admin_enterprise_quote_calculator_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600" do %>
+      <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      New Quote
+    <% end %>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="border-b border-gray-100 dark:border-gray-800">
+          <tr>
+            <th class="px-5 py-3 text-left font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Date</p></th>
+            <th class="px-3 py-3 text-left font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Customer</p></th>
+            <th class="px-3 py-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Monthly Total</p></th>
+            <th class="px-3 py-3 text-center font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Status</p></th>
+            <th class="px-3 py-3 text-left font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Created By</p></th>
+            <th class="px-5 py-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Actions</p></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <% @quotes.each do |quote| %>
+            <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+              <td class="px-5 py-3 whitespace-nowrap">
+                <span class="text-sm text-gray-600 dark:text-gray-300"><%= quote.created_at.strftime("%b %d, %Y") %></span>
+              </td>
+              <td class="px-3 py-3 whitespace-nowrap">
+                <span class="text-sm font-medium text-gray-700 dark:text-white/90"><%= quote.user.email %></span>
+              </td>
+              <td class="px-3 py-3 text-right whitespace-nowrap">
+                <span class="text-sm font-medium text-gray-700 dark:text-white/90"><%= number_to_currency(quote.total_monthly_cents / 100.0) %></span>
+              </td>
+              <td class="px-3 py-3 text-center whitespace-nowrap">
+                <%= billing_status_badge(quote.status) %>
+              </td>
+              <td class="px-3 py-3 whitespace-nowrap">
+                <span class="text-sm text-gray-600 dark:text-gray-300"><%= quote.admin_user.name %></span>
+              </td>
+              <td class="px-5 py-3 text-right whitespace-nowrap">
+                <%= link_to "View", admin_enterprise_quote_path(quote), class: "text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400" %>
+              </td>
+            </tr>
+          <% end %>
+          <% if @quotes.empty? %>
+            <tr>
+              <td colspan="6" class="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400">No quotes yet. Create one from the calculator.</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

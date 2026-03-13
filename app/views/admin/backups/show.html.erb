@@ -1,0 +1,59 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= @backup.file_name %></h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Backup details</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <%= link_to "Back to Backups", admin_backups_path, class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Database</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @backup.database_name %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
+        <div class="mt-1"><%= status_badge(@backup.status) %></div>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Size</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @backup.formatted_file_size %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Backup Job</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
+          <% if @backup.backup_job %>
+            <%= link_to @backup.backup_job.name, admin_backup_job_path(@backup.backup_job), class: "text-primary-500 hover:text-primary-700" %>
+          <% else %>
+            N/A
+          <% end %>
+        </p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Owner</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90">
+          <% if @backup.backup_job&.user %>
+            <%= link_to @backup.backup_job.user.name, admin_user_path(@backup.backup_job.user), class: "text-primary-500 hover:text-primary-700" %>
+          <% else %>
+            N/A
+          <% end %>
+        </p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Created</p>
+        <p class="mt-1 text-sm font-medium text-gray-800 dark:text-white/90"><%= @backup.created_at.strftime("%b %d, %Y at %H:%M") %></p>
+      </div>
+    </div>
+  </div>
+
+  <% if @backup.error_message.present? %>
+    <div class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+      <h3 class="text-sm font-medium text-red-800 dark:text-red-400">Error Message</h3>
+      <pre class="mt-2 whitespace-pre-wrap font-mono text-xs text-red-700 dark:text-red-300"><%= @backup.error_message %></pre>
+    </div>
+  <% end %>
+</div>

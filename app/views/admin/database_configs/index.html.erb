@@ -1,0 +1,50 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">All Databases</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Database connections across all users</p>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+    <% if @database_configs.any? %>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Name</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Host</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Type</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Health</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Owner</p></th>
+              <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Last Check</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @database_configs.each do |db| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap">
+                  <%= link_to db.name, admin_database_config_path(db), class: "text-sm font-medium text-gray-700 dark:text-white/90 hover:text-primary-600" %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= db.host %></p></td>
+                <td class="px-4 py-3 whitespace-nowrap"><p class="text-sm text-gray-700 dark:text-gray-300"><%= db.database_type %></p></td>
+                <td class="px-4 py-3 whitespace-nowrap"><%= status_badge(db.health_status) %></td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <%= link_to db.user.name, admin_user_path(db.user), class: "text-sm text-primary-500 hover:text-primary-700" %>
+                </td>
+                <td class="py-3 pl-4 whitespace-nowrap text-right">
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= time_ago_or_never(db.last_health_check_at) %></p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">Showing <%= @database_configs.count %> database<%= @database_configs.count == 1 ? '' : 's' %></p>
+      </div>
+    <% else %>
+      <div class="px-5 py-12 text-center sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No databases configured.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

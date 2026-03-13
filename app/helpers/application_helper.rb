@@ -65,6 +65,27 @@ module ApplicationHelper
     time ? time_ago_in_words(time) + " ago" : "Never"
   end
 
+  def sidebar_partial
+    current_user&.admin? && controller.class.module_parent_name&.start_with?("Admin") ? "layouts/admin_sidebar" : "layouts/sidebar"
+  end
+
+  def billing_status_badge(status)
+    classes = case status.to_s
+    when "draft"
+      "bg-gray-100 text-gray-800"
+    when "sent"
+      "bg-blue-100 text-blue-800"
+    when "paid"
+      "bg-green-100 text-green-800"
+    when "cancelled", "expired"
+      "bg-red-100 text-red-800"
+    else
+      "bg-gray-100 text-gray-800"
+    end
+
+    content_tag(:span, status.to_s.titleize, class: "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium #{classes}")
+  end
+
   def action_badge_class(action)
     case action.to_s
     when "backup_started", "restore_started"

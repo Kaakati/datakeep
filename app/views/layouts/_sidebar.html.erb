@@ -202,6 +202,30 @@
           </li>
         </ul>
       </div>
+
+      <%# Menu Group: Account %>
+      <div class="mb-6">
+        <h3 class="mb-4 text-xs uppercase leading-5 text-gray-400 font-semibold tracking-wider">
+          <span class="menu-group-title">Account</span>
+          <svg class="hidden menu-group-icon mx-auto" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z" />
+          </svg>
+        </h3>
+
+        <ul class="flex flex-col gap-2">
+          <%# Billing %>
+          <li>
+            <%= link_to billing_path,
+                class: "menu-item group #{controller_name == 'billing' ? 'menu-item-active' : 'menu-item-inactive'}",
+                data: { action: "click->sidebar#navigate" } do %>
+              <svg class="h-5 w-5 shrink-0 <%= controller_name == 'billing' ? 'menu-item-icon-active' : 'menu-item-icon-inactive' %>" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+              </svg>
+              <span class="menu-item-text">Billing</span>
+            <% end %>
+          </li>
+        </ul>
+      </div>
     </nav>
   </div>
 

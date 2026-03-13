@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_004654) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,6 +39,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.index ["notification_channel_id"], name: "idx_on_notification_channel_id_848a00b350"
   end
 
+  create_table "backup_job_storage_backends", force: :cascade do |t|
+    t.bigint "backup_job_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "storage_backend_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["backup_job_id", "storage_backend_id"], name: "idx_backup_job_storage_backend_unique", unique: true
+    t.index ["backup_job_id"], name: "index_backup_job_storage_backends_on_backup_job_id"
+    t.index ["storage_backend_id"], name: "index_backup_job_storage_backends_on_storage_backend_id"
+  end
+
   create_table "backup_jobs", force: :cascade do |t|
     t.boolean "compression", default: true, null: false
     t.datetime "created_at", null: false
@@ -52,7 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.integer "retention_days", default: 30, null: false
     t.string "schedule_type", default: "daily", null: false
     t.string "status", default: "idle", null: false
-    t.bigint "storage_backend_id", null: false
+    t.bigint "storage_backend_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["database_config_id"], name: "index_backup_jobs_on_database_config_id"
@@ -92,12 +102,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.string "database_name", null: false
     t.string "database_type", default: "postgresql", null: false
     t.text "encrypted_password"
+    t.bigint "enterprise_quote_id"
     t.string "health_status", default: "unknown"
     t.string "host", null: false
     t.datetime "last_health_check_at"
     t.string "name", null: false
     t.string "pg_version"
     t.integer "port", default: 5432, null: false
+    t.integer "quote_database_index"
     t.string "ssl_mode", default: "prefer"
     t.datetime "statistics_updated_at"
     t.datetime "updated_at", null: false
@@ -109,9 +121,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.string "vpn_tunnel_name"
     t.string "vpn_type"
     t.index ["database_type"], name: "index_database_configs_on_database_type"
+    t.index ["enterprise_quote_id", "quote_database_index"], name: "idx_database_configs_on_quote_slot", unique: true, where: "(enterprise_quote_id IS NOT NULL)"
+    t.index ["enterprise_quote_id"], name: "index_database_configs_on_enterprise_quote_id"
     t.index ["user_id", "name"], name: "index_database_configs_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_database_configs_on_user_id"
     t.index ["vpn_enabled"], name: "index_database_configs_on_vpn_enabled"
+  end
+
+  create_table "enterprise_quotes", force: :cascade do |t|
+    t.bigint "admin_user_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "usd"
+    t.float "discount_percent", default: 0.0
+    t.datetime "expires_at"
+    t.jsonb "line_items_snapshot", null: false
+    t.datetime "paid_at"
+    t.jsonb "quote_params", null: false
+    t.datetime "sent_at"
+    t.integer "status", default: 0, null: false
+    t.string "stripe_coupon_id"
+    t.string "stripe_hosted_invoice_url"
+    t.string "stripe_invoice_id"
+    t.string "stripe_subscription_id"
+    t.integer "total_monthly_cents", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["admin_user_id"], name: "index_enterprise_quotes_on_admin_user_id"
+    t.index ["status"], name: "index_enterprise_quotes_on_status"
+    t.index ["stripe_invoice_id"], name: "index_enterprise_quotes_on_stripe_invoice_id", unique: true
+    t.index ["stripe_subscription_id"], name: "index_enterprise_quotes_on_stripe_subscription_id", unique: true
+    t.index ["user_id"], name: "index_enterprise_quotes_on_user_id"
   end
 
   create_table "health_checks", force: :cascade do |t|
@@ -142,6 +181,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.index ["user_id"], name: "index_notification_channels_on_user_id"
   end
 
+  create_table "pricing_configs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "value", default: {}, null: false
+    t.index ["key"], name: "index_pricing_configs_on_key", unique: true
+  end
+
   create_table "restores", force: :cascade do |t|
     t.bigint "backup_id"
     t.datetime "completed_at"
@@ -163,10 +211,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.datetime "created_at", null: false
     t.text "encrypted_config"
     t.boolean "is_default", default: false, null: false
+    t.boolean "managed", default: false, null: false
     t.string "name", null: false
     t.string "type", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
+    t.index ["managed"], name: "index_storage_backends_on_managed"
+    t.index ["name"], name: "index_storage_backends_on_name_managed", unique: true, where: "(managed = true)"
     t.index ["user_id", "name"], name: "index_storage_backends_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_storage_backends_on_user_id"
   end
@@ -219,19 +270,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_10_220000) do
     t.string "email", null: false
     t.string "name", null: false
     t.string "password_digest", null: false
+    t.integer "role", default: 0, null: false
+    t.string "stripe_customer_id"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["role"], name: "index_users_on_role"
+    t.index ["stripe_customer_id"], name: "index_users_on_stripe_customer_id", unique: true
   end
 
   add_foreign_key "audit_logs", "users"
   add_foreign_key "backup_job_notification_channels", "backup_jobs"
   add_foreign_key "backup_job_notification_channels", "notification_channels"
+  add_foreign_key "backup_job_storage_backends", "backup_jobs"
+  add_foreign_key "backup_job_storage_backends", "storage_backends"
   add_foreign_key "backup_jobs", "database_configs"
   add_foreign_key "backup_jobs", "storage_backends"
   add_foreign_key "backup_jobs", "users"
   add_foreign_key "backups", "backup_jobs"
   add_foreign_key "backups", "storage_backends"
+  add_foreign_key "database_configs", "enterprise_quotes"
   add_foreign_key "database_configs", "users"
+  add_foreign_key "enterprise_quotes", "users"
+  add_foreign_key "enterprise_quotes", "users", column: "admin_user_id"
   add_foreign_key "health_checks", "database_configs"
   add_foreign_key "notification_channels", "users"
   add_foreign_key "restores", "backups"

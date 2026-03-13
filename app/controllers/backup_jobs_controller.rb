@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 class BackupJobsController < ApplicationController
+  include PlanEnforcement
+
   before_action :set_backup_job, only: [ :show, :edit, :update, :destroy, :run_now, :pause, :resume ]
+  enforce_plan_limit :backup_job, only: [ :new, :create ]
 
   def index
     @backup_jobs = current_user.backup_jobs
-                               .includes(:database_config, :storage_backend)
+                               .includes(:database_config, :storage_backend, :storage_backends)
                                .order(created_at: :desc)
   end
 
@@ -31,6 +34,7 @@ class BackupJobsController < ApplicationController
 
   def create
     @backup_job = current_user.backup_jobs.build(backup_job_params)
+    sync_legacy_storage_backend(@backup_job)
 
     if @backup_job.save
       AuditLog.log(
@@ -49,6 +53,8 @@ class BackupJobsController < ApplicationController
   end
 
   def update
+    sync_legacy_storage_backend(@backup_job, backup_job_params)
+
     if @backup_job.update(backup_job_params)
       AuditLog.log(
         action: "update_backup_job",
@@ -120,7 +126,17 @@ class BackupJobsController < ApplicationController
       :name, :database_config_id, :storage_backend_id,
       :schedule_type, :cron_expression,
       :compression, :encryption, :retention_days, :enabled,
-      notification_channel_ids: []
+      notification_channel_ids: [],
+      storage_backend_ids: []
     )
+  end
+
+  # Keep legacy storage_backend_id in sync with first selected backend
+  def sync_legacy_storage_backend(backup_job, params_hash = backup_job_params)
+    ids = params_hash[:storage_backend_ids]
+    return unless ids.present?
+
+    ids = ids.reject(&:blank?)
+    backup_job.storage_backend_id = ids.first if ids.any?
   end
 end

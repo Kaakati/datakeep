@@ -27,80 +27,159 @@ class BackupExecutionJob < ApplicationJob
 
     backup_job.update!(status: "running", last_run_at: Time.current)
 
-    backup = create_backup_record(backup_job)
+    backends = backup_job.effective_storage_backends
+
+    # Create one Backup record per storage backend (all pending)
+    backups = backends.map do |backend|
+      create_backup_record(backup_job, backend)
+    end
+
+    # Check database size against plan limit BEFORE dumping
+    if (size_error = check_database_size_limit(backup_job, backups))
+      return
+    end
 
     begin
-      backup.start!
-
-      result = with_vpn_for(backup_job.database_config) do
+      # Run dump once (inside VPN if needed), then upload to each backend
+      dump_result = with_vpn_for(backup_job.database_config) do
         service = BackupService.new(
           database_config: backup_job.database_config,
-          storage_backend: backup_job.storage_backend,
+          storage_backend: nil,
           options: {
             compression: backup_job.compression,
             encryption: backup_job.encryption,
             format: :custom
           }
         )
-
-        res = service.call
-        raise res.error unless res.success?
-        res
+        service.dump
       end
 
-      backup.complete!(
-        file_path: result.file_path,
-        file_size: result.file_size,
-        checksum: result.checksum
-      )
+      # Mark all backups as running
+      backups.each(&:start!)
 
-      backup_job.update!(
-        status: "idle",
-        last_run_at: Time.current
-      )
+      any_failed = false
 
+      # Upload to each backend
+      backups.each_with_index do |backup, idx|
+        backend = backends[idx]
+        upload_result = BackupService.upload(
+          storage_backend: backend,
+          temp_file: dump_result.temp_file,
+          file_name: dump_result.file_name
+        )
+
+        if upload_result[:success]
+          backup.complete!(
+            file_path: upload_result[:file_path],
+            file_size: dump_result.file_size,
+            checksum: dump_result.checksum
+          )
+          NotificationService.notify_backup_success(backup)
+        else
+          any_failed = true
+          backup.fail!(upload_result[:error])
+          NotificationService.notify_backup_failure(backup)
+        end
+      end
+
+      final_status = any_failed ? "failed" : "idle"
+      backup_job.update!(status: final_status, last_run_at: Time.current)
       SchedulerService.update_next_run(backup_job)
-      NotificationService.notify_backup_success(backup)
+
+      completed_count = backups.count(&:completed?)
+      failed_count = backups.count(&:failed?)
 
       AuditLog.log(
-        action: "backup_completed",
+        action: any_failed ? "backup_partially_failed" : "backup_completed",
         user: backup_job.user,
-        resource: backup,
-        details: { file_size: result.file_size, duration: backup.duration }
+        resource: backups.first,
+        details: {
+          backends_total: backends.size,
+          backends_completed: completed_count,
+          backends_failed: failed_count,
+          file_size: dump_result.file_size,
+          duration: backups.first&.duration
+        }
       )
-
-      backup
     rescue StandardError => e
       Rails.logger.error "[BackupExecutionJob] Failed: #{e.message}"
       Rails.logger.error e.backtrace.first(10).join("\n")
 
-      backup.fail!(e.message)
+      # Mark any pending/running backups as failed
+      backups.each do |backup|
+        backup.fail!(e.message) unless backup.completed? || backup.failed?
+      end
+
       backup_job.update!(status: "failed", last_run_at: Time.current)
       SchedulerService.update_next_run(backup_job)
-      NotificationService.notify_backup_failure(backup)
+
+      backups.each do |backup|
+        NotificationService.notify_backup_failure(backup) if backup.failed?
+      end
 
       AuditLog.log(
         action: "backup_failed",
         user: backup_job.user,
-        resource: backup,
+        resource: backups.first,
         details: { error: e.message }
       )
 
       raise
+    ensure
+      # Cleanup temp file
+      if defined?(dump_result) && dump_result
+        BackupService.new(
+          database_config: backup_job.database_config,
+          storage_backend: nil,
+          options: {}
+        ).send(:cleanup_temp_files, dump_result.temp_file)
+      end
     end
   end
 
   private
+
+  def check_database_size_limit(backup_job, backups)
+    db_config = backup_job.database_config
+    max_gb = db_config.purchased_size_gb
+    return nil unless max_gb
+
+    stats = with_vpn_for(db_config) { db_config.fetch_statistics }
+    return nil if stats[:error]
+
+    actual_size_bytes = stats[:database_size]
+    return nil unless actual_size_bytes
+
+    max_bytes = max_gb * 1_073_741_824
+    return nil if actual_size_bytes <= max_bytes
+
+    message = "Database size (#{db_config.format_bytes(actual_size_bytes)}) exceeds your plan limit " \
+              "of #{max_gb} GB. Upgrade your plan to back up larger databases."
+
+    backups.each { |b| b.fail!(message) }
+    backup_job.update!(status: "failed", last_run_at: Time.current)
+    SchedulerService.update_next_run(backup_job)
+    backups.each { |b| NotificationService.notify_backup_failure(b) }
+
+    AuditLog.log(
+      action: "backup_size_limit_exceeded",
+      user: backup_job.user,
+      resource: backups.first,
+      details: { actual_bytes: actual_size_bytes, limit_gb: max_gb }
+    )
+
+    true
+  end
 
   def stale_running_job?(backup_job)
     return false unless backup_job.last_run_at
     backup_job.last_run_at < STALE_RUNNING_THRESHOLD.ago
   end
 
-  def create_backup_record(backup_job)
+  def create_backup_record(backup_job, storage_backend)
     Backup.create!(
       backup_job: backup_job,
-      storage_backend: backup_job.storage_backend,
+      storage_backend: storage_backend,
       file_name: generate_file_name(backup_job),
       database_name: backup_job.database_config.database_name,
       pg_version: backup_job.database_config.pg_version,

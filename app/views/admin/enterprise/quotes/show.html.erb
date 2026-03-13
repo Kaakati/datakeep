@@ -1,0 +1,172 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Quote #<%= @quote.id %></h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        For <%= @quote.user.email %> &middot; Created <%= @quote.created_at.strftime("%b %d, %Y") %>
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= billing_status_badge(@quote.status) %>
+      <%= link_to "Back to Quotes", admin_enterprise_quotes_path, class: "text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400" %>
+    </div>
+  </div>
+
+  <%# Quote breakdown (reusing results partial layout) %>
+  <div class="space-y-6" data-controller="clipboard">
+    <%# Line Items Breakdown %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] pt-4">
+      <div class="mb-4 px-5 sm:px-6">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Quote Breakdown</h3>
+      </div>
+      <div class="overflow-x-auto px-5 sm:px-6">
+        <table class="min-w-full">
+          <thead class="border-y border-gray-100 dark:border-gray-800">
+            <tr>
+              <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Database</p></th>
+              <th class="px-3 py-3 text-left font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Engine</p></th>
+              <th class="px-3 py-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Raw Size</p></th>
+              <th class="px-3 py-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Compressed</p></th>
+              <th class="px-3 py-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Stored</p></th>
+              <th class="px-3 py-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Storage</p></th>
+              <th class="px-3 py-3 text-center font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Regions</p></th>
+              <th class="py-3 pl-3 text-right font-normal whitespace-nowrap"><p class="text-xs text-gray-500 dark:text-gray-400">Line Total</p></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <% @result.line_items.each do |item| %>
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                <td class="py-3 pr-4 whitespace-nowrap"><span class="text-sm font-medium text-gray-700 dark:text-white/90"><%= item.name %></span></td>
+                <td class="px-3 py-3 whitespace-nowrap"><span class="text-sm text-gray-600 dark:text-gray-300"><%= item.engine.titleize %></span></td>
+                <td class="px-3 py-3 text-right whitespace-nowrap"><span class="text-sm text-gray-600 dark:text-gray-300"><%= item.raw_size_gb %> GB</span></td>
+                <td class="px-3 py-3 text-right whitespace-nowrap"><span class="text-sm text-gray-600 dark:text-gray-300"><%= item.compressed_gb %> GB</span></td>
+                <td class="px-3 py-3 text-right whitespace-nowrap"><span class="text-sm text-gray-600 dark:text-gray-300"><%= number_with_delimiter(item.total_stored_gb) %> GB</span></td>
+                <td class="px-3 py-3 text-right whitespace-nowrap"><span class="text-sm text-gray-600 dark:text-gray-300"><%= number_to_currency(item.storage_cost_cents / 100.0) %></span></td>
+                <td class="px-3 py-3 text-center whitespace-nowrap"><span class="text-sm text-gray-600 dark:text-gray-300"><%= item.regions %>&times;</span></td>
+                <td class="py-3 pl-3 text-right whitespace-nowrap"><span class="text-sm font-medium text-gray-700 dark:text-white/90"><%= number_to_currency(item.line_total_cents / 100.0) %></span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 px-5 py-3 sm:px-6">
+        <p class="text-sm text-gray-500 dark:text-gray-400"><%= @result.line_items.size %> database<%= @result.line_items.size == 1 ? '' : 's' %></p>
+      </div>
+    </div>
+
+    <%# Summary %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Summary</h3>
+      <dl class="space-y-3">
+        <div class="flex items-center justify-between">
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Platform Fee</dt>
+          <dd class="text-sm font-medium text-gray-700 dark:text-white/90"><%= number_to_currency(@result.platform_fee_cents / 100.0) %></dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Storage Total</dt>
+          <dd class="text-sm font-medium text-gray-700 dark:text-white/90"><%= number_to_currency(@result.line_items.sum(&:line_total_cents) / 100.0) %></dd>
+        </div>
+        <div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3">
+          <dt class="text-sm font-semibold text-gray-700 dark:text-white/90">Subtotal (monthly)</dt>
+          <dd class="text-sm font-semibold text-gray-700 dark:text-white/90"><%= number_to_currency(@result.subtotal_cents / 100.0) %></dd>
+        </div>
+        <% if @result.discount_percent > 0 %>
+          <div class="flex items-center justify-between text-green-600 dark:text-green-400">
+            <dt class="text-sm">Discount (<%= @result.discount_percent.to_i %>%)</dt>
+            <dd class="text-sm font-medium">-<%= number_to_currency(@result.discount_amount_cents / 100.0) %></dd>
+          </div>
+        <% end %>
+        <div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-3">
+          <dt class="text-base font-bold text-gray-800 dark:text-white">Monthly Total</dt>
+          <dd class="text-base font-bold text-primary-600 dark:text-primary-400"><%= number_to_currency(@result.total_monthly_cents / 100.0) %></dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Annual Contract Value</dt>
+          <dd class="text-sm font-semibold text-gray-700 dark:text-white/90"><%= number_to_currency(@result.annual_contract_value_cents / 100.0) %></dd>
+        </div>
+        <% if @result.savings_amount_cents > 0 %>
+          <div class="flex items-center justify-between text-green-600 dark:text-green-400">
+            <dt class="text-sm">Annual Savings</dt>
+            <dd class="text-sm font-medium"><%= number_to_currency(@result.savings_amount_cents / 100.0) %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  </div>
+
+  <%# Stripe Metadata %>
+  <% if @quote.stripe_invoice_id.present? || @quote.stripe_subscription_id.present? %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 sm:p-6">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stripe Details</h3>
+      <dl class="space-y-3">
+        <% if @quote.stripe_invoice_id.present? %>
+          <div class="flex items-center justify-between">
+            <dt class="text-sm text-gray-500 dark:text-gray-400">Invoice ID</dt>
+            <dd class="text-sm font-mono text-gray-700 dark:text-white/90"><%= @quote.stripe_invoice_id %></dd>
+          </div>
+        <% end %>
+        <% if @quote.stripe_hosted_invoice_url.present? %>
+          <div class="space-y-1.5">
+            <dt class="text-sm text-gray-500 dark:text-gray-400">Invoice URL (share with customer)</dt>
+            <dd class="flex items-center gap-2" data-controller="clipboard">
+              <input type="text" readonly value="<%= @quote.stripe_hosted_invoice_url %>"
+                     data-clipboard-target="source"
+                     class="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700 dark:border-gray-700 dark:bg-white/[0.03] dark:text-white/90 select-all" />
+              <button type="button" data-action="clipboard#copy"
+                      class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-white/[0.05] dark:text-gray-300 dark:hover:bg-white/[0.08]">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                </svg>
+                <span class="ml-1.5" data-clipboard-target="label">Copy</span>
+              </button>
+            </dd>
+          </div>
+        <% end %>
+        <% if @quote.stripe_subscription_id.present? %>
+          <div class="flex items-center justify-between">
+            <dt class="text-sm text-gray-500 dark:text-gray-400">Subscription ID</dt>
+            <dd class="text-sm font-mono text-gray-700 dark:text-white/90"><%= @quote.stripe_subscription_id %></dd>
+          </div>
+        <% end %>
+        <% if @quote.sent_at.present? %>
+          <div class="flex items-center justify-between">
+            <dt class="text-sm text-gray-500 dark:text-gray-400">Sent At</dt>
+            <dd class="text-sm text-gray-700 dark:text-white/90"><%= @quote.sent_at.strftime("%b %d, %Y %H:%M") %></dd>
+          </div>
+        <% end %>
+        <% if @quote.paid_at.present? %>
+          <div class="flex items-center justify-between">
+            <dt class="text-sm text-gray-500 dark:text-gray-400">Paid At</dt>
+            <dd class="text-sm text-gray-700 dark:text-white/90"><%= @quote.paid_at.strftime("%b %d, %Y %H:%M") %></dd>
+          </div>
+        <% end %>
+        <% if @quote.expires_at.present? %>
+          <div class="flex items-center justify-between">
+            <dt class="text-sm text-gray-500 dark:text-gray-400">Expires At</dt>
+            <dd class="text-sm text-gray-700 dark:text-white/90"><%= @quote.expires_at.strftime("%b %d, %Y %H:%M") %></dd>
+          </div>
+        <% end %>
+      </dl>
+    </div>
+  <% end %>
+
+  <%# Actions %>
+  <div class="flex gap-3">
+    <% if @quote.draft? %>
+      <%= button_to "Send Invoice via Stripe", send_invoice_admin_enterprise_quote_path(@quote),
+          method: :post,
+          class: "rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 cursor-pointer",
+          data: { turbo_confirm: "This will send a Stripe invoice to #{@quote.user.email}. This action cannot be undone. Continue?" } %>
+    <% end %>
+    <% if @quote.stripe_hosted_invoice_url.present? && @quote.sent? %>
+      <%= link_to @quote.stripe_hosted_invoice_url,
+          target: "_blank",
+          class: "inline-flex items-center rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600" do %>
+        Pay Invoice
+        <svg class="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+        </svg>
+      <% end %>
+    <% end %>
+  </div>
+</div>
