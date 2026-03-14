@@ -25,6 +25,7 @@ env:
 permissions:
   id-token: write
   contents: read
+  checks: read
 
 jobs:
   # Gate: wait for CI to pass (unless skipped)
