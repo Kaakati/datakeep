@@ -2,6 +2,7 @@
 
 class SessionsController < ApplicationController
   allow_unauthenticated_access only: [ :new, :create ]
+  verify_turnstile_request only: [ :create ]
 
   def new
     if logged_in?

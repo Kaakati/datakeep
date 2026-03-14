@@ -38,3 +38,14 @@ variable "web_max_count" {
   type        = number
   default     = 2
 }
+
+variable "turnstile_site_key" {
+  description = "Cloudflare Turnstile site key"
+  type        = string
+}
+
+variable "turnstile_secret_key" {
+  description = "Cloudflare Turnstile secret key"
+  type        = string
+  sensitive   = true
+}

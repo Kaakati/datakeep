@@ -37,6 +37,9 @@ gem "faraday", "~> 2.9"
 # Stripe billing and invoicing
 gem "stripe", "~> 13.0"
 
+# Cloudflare Turnstile bot protection
+gem "turnstiled"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

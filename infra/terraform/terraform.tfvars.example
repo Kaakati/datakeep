@@ -11,6 +11,10 @@ aws_region      = "eu-south-1"
 domain_name     = "datakeep.ai"
 certificate_arn = "arn:aws:acm:eu-south-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
 
+# Cloudflare Turnstile (bot protection for login/signup)
+turnstile_site_key   = "YOUR_TURNSTILE_SITE_KEY"
+turnstile_secret_key = "YOUR_TURNSTILE_SECRET_KEY"
+
 # Lean defaults — override to scale up
 db_instance_class = "db.t3.micro"   # upgrade: db.t3.small or db.t3.medium
 web_desired_count = 1               # upgrade: 2+

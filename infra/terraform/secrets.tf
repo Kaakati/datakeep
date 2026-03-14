@@ -81,6 +81,27 @@ resource "aws_secretsmanager_secret_version" "stripe_webhook_secret" {
   lifecycle { ignore_changes = [secret_string] }
 }
 
+# Cloudflare Turnstile (bot protection)
+resource "aws_secretsmanager_secret" "turnstile_site_key" {
+  name = "datakeep/turnstile-site-key"
+  tags = { Name = "${local.name_prefix}-turnstile-site-key" }
+}
+
+resource "aws_secretsmanager_secret_version" "turnstile_site_key" {
+  secret_id     = aws_secretsmanager_secret.turnstile_site_key.id
+  secret_string = var.turnstile_site_key
+}
+
+resource "aws_secretsmanager_secret" "turnstile_secret_key" {
+  name = "datakeep/turnstile-secret-key"
+  tags = { Name = "${local.name_prefix}-turnstile-secret-key" }
+}
+
+resource "aws_secretsmanager_secret_version" "turnstile_secret_key" {
+  secret_id     = aws_secretsmanager_secret.turnstile_secret_key.id
+  secret_string = var.turnstile_secret_key
+}
+
 # Active Record Encryption keys (auto-generated, do not change after data is encrypted)
 resource "aws_secretsmanager_secret" "ar_encryption_primary_key" {
   name = "datakeep/ar-encryption-primary-key"
