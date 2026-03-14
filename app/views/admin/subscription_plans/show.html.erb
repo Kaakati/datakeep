@@ -1,0 +1,145 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90"><%= @plan.name %></h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Tier: <code class="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded"><%= @plan.tier_key %></code>
+        &middot;
+        <% if @plan.enabled? %>
+          <span class="text-green-600 dark:text-green-400">Enabled</span>
+        <% else %>
+          <span class="text-gray-400">Disabled</span>
+        <% end %>
+      </p>
+    </div>
+    <div class="mt-4 flex items-center gap-2 sm:mt-0">
+      <%= link_to "Edit", edit_admin_subscription_plan_path(@plan),
+        class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+      <%= button_to "Sync to Stripe", sync_to_stripe_admin_subscription_plan_path(@plan),
+        method: :post,
+        class: "inline-flex items-center rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600" %>
+    </div>
+  </div>
+
+  <%# Pricing Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Pricing</h3>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Monthly</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white">$<%= "%.2f" % (@plan.monthly_price_cents / 100.0) %></p>
+        </div>
+        <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Annual</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white">$<%= "%.2f" % (@plan.annual_price_cents / 100.0) %>/yr</p>
+          <% if @plan.annual_savings_percent > 0 %>
+            <p class="text-xs text-green-600 dark:text-green-400">Save <%= @plan.annual_savings_percent %>%</p>
+          <% end %>
+        </div>
+        <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Sort Order</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @plan.sort_order %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Stripe Status Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Stripe Integration</h3>
+        <% if @plan.stripe_synced? %>
+          <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Synced</span>
+        <% else %>
+          <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Not synced</span>
+        <% end %>
+      </div>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Product ID</span>
+          <span class="font-mono text-xs text-gray-600 dark:text-gray-400"><%= @plan.stripe_product_id || "—" %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Monthly Price ID</span>
+          <span class="font-mono text-xs text-gray-600 dark:text-gray-400"><%= @plan.stripe_monthly_price_id || "—" %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Annual Price ID</span>
+          <span class="font-mono text-xs text-gray-600 dark:text-gray-400"><%= @plan.stripe_annual_price_id || "—" %></span>
+        </div>
+      </div>
+      <% unless @plan.stripe_synced? %>
+        <div class="mt-4 rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
+          <p class="text-sm text-amber-800 dark:text-amber-300">
+            This plan has not been synced to Stripe yet. Click "Sync to Stripe" to create the Product and Prices.
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Limits Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Plan Limits</h3>
+      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Merged: DB overrides + built-in defaults</p>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <% merged = @plan.merged_limits %>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <% [:max_database_configs, :max_backup_jobs, :max_storage_backends, :max_notification_channels,
+            :max_retention_days, :max_storage_gb, :max_zones, :max_jobs_per_month, :min_backup_interval, :s3_allowed].each do |key| %>
+          <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400"><%= key.to_s.humanize %></p>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">
+              <% val = merged[key] %>
+              <%= val.nil? ? "Unlimited" : val.to_s %>
+              <% if @plan.limits.key?(key.to_s) %>
+                <span class="text-xs text-primary-500 ml-1">(override)</span>
+              <% end %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# Active Subscriptions %>
+  <% active_count = Subscription.where(plan_tier: @plan.tier_key).where.not(status: :canceled).count %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Usage</h3>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl font-bold text-gray-900 dark:text-white"><%= active_count %></span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">active subscription<%= active_count == 1 ? '' : 's' %> on this plan</span>
+      </div>
+    </div>
+  </div>
+
+  <%# Danger Zone %>
+  <div class="rounded-2xl border border-red-200 bg-white dark:border-red-900/50 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
+    </div>
+    <div class="border-t border-red-100 p-5 sm:p-6 dark:border-red-900/50">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Delete this plan</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Only possible if no active subscriptions use this tier.</p>
+        </div>
+        <%= button_to "Delete Plan", admin_subscription_plan_path(@plan),
+          method: :delete,
+          class: "inline-flex items-center rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-red-900/20",
+          data: { turbo_confirm: "Are you sure? This cannot be undone." } %>
+      </div>
+    </div>
+  </div>
+</div>

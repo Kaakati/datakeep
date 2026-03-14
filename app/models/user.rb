@@ -54,7 +54,7 @@ class User < ApplicationRecord
 
   def plan_name
     return "Enterprise" if enterprise_plan?
-    TIER_DEFINITIONS.dig(plan_tier_key, :label) || "Free"
+    resolve_tier_limits(plan_tier_key)[:label] || "Free"
   end
 
   def plan_limits
@@ -72,7 +72,7 @@ class User < ApplicationRecord
         default_size_gb: nil
       }
     else
-      tier = TIER_DEFINITIONS[plan_tier_key] || TIER_DEFINITIONS[:free]
+      tier = resolve_tier_limits(plan_tier_key)
       {
         max_database_configs: tier[:max_database_configs],
         max_backup_jobs: tier[:max_backup_jobs],
@@ -142,6 +142,12 @@ class User < ApplicationRecord
   end
 
   private
+
+  def resolve_tier_limits(key)
+    db_plan = SubscriptionPlan.for_tier(key) if key != :free
+    return db_plan.merged_limits if db_plan
+    TIER_DEFINITIONS[key] || TIER_DEFINITIONS[:free]
+  end
 
   def password_required?
     return false if oauth_user?

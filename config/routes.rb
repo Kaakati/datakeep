@@ -20,6 +20,15 @@ Rails.application.routes.draw do
     resources :backups, only: [ :index, :show ]
     resources :audit_logs, only: [ :index, :show ]
     resources :pricing_configs, only: [ :index, :edit, :update ]
+    resources :subscription_plans do
+      member do
+        post :sync_to_stripe
+        patch :toggle
+      end
+      collection do
+        post :seed
+      end
+    end
     namespace :enterprise do
       resource :quote, only: [ :show, :create ], controller: "quote_calculator", as: :quote_calculator
       resources :quotes, only: [ :index, :show, :create ] do
@@ -109,8 +118,10 @@ Rails.application.routes.draw do
     end
   end
 
-  # Billing
+  # Billing & Subscriptions
   get "billing", to: "billing#show"
+  resource :subscription, only: [:create, :update, :destroy]
+  post "stripe_portal", to: "stripe_portal#create"
 
   # Audit logs
   resources :audit_logs, only: [ :index, :show ]

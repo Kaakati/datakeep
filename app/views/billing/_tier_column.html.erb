@@ -1,0 +1,105 @@
+<%# Renders a single pricing tier column
+     locals: tier_key, tier, current_tier, subscription, recommended %>
+<% is_current = (current_tier == tier_key) %>
+<% is_enterprise_user = (current_tier == :enterprise) %>
+<% has_subscription = subscription&.active_access? %>
+<% tier_value = Subscription.plan_tiers[tier_key.to_s] || 0 %>
+<% current_value = Subscription.plan_tiers[current_tier.to_s] || 0 %>
+<% is_upgrade = tier_value > current_value && !is_enterprise_user %>
+<% is_downgrade = tier_value < current_value && tier_key != :free && !is_enterprise_user %>
+
+<div class="relative flex flex-col rounded-2xl border p-6
+  <%= recommended ? 'border-primary-300 dark:border-primary-700 shadow-lg ring-1 ring-primary-200 dark:ring-primary-800' : 'border-gray-200 dark:border-gray-800' %>
+  bg-white dark:bg-white/[0.03]">
+
+  <% if recommended %>
+    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+      <span class="inline-flex items-center rounded-full bg-primary-500 px-3 py-0.5 text-xs font-semibold text-white">Recommended</span>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><%= tier[:label] %></h3>
+    <div data-billing-toggle-target="monthlyPrice" class="mt-2">
+      <span class="text-3xl font-bold text-gray-900 dark:text-white">$<%= tier[:monthly_price_cents] / 100 %></span>
+      <span class="text-sm text-gray-500 dark:text-gray-400">/month</span>
+    </div>
+    <div data-billing-toggle-target="annualPrice" class="mt-2 hidden">
+      <span class="text-3xl font-bold text-gray-900 dark:text-white">$<%= tier[:annual_price_cents] / 100 / 12 %></span>
+      <span class="text-sm text-gray-500 dark:text-gray-400">/month</span>
+      <p class="text-xs text-green-600 dark:text-green-400 mt-0.5">
+        Save <%= ((1.0 - tier[:annual_price_cents].to_f / (tier[:monthly_price_cents] * 12)) * 100).round %>%
+      </p>
+    </div>
+  </div>
+
+  <ul class="mb-6 space-y-2.5 flex-1">
+    <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+      <%= tier[:max_database_configs] %> databases
+    </li>
+    <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+      <%= tier[:max_backup_jobs] ? "#{tier[:max_backup_jobs]} backup jobs" : "Unlimited backup jobs" %>
+    </li>
+    <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+      <%= tier[:max_retention_days] %>-day retention
+    </li>
+    <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+      <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+      <%= tier[:max_storage_gb] %> GB storage
+    </li>
+    <% if tier[:s3_allowed] %>
+      <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+        S3 cloud storage
+      </li>
+    <% end %>
+    <% if tier[:max_notification_channels] && tier[:max_notification_channels] > 0 %>
+      <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+        <%= tier[:max_notification_channels] %> notification channels
+      </li>
+    <% elsif tier[:max_notification_channels].nil? %>
+      <li class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <svg class="h-4 w-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+        Unlimited notifications
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="mt-auto">
+    <% if is_current %>
+      <button disabled class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed">
+        Current Plan
+      </button>
+    <% elsif is_enterprise_user %>
+      <button disabled class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed">
+        Enterprise Active
+      </button>
+    <% elsif !has_subscription || current_tier == :free %>
+      <%# New subscription via checkout %>
+      <%= form_with url: subscription_path, method: :post, class: "w-full" do |f| %>
+        <%= f.hidden_field :plan_tier, value: tier_key %>
+        <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+        <%= f.submit "Subscribe to #{tier[:label]}",
+          class: "w-full rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition cursor-pointer" %>
+      <% end %>
+    <% elsif is_upgrade %>
+      <%= form_with url: subscription_path, method: :patch, class: "w-full" do |f| %>
+        <%= f.hidden_field :plan_tier, value: tier_key %>
+        <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+        <%= f.submit "Upgrade to #{tier[:label]}",
+          class: "w-full rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600 transition cursor-pointer" %>
+      <% end %>
+    <% elsif is_downgrade %>
+      <%= form_with url: subscription_path, method: :patch, class: "w-full" do |f| %>
+        <%= f.hidden_field :plan_tier, value: tier_key %>
+        <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+        <%= f.submit "Downgrade to #{tier[:label]}",
+          class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

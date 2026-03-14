@@ -1,0 +1,60 @@
+<%# Pricing Grid — Monthly/Annual toggle + tier columns %>
+<%# Uses DB-backed plans if available, falls back to TIER_DEFINITIONS %>
+<div data-controller="billing-toggle">
+  <div class="mb-6 flex items-center justify-between">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Choose a Plan</h3>
+    <div class="inline-flex items-center rounded-lg bg-gray-100 p-0.5 dark:bg-gray-800">
+      <button type="button"
+        data-action="click->billing-toggle#showMonthly"
+        data-billing-toggle-target="monthlyBtn"
+        class="rounded-md px-3 py-1.5 text-sm font-medium transition bg-white shadow-sm dark:bg-gray-700">
+        Monthly
+      </button>
+      <button type="button"
+        data-action="click->billing-toggle#showAnnual"
+        data-billing-toggle-target="annualBtn"
+        class="rounded-md px-3 py-1.5 text-sm font-medium transition text-gray-500">
+        Annual
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <% if @db_plans.present? %>
+      <%# DB-backed plans %>
+      <% @db_plans.each do |db_plan| %>
+        <% tier_data = db_plan.merged_limits %>
+        <%= render "billing/tier_column",
+          tier_key: db_plan.tier_key.to_sym,
+          tier: tier_data,
+          current_tier: @current_tier,
+          subscription: @subscription,
+          recommended: (db_plan.tier_key == "professional") %>
+      <% end %>
+    <% else %>
+      <%# Fallback to hardcoded TIER_DEFINITIONS %>
+      <% [:starter, :professional, :business].each do |tier_key| %>
+        <%= render "billing/tier_column",
+          tier_key: tier_key,
+          tier: @tier_definitions[tier_key],
+          current_tier: @current_tier,
+          subscription: @subscription,
+          recommended: (tier_key == :professional) %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Enterprise CTA %>
+  <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="flex items-center justify-between">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Enterprise</h4>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Custom pricing for large-scale deployments</p>
+      </div>
+      <a href="mailto:support@datakeep.io" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+        Contact Sales
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+      </a>
+    </div>
+  </div>
+</div>
