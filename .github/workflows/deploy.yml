@@ -1,0 +1,169 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Skip CI checks and deploy immediately"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: eu-south-1
+  ECR_REPOSITORY: datakeep
+  ECS_CLUSTER: datakeep-production
+  WEB_SERVICE: datakeep-production-web
+  JOBS_SERVICE: datakeep-production-jobs
+  MIGRATE_TASK: datakeep-production-migrate
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # Gate: wait for CI to pass (unless skipped)
+  ci-check:
+    if: ${{ !inputs.skip_tests }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI workflow
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.sha }}
+          check-name: "test"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 15
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [ci-check]
+    if: ${{ always() && (needs.ci-check.result == 'success' || needs.ci-check.result == 'skipped') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: tag
+        run: echo "tag=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.tag }}
+            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Run database migrations
+        id: migrate
+        run: |
+          SUBNETS=$(aws ec2 describe-subnets \
+            --filters "Name=tag:Name,Values=${{ env.ECS_CLUSTER }}-public-*" \
+            --query 'Subnets[0].SubnetId' --output text)
+
+          SG=$(aws ec2 describe-security-groups \
+            --filters "Name=tag:Name,Values=${{ env.ECS_CLUSTER }}-ecs-sg" \
+            --query 'SecurityGroups[0].GroupId' --output text)
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --task-definition ${{ env.MIGRATE_TASK }} \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+
+          echo "task_arn=$TASK_ARN" >> "$GITHUB_OUTPUT"
+          echo "::notice::Migration task: $TASK_ARN"
+
+          aws ecs wait tasks-stopped --cluster ${{ env.ECS_CLUSTER }} --tasks "$TASK_ARN"
+
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "::error::Migration failed with exit code $EXIT_CODE"
+            aws logs tail /ecs/datakeep/migrate --since 5m --format short || true
+            exit 1
+          fi
+
+          echo "::notice::Migration completed successfully"
+
+      - name: Deploy web service
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.WEB_SERVICE }} \
+            --force-new-deployment \
+            --no-cli-pager
+
+      - name: Deploy jobs service
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.JOBS_SERVICE }} \
+            --force-new-deployment \
+            --no-cli-pager
+
+      - name: Wait for web service stability
+        run: |
+          echo "Waiting for web service to stabilize..."
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.WEB_SERVICE }}
+          echo "::notice::Web service is stable"
+
+      - name: Verify health check
+        run: |
+          ALB_DNS=$(aws elbv2 describe-load-balancers \
+            --names ${{ env.ECS_CLUSTER }}-alb \
+            --query 'LoadBalancers[0].DNSName' --output text)
+
+          STATUS=$(curl -sk -o /dev/null -w "%{http_code}" "https://$ALB_DNS/up")
+
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Health check failed with status $STATUS"
+            exit 1
+          fi
+
+          echo "::notice::Health check passed (HTTP $STATUS)"
+
+      - name: Post deployment summary
+        if: success()
+        run: |
+          echo "### Deployment successful :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Detail | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Image tag** | \`${{ steps.tag.outputs.tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Cluster** | \`${{ env.ECS_CLUSTER }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Region** | \`${{ env.AWS_REGION }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "### Deployment failed :x:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Check the logs above for details." >> "$GITHUB_STEP_SUMMARY"
+          echo "To rollback: \`cd infra && make rollback web\`" >> "$GITHUB_STEP_SUMMARY"
