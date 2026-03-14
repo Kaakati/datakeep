@@ -28,7 +28,7 @@ RUN apt-get update -qq && \
       libjemalloc2 \
       libvips \
       # PostgreSQL client tools (pg_dump, pg_restore, psql)
-      postgresql-client-16 \
+      postgresql-client \
       # Required for pg gem native extension
       libpq5 \
       # Compression utilities for backup compression

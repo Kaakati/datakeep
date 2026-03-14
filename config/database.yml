@@ -29,9 +29,10 @@ test:
 
 # Production uses DATABASE_URL environment variable
 production:
-  <<: *default
-  database: datakeep_production
-  username: datakeep
-  password: <%= ENV["DATABASE_PASSWORD"] %>
-  host: <%= ENV["DATABASE_HOST"] %>
-  port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
+  primary:
+    <<: *default
+    url: <%= ENV["DATABASE_URL"] %>
+  cache:
+    <<: *default
+    url: <%= ENV["DATABASE_URL"] %>
+    migrations_paths: db/cache_migrate

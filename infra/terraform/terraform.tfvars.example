@@ -1,0 +1,17 @@
+# Copy to terraform.tfvars and fill in values
+#
+# Setup steps:
+#   1. Request ACM certificate:  make cert
+#   2. Add CNAME validation record in Cloudflare
+#   3. Wait for validation, copy certificate ARN below
+#   4. terraform init && terraform apply
+
+environment     = "production"
+aws_region      = "eu-south-1"
+domain_name     = "datakeep.ai"
+certificate_arn = "arn:aws:acm:eu-south-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
+
+# Lean defaults — override to scale up
+db_instance_class = "db.t3.micro"   # upgrade: db.t3.small or db.t3.medium
+web_desired_count = 1               # upgrade: 2+
+web_max_count     = 2               # upgrade: 4+

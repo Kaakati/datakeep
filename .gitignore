@@ -40,3 +40,11 @@
 # Ignore backup files
 /backups/*
 !/backups/.keep
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/*.tfvars
+infra/terraform/.terraform.lock.hcl
+infra/terraform/crash.log
