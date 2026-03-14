@@ -1,8 +1,8 @@
 # DataKeep
 
-**Open-source database backup and monitoring platform for PostgreSQL databases.**
+**Open-source database backup, sync, and monitoring platform for PostgreSQL databases.**
 
-DataKeep provides automated backup scheduling, health monitoring, and backup management through an intuitive web interface built with Ruby on Rails.
+DataKeep provides automated backup scheduling, database syncing, health monitoring, and backup management through an intuitive web interface built with Ruby on Rails.
 
 ![DataKeep Dashboard](DataKeep_Dashboard.png)
 
@@ -13,6 +13,7 @@ DataKeep provides automated backup scheduling, health monitoring, and backup man
 - **Connection Testing** - Verify database connectivity before saving configurations
 - **Database URL Parsing** - Automatically parse connection strings for quick setup
 - **Secure Credentials** - Encrypted storage for database passwords
+- **VPN Support** - Connect to databases behind OpenVPN or IPSec tunnels
 
 ### Backup Management
 - **Scheduled Backups** - Daily, weekly, monthly, or custom cron schedules
@@ -20,271 +21,435 @@ DataKeep provides automated backup scheduling, health monitoring, and backup man
 - **Backup History** - View and manage all backup records
 - **File Deletion** - Delete backup files from storage when removing records
 - **Retention Policies** - Automatic cleanup based on retention days
+- **Restore** - Restore backups to any connected database
+
+### Database Sync
+- **One-to-Many Replication** - Sync one source database to multiple targets
+- **Interval Scheduling** - Configurable sync intervals
+- **Execution History** - Track sync job runs and status
 
 ### Storage Backends
 - **Local Storage** - Store backups on the local filesystem
 - **AWS S3** - Cloud storage with configurable bucket and prefix
-- **Multiple Backends** - Configure different storage for different backup jobs
+- **Multiple Backends** - A single backup job can write to multiple storage backends
+- **Managed Backends** - Admin-created system-wide storage (S3 buckets shared across tenants)
 
 ### Health Monitoring
 - **Automated Health Checks** - Regular connectivity and performance checks
 - **Health Heatmap** - Visual 24-hour health status overview
 - **Uptime Tracking** - Monitor database availability percentage
-- **Alert System** - Notifications for failed health checks
+- **Alert System** - Notifications via Slack, Discord, Telegram, Webhook, or Email
 
-### User Management
-- **Multi-tenant** - Each user manages their own databases and backups
-- **Secure Authentication** - bcrypt password hashing
-- **Audit Logging** - Track all user actions
+### Enterprise Billing
+- **SaaS Plans** - Free and enterprise tiers with configurable limits
+- **Stripe Integration** - Subscription billing with invoice management
+- **Enterprise Quotes** - Custom pricing calculator for large deployments
+- **Admin Panel** - User management, pricing config, audit logs
 
 ## Tech Stack
 
 - **Framework**: Ruby on Rails 8.1
-- **Database**: PostgreSQL
-- **Background Jobs**: Sidekiq with Redis
-- **Frontend**: Hotwire (Turbo + Stimulus), Tailwind CSS
-- **UI Theme**: TailAdmin Dashboard
-- **Deployment**: Docker + Kamal
+- **Database**: PostgreSQL 16
+- **Background Jobs**: Sidekiq 8 + sidekiq-cron (Redis-backed)
+- **Frontend**: Hotwire (Turbo + Stimulus), Tailwind CSS, TailAdmin
+- **Billing**: Stripe
+- **Auth**: Custom session-based with bcrypt
+- **Deployment**: Docker + AWS ECS (Fargate Spot + EC2)
 
 ## Requirements
 
-- Docker & Docker Compose (recommended)
-- Or: Ruby 3.4.2+, PostgreSQL 14+, Redis 7.0+
+- Docker & Docker Compose (recommended for development)
+- Or: Ruby 3.4.7+, PostgreSQL 16+, Redis 7.0+
 
-## Quick Start with Docker
+---
 
-The easiest way to run DataKeep is with Docker Compose:
+## Local Development
 
-### 1. Clone the repository
+### Quick Start with Docker
 
 ```bash
+# Clone and start
 git clone https://github.com/Kaakati/datakeep.git
 cd datakeep
-```
-
-### 2. Start the application
-
-```bash
 docker compose up
+
+# Setup database (first run)
+docker compose exec web bin/rails db:create db:migrate db:seed
+
+# Visit http://localhost:3000
 ```
 
-This starts all services:
-- **web** - Rails application on [http://localhost:3000](http://localhost:3000)
-- **jobs** - Sidekiq background worker
-- **db** - PostgreSQL database
-- **redis** - Redis for caching and job queues
-
-### 3. Setup the database (first run only)
-
-```bash
-docker compose exec web bin/rails db:create db:migrate
-```
-
-### 4. Visit the application
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Services started by Docker Compose:
+- **web** - Rails app on [http://localhost:3000](http://localhost:3000)
+- **jobs** - Sidekiq worker (with VPN capabilities: NET_ADMIN, /dev/net/tun)
+- **db** - PostgreSQL on port 5430 (host)
+- **redis** - Redis on port 6370 (host)
 
 ### Docker Commands
 
 ```bash
-# Start in background
-docker compose up -d
-
-# View logs
-docker compose logs -f web
-
-# Stop services
-docker compose down
-
-# Reset database
-docker compose exec web bin/rails db:reset
-
-# Run tests
-docker compose exec web bin/rails test
-
-# Access Rails console
-docker compose exec web bin/rails console
+docker compose up -d              # Start in background
+docker compose logs -f web        # Tail web logs
+docker compose exec web bin/rails console  # Rails console
+docker compose exec web bundle exec rspec  # Run tests
+docker compose down               # Stop all services
 ```
 
-## Manual Installation (without Docker)
+### Manual Installation (without Docker)
 
 <details>
-<summary>Click to expand manual installation steps</summary>
-
-### 1. Install dependencies
+<summary>Click to expand</summary>
 
 ```bash
 bundle install
-```
-
-### 2. Setup database
-
-```bash
 bin/rails db:create db:migrate
-```
-
-### 3. Start Redis (required for Sidekiq)
-
-```bash
-redis-server
-```
-
-### 4. Start the application
-
-```bash
-# Terminal 1: Rails server
-bin/rails server
-
-# Terminal 2: Sidekiq worker
-bundle exec sidekiq
+redis-server                  # Terminal 1
+bin/rails server              # Terminal 2
+bundle exec sidekiq           # Terminal 3
 ```
 
 </details>
 
-## Configuration
-
 ### Environment Variables
+
+Copy `.env.example` to `.env` (loaded by `dotenv-rails`):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection URL | - |
 | `REDIS_URL` | Redis connection URL | `redis://localhost:6379/0` |
-| `RAILS_ENV` | Environment (development/production/test) | `development` |
 | `SECRET_KEY_BASE` | Rails secret key (required in production) | - |
+| `RAILS_MASTER_KEY` | Decrypts Rails credentials | - |
+| `STRIPE_SECRET_KEY` | Stripe API key | - |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | - |
 
-### Storage Backend Configuration
-
-**Local Storage:**
-```ruby
-{
-  path: "/var/backups/datakeep"
-}
-```
-
-**AWS S3:**
-```ruby
-{
-  bucket: "my-backup-bucket",
-  region: "us-east-1",
-  access_key_id: "AKIA...",
-  secret_access_key: "...",
-  prefix: "backups/"
-}
-```
-
-## Running Tests
+### Running Tests
 
 ```bash
-RAILS_ENV=test bin/rails test
+bundle exec rspec                          # Full suite
+bundle exec rspec spec/models/             # Model specs only
+bundle exec rspec spec/models/user_spec.rb # Single file
+bundle exec rubocop                        # Linting
+bundle exec brakeman                       # Security scan
 ```
+
+---
+
+## Production Deployment (AWS ECS)
+
+DataKeep runs on AWS ECS in **eu-south-1 (Milan)** using the `manifest` AWS profile. The infrastructure is managed with Terraform/OpenTofu.
+
+### Architecture
+
+```
+Internet
+   │
+   ▼
+┌──────────────────────────────────────────────────┐
+│  ALB (HTTPS with ACM certificate)                │
+│  datakeep-production-alb                         │
+│  Public subnets (2 AZs)                          │
+└──────────────┬───────────────────────────────────┘
+               │ port 8080
+               ▼
+┌──────────────────────────────────────────────────┐
+│  ECS Cluster: datakeep-production                │
+│                                                  │
+│  ┌─────────────────┐  ┌──────────────────────┐   │
+│  │ Web Service      │  │ Jobs Service          │  │
+│  │ Fargate Spot     │  │ EC2 (t3.small)        │  │
+│  │ 1 vCPU / 2 GB   │  │ NET_ADMIN + /dev/tun  │  │
+│  │ Puma + Thruster  │  │ Sidekiq               │  │
+│  │ Public subnet    │  │ Public subnet         │  │
+│  └─────────────────┘  └──────────────────────┘   │
+│                                                  │
+│  ┌─────────────────────────────────────────────┐ │
+│  │ Private subnets                              │ │
+│  │ ┌─────────┐ ┌──────────┐ ┌───────────────┐  │ │
+│  │ │ RDS     │ │ Redis    │ │ EFS           │  │ │
+│  │ │ PG 16   │ │ 7.1      │ │ /storage      │  │ │
+│  │ │ t3.micro│ │ t3.micro │ │ /backups      │  │ │
+│  │ └─────────┘ └──────────┘ └───────────────┘  │ │
+│  └─────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────┘
+```
+
+**Key design decisions:**
+- **Web on Fargate Spot** - 70% cost savings, ALB handles failover
+- **Jobs on EC2** - Fargate doesn't support `NET_ADMIN`/`NET_RAW` capabilities needed for VPN tunneling
+- **Public subnets for ECS** - Free public IPs on Fargate ENIs eliminate NAT costs entirely
+- **Private subnets for data** - RDS, Redis, and EFS are not internet-accessible
+
+### Cost Breakdown (~$112/mo)
+
+| Component | Monthly |
+|---|---:|
+| ALB | ~$27 |
+| ECS Web (1x Fargate Spot, 1 vCPU/2 GB) | ~$14 |
+| ECS Jobs (1x t3.small EC2) | ~$17 |
+| RDS (db.t3.micro, 20 GB gp3) | ~$17 |
+| ElastiCache (cache.t3.micro) | ~$14 |
+| EFS (~10 GB) | ~$5 |
+| Secrets Manager (6 secrets) | ~$3 |
+| CloudWatch Logs | ~$10 |
+| ECR + Data Transfer | ~$5 |
+| **Total** | **~$112** |
+
+### Infrastructure Files
+
+```
+infra/
+├── Makefile                    # Common operations
+├── terraform/
+│   ├── main.tf                 # Provider (manifest profile, eu-south-1)
+│   ├── variables.tf            # Input variables with lean defaults
+│   ├── outputs.tf              # ALB DNS, ECR URL, endpoints
+│   ├── vpc.tf                  # VPC, 2 public + 2 private subnets
+│   ├── security_groups.tf      # ALB, ECS, RDS, Redis, EFS SGs
+│   ├── alb.tf                  # ALB, target group, HTTPS listener
+│   ├── ecr.tf                  # ECR repository + lifecycle policy
+│   ├── ecs_cluster.tf          # Cluster + FARGATE_SPOT + EC2 providers
+│   ├── ecs_iam.tf              # Execution role, task role, EC2 role
+│   ├── ecs_web.tf              # Web task def + Fargate Spot service
+│   ├── ecs_jobs.tf             # Jobs task def + EC2 service + ASG
+│   ├── ecs_migrate.tf          # One-off migration task definition
+│   ├── rds.tf                  # PostgreSQL 16, db.t3.micro
+│   ├── elasticache.tf          # Redis 7.1, cache.t3.micro
+│   ├── efs.tf                  # Encrypted EFS + access points
+│   ├── secrets.tf              # 6 Secrets Manager entries
+│   ├── cloudwatch.tf           # Log groups (web, jobs, migrate)
+│   ├── autoscaling.tf          # Web auto-scaling (1-2 tasks)
+│   └── terraform.tfvars.example
+└── scripts/
+    ├── deploy.sh               # Build, push, migrate, deploy
+    ├── migrate.sh              # Run migrations as one-off task
+    └── rollback.sh             # Rollback to previous task definition
+```
+
+### Prerequisites
+
+- [OpenTofu](https://opentofu.org/) or Terraform >= 1.5
+- AWS CLI configured with `manifest` profile (`aws configure --profile manifest`)
+- Docker (for building images)
+- Domain DNS managed in Cloudflare (or any DNS provider)
+
+### First-Time Setup
+
+#### 1. Request an ACM certificate
+
+```bash
+cd infra
+make cert
+```
+
+Add the CNAME validation record in Cloudflare. Wait for the certificate status to become `ISSUED`:
+
+```bash
+aws acm describe-certificate \
+  --certificate-arn <ARN> \
+  --profile manifest --region eu-south-1 \
+  --query 'Certificate.Status'
+```
+
+#### 2. Configure Terraform variables
+
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+# Edit terraform.tfvars — set certificate_arn to the issued cert ARN
+```
+
+#### 3. Create infrastructure
+
+```bash
+make init    # Initialize providers
+make plan    # Review resources (86 resources)
+make apply   # Create everything (~7 minutes)
+```
+
+#### 4. Set secrets
+
+```bash
+# Rails master key
+make set-master-key
+
+# Stripe keys (when ready)
+make set-stripe-keys STRIPE_KEY=sk_live_... STRIPE_WEBHOOK=whsec_...
+```
+
+#### 5. Build and deploy
+
+```bash
+make ecr-login                 # Authenticate Docker to ECR
+make deploy TAG=v1             # Build, push, migrate, deploy
+```
+
+#### 6. Seed the database (optional)
+
+```bash
+# Run db:seed as a one-off Fargate task
+SUBNETS=$(aws ec2 describe-subnets --profile manifest --region eu-south-1 \
+  --filters "Name=tag:Name,Values=datakeep-production-public-*" \
+  --query 'Subnets[0].SubnetId' --output text)
+SG=$(aws ec2 describe-security-groups --profile manifest --region eu-south-1 \
+  --filters "Name=tag:Name,Values=datakeep-production-ecs-sg" \
+  --query 'SecurityGroups[0].GroupId' --output text)
+
+aws ecs run-task \
+  --cluster datakeep-production \
+  --task-definition datakeep-production-migrate \
+  --launch-type FARGATE \
+  --overrides '{"containerOverrides":[{"name":"migrate","command":["./bin/rails","db:seed"]}]}' \
+  --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=ENABLED}" \
+  --profile manifest --region eu-south-1
+```
+
+#### 7. Point DNS
+
+Add a CNAME record in Cloudflare:
+
+| Type | Name | Value |
+|---|---|---|
+| CNAME | `datakeep.ai` | `datakeep-production-alb-xxxxx.eu-south-1.elb.amazonaws.com` |
+
+Get the ALB DNS name:
+```bash
+cd infra/terraform && tofu output alb_dns_name
+```
+
+#### 8. Verify
+
+```bash
+curl -s https://datakeep.ai/up
+# Should return green HTML page
+```
+
+### Ongoing Operations
+
+```bash
+cd infra
+
+# Deploy a new version
+make ecr-login
+make deploy TAG=v2
+
+# Run migrations only
+make migrate
+
+# Rollback web or jobs service
+make rollback web
+make rollback jobs
+
+# Tail logs
+make logs-web
+make logs-jobs
+make logs-migrate
+
+# Shell into a running task
+make shell TASK=<task-id>
+make shell TASK=<task-id> CONTAINER=jobs
+
+# Run any Rails command as a one-off task
+aws ecs run-task \
+  --cluster datakeep-production \
+  --task-definition datakeep-production-migrate \
+  --launch-type FARGATE \
+  --overrides '{"containerOverrides":[{"name":"migrate","command":["./bin/rails","console"]}]}' \
+  --network-configuration "awsvpcConfiguration={subnets=[<subnet>],securityGroups=[<sg>],assignPublicIp=ENABLED}" \
+  --profile manifest --region eu-south-1
+```
+
+### Scaling Up
+
+When traffic grows, these are simple `terraform apply` changes:
+
+| Change | How |
+|---|---|
+| More web tasks | Set `web_desired_count = 2` and `web_max_count = 4` in `terraform.tfvars` |
+| Guaranteed availability | Switch web from `FARGATE_SPOT` to `FARGATE` in `ecs_web.tf` |
+| More database RAM | Change `db_instance_class` to `db.t3.small` (2 GB) or `db.t3.medium` (4 GB) |
+| More Redis | Upgrade `node_type` to `cache.t3.small` in `elasticache.tf` |
+
+### Secrets Management
+
+Six secrets are stored in AWS Secrets Manager under the `datakeep/` prefix:
+
+| Secret | Source |
+|---|---|
+| `datakeep/database-url` | Auto-constructed from RDS endpoint |
+| `datakeep/redis-url` | Auto-constructed from ElastiCache endpoint |
+| `datakeep/rails-master-key` | Manual — `make set-master-key` |
+| `datakeep/secret-key-base` | Auto-generated (128 chars) |
+| `datakeep/stripe-secret-key` | Manual — `make set-stripe-keys` |
+| `datakeep/stripe-webhook-secret` | Manual — `make set-stripe-keys` |
+
+### App Changes for Production
+
+These modifications were made to support ECS deployment:
+
+- **`bin/docker-entrypoint`** - Added `SKIP_DB_PREPARE` guard to prevent race conditions with multiple web replicas. Set `SKIP_DB_PREPARE=true` in ECS task env; migrations run as a separate one-off task.
+- **`config/database.yml`** - Production uses `DATABASE_URL` env var via `url:` config. Multi-database format with `cache` entry for Solid Cache gem compatibility.
+- **`config/cable.yml`** - Production uses `async` adapter (in-process) instead of Solid Cable.
+- **`config/environments/production.rb`** - Cache store switched from `solid_cache_store` to `redis_cache_store` backed by ElastiCache.
+- **`Dockerfile`** - Fixed `postgresql-client` package name for Debian Trixie (Ruby 3.4.7 base image).
+
+---
 
 ## Architecture
 
-### Database Adapter Pattern
+### Database Adapter Factory Pattern
 
-DataKeep uses a **Factory Pattern** with pluggable database adapters to support multiple database types. This architecture enables easy extension for new database engines (MySQL, MSSQL, MongoDB, etc.).
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    DatabaseAdapterFactory                        │
-│  - Registers adapters by database type                          │
-│  - Creates appropriate adapter instance for each DatabaseConfig │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   DatabaseAdapters::Base                         │
-│  - Abstract interface defining all database operations          │
-│  - Connection testing, backup, restore, statistics              │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┼───────────────────┐
-          ▼                   ▼                   ▼
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-│   Postgresql     │ │     MySQL        │ │    MongoDB       │
-│   (Implemented)  │ │   (Future)       │ │   (Future)       │
-└──────────────────┘ └──────────────────┘ └──────────────────┘
-```
-
-**Key Components:**
-
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| `DatabaseAdapterFactory` | `app/services/database_adapter_factory.rb` | Creates adapters based on database type |
-| `DatabaseAdapters::Base` | `app/services/database_adapters/base.rb` | Abstract interface for all adapters |
-| `DatabaseAdapters::Postgresql` | `app/services/database_adapters/postgresql.rb` | PostgreSQL implementation |
-| `BackupService` | `app/services/backup_service.rb` | Unified backup orchestration |
-| `RestoreService` | `app/services/restore_service.rb` | Unified restore orchestration |
-
-**Adding a New Database Type:**
-
-1. Create adapter class extending `DatabaseAdapters::Base`
-2. Implement all required methods (backup, restore, test_connection, etc.)
-3. Register with factory: `DatabaseAdapterFactory.register(:mysql, DatabaseAdapters::Mysql)`
-
-Example:
-```ruby
-# app/services/database_adapters/mysql.rb
-module DatabaseAdapters
-  class Mysql < Base
-    def backup(output_path:, format: :sql, options: {})
-      # mysqldump implementation
-    end
-
-    def restore(backup_path:, options: {})
-      # mysql import implementation
-    end
-
-    # ... implement other required methods
-  end
-end
-
-DatabaseAdapterFactory.register(:mysql, DatabaseAdapters::Mysql)
-```
-
-## Project Structure
+DataKeep uses a **Factory Pattern** with pluggable database adapters. Currently supports PostgreSQL; MySQL, MongoDB, MSSQL, and SQLite are planned.
 
 ```
-app/
-├── controllers/
-│   ├── backups_controller.rb      # Backup management
-│   ├── backup_jobs_controller.rb  # Scheduled backup jobs
-│   ├── database_configs_controller.rb  # Database connections
-│   ├── health_checks_controller.rb     # Health monitoring
-│   └── storage_backends_controller.rb  # Storage configuration
-├── models/
-│   ├── backup.rb                  # Backup records
-│   ├── backup_job.rb              # Scheduled jobs
-│   ├── database_config.rb         # Database connections
-│   ├── health_check.rb            # Health check results
-│   ├── storage_backend.rb         # Base storage class (STI)
-│   └── storage_backends/
-│       ├── local_storage.rb       # Local filesystem
-│       └── s3_storage.rb          # AWS S3
-├── services/
-│   ├── database_adapter_factory.rb    # Factory for database adapters
-│   ├── backup_service.rb              # Unified backup orchestration
-│   ├── restore_service.rb             # Unified restore orchestration
-│   └── database_adapters/
-│       ├── base.rb                    # Abstract adapter interface
-│       └── postgresql.rb              # PostgreSQL implementation
-├── jobs/
-│   ├── backup_execution_job.rb    # Execute backups via adapter
-│   └── health_check_job.rb        # Execute health checks
-└── views/
-    └── ...                        # ERB templates with TailAdmin
+DatabaseAdapterFactory
+        │
+        ▼
+  DatabaseAdapters::Base (abstract)
+        │
+        ├── Postgresql (implemented)
+        ├── MySQL (future)
+        └── MongoDB (future)
 ```
 
-## API Endpoints
+**Adding a new database type:**
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/databases` | List all database configurations |
-| POST | `/databases` | Create new database configuration |
-| GET | `/databases/:id` | Show database details with health/backups |
-| POST | `/databases/:id/test_connection` | Test database connectivity |
-| GET | `/backup_jobs` | List all backup jobs |
-| POST | `/backup_jobs/:id/run_now` | Trigger immediate backup |
-| DELETE | `/backup_jobs/:job_id/backups/:id` | Delete backup and file |
+1. Create adapter in `app/services/database_adapters/` extending `Base`
+2. Implement: `backup`, `restore`, `test_connection`, statistics methods
+3. Register: `DatabaseAdapterFactory.register(:mysql, DatabaseAdapters::Mysql)`
+4. Add type to `DatabaseConfig` model validations
+
+### Key Models
+
+```
+User (role: user|admin, stripe_customer_id)
+ ├── DatabaseConfig (VPN fields, cached_statistics JSONB)
+ │    ├── HealthCheck
+ │    └── SyncJobTarget
+ ├── StorageBackend (STI: LocalStorage, S3Storage)
+ ├── BackupJob → Backup (many), BackupJobStorageBackend (join)
+ ├── SyncJob → SyncJobTarget, SyncExecution
+ ├── NotificationChannel (STI: Slack, Discord, Telegram, Webhook, Email)
+ ├── EnterpriseQuote
+ ├── Restore
+ └── AuditLog
+
+PricingConfig (standalone, admin-managed)
+```
+
+### Background Jobs
+
+| Job | Purpose |
+|---|---|
+| `BackupExecutionJob` | Run backups (supports VPN via `VpnConnectable`) |
+| `SyncExecutionJob` | Run database sync |
+| `RestoreExecutionJob` | Run restore |
+| `HealthCheckJob` | Connectivity/performance checks |
+| `SchedulerJob` | Trigger scheduled backups (sidekiq-cron) |
+| `CleanupJob` | Retention policy enforcement |
+| `NotificationJob` | Async notification delivery |
+| `StripeInvoiceJob` | Async Stripe invoice operations |
+
+---
 
 ## Contributing
 
@@ -297,9 +462,10 @@ app/
 ### Development Guidelines
 
 - Follow Rails conventions
-- Write tests for new features
+- Write RSpec tests for new features (`bundle exec rspec`)
 - Use TailAdmin UI patterns for consistency
 - Ensure WCAG 2.2 Level AA accessibility compliance
+- Run `bundle exec rubocop` and `bundle exec brakeman` before committing
 
 ## License
 
