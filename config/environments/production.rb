@@ -49,6 +49,11 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :redis_cache_store, { url: ENV["REDIS_URL"] }
 
+  # Active Record Encryption (keys from environment variables / Secrets Manager)
+  config.active_record.encryption.primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"]
+  config.active_record.encryption.deterministic_key = ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"]
+  config.active_record.encryption.key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"]
+
   # Use Sidekiq for background jobs
   config.active_job.queue_adapter = :sidekiq
 

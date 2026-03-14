@@ -25,6 +25,9 @@ resource "aws_ecs_task_definition" "migrate" {
       { name = "DATABASE_URL", valueFrom = aws_secretsmanager_secret.database_url.arn },
       { name = "RAILS_MASTER_KEY", valueFrom = aws_secretsmanager_secret.rails_master_key.arn },
       { name = "SECRET_KEY_BASE", valueFrom = aws_secretsmanager_secret.secret_key_base.arn },
+      { name = "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY", valueFrom = aws_secretsmanager_secret.ar_encryption_primary_key.arn },
+      { name = "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY", valueFrom = aws_secretsmanager_secret.ar_encryption_deterministic_key.arn },
+      { name = "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT", valueFrom = aws_secretsmanager_secret.ar_encryption_key_derivation_salt.arn },
     ]
 
     logConfiguration = {

@@ -80,3 +80,19 @@ resource "aws_secretsmanager_secret_version" "stripe_webhook_secret" {
 
   lifecycle { ignore_changes = [secret_string] }
 }
+
+# Active Record Encryption keys (auto-generated, do not change after data is encrypted)
+resource "aws_secretsmanager_secret" "ar_encryption_primary_key" {
+  name = "datakeep/ar-encryption-primary-key"
+  tags = { Name = "${local.name_prefix}-ar-primary-key" }
+}
+
+resource "aws_secretsmanager_secret" "ar_encryption_deterministic_key" {
+  name = "datakeep/ar-encryption-deterministic-key"
+  tags = { Name = "${local.name_prefix}-ar-deterministic-key" }
+}
+
+resource "aws_secretsmanager_secret" "ar_encryption_key_derivation_salt" {
+  name = "datakeep/ar-encryption-key-derivation-salt"
+  tags = { Name = "${local.name_prefix}-ar-key-derivation-salt" }
+}
