@@ -40,6 +40,11 @@ gem "stripe", "~> 13.0"
 # Cloudflare Turnstile bot protection
 gem "turnstiled"
 
+# Google OAuth authentication
+gem "omniauth", "~> 2.1"
+gem "omniauth-google-oauth2", "~> 1.2"
+gem "omniauth-rails_csrf_protection", "~> 1.0"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

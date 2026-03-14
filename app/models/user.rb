@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 class User < ApplicationRecord
-  has_secure_password
+  include PlanTierLimits
+
+  has_secure_password validations: false
 
   enum :role, { user: 0, admin: 1 }, default: :user
 
@@ -12,12 +14,13 @@ class User < ApplicationRecord
   has_many :notification_channels, dependent: :destroy
   has_many :enterprise_quotes
   has_many :audit_logs, dependent: :nullify
+  has_one  :subscription, dependent: :destroy
 
   validates :email, presence: true,
                     uniqueness: { case_sensitive: false },
                     format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
-  validates :password, length: { minimum: 8 }, if: -> { new_record? || password.present? }
+  validates :password, length: { minimum: 8 }, if: :password_required?
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 
@@ -27,16 +30,6 @@ class User < ApplicationRecord
 
   # --- Plan & Billing ---
 
-  FREE_PLAN_LIMITS = {
-    max_database_configs: 1,
-    max_backup_jobs: 1,
-    max_storage_backends: 1,
-    max_notification_channels: 0,
-    max_retention_days: 7,
-    s3_allowed: false,
-    default_size_gb: 0.5
-  }.freeze
-
   def active_enterprise_quote
     @active_enterprise_quote ||= enterprise_quotes.where(status: :paid).order(created_at: :desc).first
   end
@@ -45,12 +38,23 @@ class User < ApplicationRecord
     active_enterprise_quote.present?
   end
 
+  def active_subscription
+    @active_subscription ||= subscription if subscription&.active_access?
+  end
+
+  def plan_tier_key
+    return :enterprise if enterprise_plan?
+    return active_subscription.plan_tier.to_sym if active_subscription
+    :free
+  end
+
   def free_plan?
-    !enterprise_plan?
+    plan_tier_key == :free
   end
 
   def plan_name
-    enterprise_plan? ? "Enterprise" : "Free"
+    return "Enterprise" if enterprise_plan?
+    TIER_DEFINITIONS.dig(plan_tier_key, :label) || "Free"
   end
 
   def plan_limits
@@ -60,7 +64,7 @@ class User < ApplicationRecord
       retention = (quote.quote_params["retention_days"] || 365).to_i
       {
         max_database_configs: databases.size,
-        max_backup_jobs: nil, # unlimited
+        max_backup_jobs: nil,
         max_storage_backends: nil,
         max_notification_channels: nil,
         max_retention_days: retention,
@@ -68,7 +72,16 @@ class User < ApplicationRecord
         default_size_gb: nil
       }
     else
-      FREE_PLAN_LIMITS
+      tier = TIER_DEFINITIONS[plan_tier_key] || TIER_DEFINITIONS[:free]
+      {
+        max_database_configs: tier[:max_database_configs],
+        max_backup_jobs: tier[:max_backup_jobs],
+        max_storage_backends: tier[:max_storage_backends],
+        max_notification_channels: tier[:max_notification_channels],
+        max_retention_days: tier[:max_retention_days],
+        s3_allowed: tier[:s3_allowed],
+        default_size_gb: tier[:max_storage_gb]
+      }
     end
   end
 
@@ -99,6 +112,25 @@ class User < ApplicationRecord
     end
   end
 
+  def oauth_user?
+    provider.present?
+  end
+
+  def self.find_or_create_from_oauth(auth_hash)
+    info = auth_hash["info"]
+    find_by(provider: auth_hash["provider"], uid: auth_hash["uid"]) ||
+      find_by(email: info["email"])&.tap { |u|
+        u.update!(provider: auth_hash["provider"], uid: auth_hash["uid"], avatar_url: info["image"])
+      } ||
+      create!(
+        email: info["email"],
+        name: info["name"],
+        provider: auth_hash["provider"],
+        uid: auth_hash["uid"],
+        avatar_url: info["image"]
+      )
+  end
+
   def log_action(action, resource: nil, details: nil, ip_address: nil)
     audit_logs.create!(
       action: action,
@@ -107,5 +139,12 @@ class User < ApplicationRecord
       details: details.is_a?(Hash) ? details.to_json : details,
       ip_address: ip_address
     )
+  end
+
+  private
+
+  def password_required?
+    return false if oauth_user?
+    new_record? || password.present?
   end
 end

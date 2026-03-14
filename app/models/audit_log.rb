@@ -13,6 +13,7 @@ class AuditLog < ApplicationRecord
     create_backup delete_backup restore_backup download_backup
     create_notification_channel update_notification_channel delete_notification_channel test_notification_channel
     upload_restore
+    oauth_login
   ].freeze
 
   scope :recent, -> { order(created_at: :desc) }

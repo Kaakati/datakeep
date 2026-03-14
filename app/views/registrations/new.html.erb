@@ -16,6 +16,19 @@
 
   <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-lg">
     <div class="rounded-2xl border border-gray-200 bg-white py-10 px-8 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:px-12">
+      <div class="mb-8">
+        <%= render "shared/google_oauth_button" %>
+      </div>
+
+      <div class="relative mb-8">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="bg-white px-4 text-gray-500 dark:bg-gray-900 dark:text-gray-400">Or sign up with email</span>
+        </div>
+      </div>
+
       <%= form_with model: @user, url: signup_path, class: "space-y-6" do |f| %>
         <% if @user.errors.any? %>
           <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">

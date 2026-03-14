@@ -47,6 +47,10 @@ Rails.application.routes.draw do
   get "signup", to: "registrations#new"
   post "signup", to: "registrations#create"
 
+  # OAuth callbacks
+  get "auth/google_oauth2/callback", to: "oauth_callbacks#google_oauth2"
+  get "auth/failure", to: "oauth_callbacks#failure"
+
   # Database configurations
   resources :database_configs do
     member do

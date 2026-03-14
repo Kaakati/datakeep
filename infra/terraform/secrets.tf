@@ -102,6 +102,33 @@ resource "aws_secretsmanager_secret_version" "turnstile_secret_key" {
   secret_string = var.turnstile_secret_key
 }
 
+# Google OAuth (set manually after first apply)
+#   aws secretsmanager put-secret-value --secret-id datakeep/google-client-id \
+#     --secret-string "799594264273-..." --profile manifest --region eu-south-1
+resource "aws_secretsmanager_secret" "google_client_id" {
+  name = "datakeep/google-client-id"
+  tags = { Name = "${local.name_prefix}-google-client-id" }
+}
+
+resource "aws_secretsmanager_secret_version" "google_client_id" {
+  secret_id     = aws_secretsmanager_secret.google_client_id.id
+  secret_string = "CHANGE_ME"
+
+  lifecycle { ignore_changes = [secret_string] }
+}
+
+resource "aws_secretsmanager_secret" "google_client_secret" {
+  name = "datakeep/google-client-secret"
+  tags = { Name = "${local.name_prefix}-google-client-secret" }
+}
+
+resource "aws_secretsmanager_secret_version" "google_client_secret" {
+  secret_id     = aws_secretsmanager_secret.google_client_secret.id
+  secret_string = "CHANGE_ME"
+
+  lifecycle { ignore_changes = [secret_string] }
+}
+
 # Active Record Encryption keys (auto-generated, do not change after data is encrypted)
 resource "aws_secretsmanager_secret" "ar_encryption_primary_key" {
   name = "datakeep/ar-encryption-primary-key"

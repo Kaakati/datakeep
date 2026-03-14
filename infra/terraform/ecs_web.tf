@@ -46,6 +46,8 @@ resource "aws_ecs_task_definition" "web" {
       { name = "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT", valueFrom = aws_secretsmanager_secret.ar_encryption_key_derivation_salt.arn },
       { name = "TURNSTILE_SITE_KEY", valueFrom = aws_secretsmanager_secret.turnstile_site_key.arn },
       { name = "TURNSTILE_SECRET_KEY", valueFrom = aws_secretsmanager_secret.turnstile_secret_key.arn },
+      { name = "GOOGLE_CLIENT_ID", valueFrom = aws_secretsmanager_secret.google_client_id.arn },
+      { name = "GOOGLE_CLIENT_SECRET", valueFrom = aws_secretsmanager_secret.google_client_secret.arn },
     ]
 
     mountPoints = [
