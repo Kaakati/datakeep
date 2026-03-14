@@ -103,6 +103,9 @@
                   <p class="text-sm text-gray-500">Database</p>
                 </th>
                 <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
+                  <p class="text-sm text-gray-500">Location</p>
+                </th>
+                <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
                   <p class="text-sm text-gray-500">Size</p>
                 </th>
                 <th class="px-4 py-3 text-left font-normal whitespace-nowrap">
@@ -138,7 +141,24 @@
                           </svg>
                         </div>
                       <% end %>
-                      <p class="text-sm font-medium text-gray-700"><%= backup.database_name %></p>
+                      <div>
+                        <p class="text-sm font-medium text-gray-700"><%= backup.backup_job.database_config.name %></p>
+                        <p class="text-xs text-gray-500"><%= backup.database_name %></p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex items-center gap-1.5">
+                      <% if backup.storage_backend.type == "StorageBackends::S3Storage" %>
+                        <svg class="h-4 w-4 text-orange-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                        </svg>
+                      <% else %>
+                        <svg class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
+                        </svg>
+                      <% end %>
+                      <p class="text-sm text-gray-700 truncate max-w-[120px]" title="<%= backup.storage_backend.name %>"><%= backup.storage_backend.name %></p>
                     </div>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap">

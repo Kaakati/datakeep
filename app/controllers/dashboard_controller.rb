@@ -7,6 +7,7 @@ class DashboardController < ApplicationController
     @database_configs = current_user.database_configs.includes(:backup_jobs)
     @backup_jobs = current_user.backup_jobs.includes(:database_config, :storage_backend)
     @recent_backups = Backup.joins(backup_job: :user)
+                            .includes(backup_job: :database_config, storage_backend: [])
                             .where(backup_jobs: { user_id: current_user.id })
                             .recent
                             .limit(10)
