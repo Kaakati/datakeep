@@ -103,6 +103,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Preview emails in browser at /letter_opener
+  gem "letter_opener_web", "~> 3.0"
 end
 
 group :test do

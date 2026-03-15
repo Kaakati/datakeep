@@ -29,6 +29,12 @@ Rails.application.routes.draw do
         post :seed
       end
     end
+    resources :coupons do
+      member do
+        patch :toggle
+        post :sync_to_stripe
+      end
+    end
     namespace :enterprise do
       resource :quote, only: [ :show, :create ], controller: "quote_calculator", as: :quote_calculator
       resources :quotes, only: [ :index, :show, :create ] do
@@ -44,8 +50,12 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => "/sidekiq"
   end
 
-  # Root path
-  root "dashboard#index"
+  # Letter Opener — development email preview
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+
+  # Root path — public landing page (redirects to dashboard if logged in)
+  root "pages#home"
+  get "dashboard", to: "dashboard#index", as: :dashboard
 
   # Authentication
   get "login", to: "sessions#new"
@@ -130,6 +140,10 @@ Rails.application.routes.draw do
 
   # Audit logs
   resources :audit_logs, only: [ :index, :show ]
+
+  # Legal pages (public, no auth)
+  get "terms", to: "legal#terms", as: :terms
+  get "privacy", to: "legal#privacy", as: :privacy
 
   # Health check for app (not database health)
   get "up" => "rails/health#show", as: :rails_health_check
