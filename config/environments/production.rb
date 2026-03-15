@@ -61,10 +61,12 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "app.datakeep.ai") }
 
-  Aws::Rails.add_action_mailer_delivery_method(
-    :ses_v2,
-    client: Aws::SESV2::Client.new(region: ENV.fetch("AWS_SES_REGION", "eu-south-1"))
-  )
+  config.after_initialize do
+    Aws::Rails.add_action_mailer_delivery_method(
+      :ses_v2,
+      client: Aws::SESV2::Client.new(region: ENV.fetch("AWS_SES_REGION", "eu-south-1"))
+    )
+  end
   config.action_mailer.delivery_method = :ses_v2
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
