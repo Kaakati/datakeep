@@ -59,12 +59,13 @@ Rails.application.configure do
 
   # Action Mailer — AWS SES API v2 (eu-south-1, same region as infra)
   config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.delivery_method = :ses_v2
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "app.datakeep.ai") }
 
-  config.action_mailer.ses_v2_settings = {
-    aws_region: ENV.fetch("AWS_SES_REGION", "eu-south-1")
-  }
+  Aws::Rails.add_action_mailer_delivery_method(
+    :ses_v2,
+    client: Aws::SESV2::Client.new(region: ENV.fetch("AWS_SES_REGION", "eu-south-1"))
+  )
+  config.action_mailer.delivery_method = :ses_v2
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
