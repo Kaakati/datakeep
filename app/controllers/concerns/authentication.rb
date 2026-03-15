@@ -12,11 +12,11 @@ module Authentication
   class_methods do
     def allow_unauthenticated_access(**options)
       skip_before_action :require_authentication, **options
-      skip_before_action :require_email_verification, **options
+      skip_before_action :require_email_verification, raise: false, **options
     end
 
     def skip_email_verification(**options)
-      skip_before_action :require_email_verification, **options
+      skip_before_action :require_email_verification, raise: false, **options
     end
   end
 
