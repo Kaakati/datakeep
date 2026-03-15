@@ -46,8 +46,9 @@ RUN apt-get update -qq && \
 
 # Install MongoDB Database Tools (mongodump, mongorestore)
 # Pin to bookworm repo — MongoDB doesn't publish packages for trixie yet
-RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/mongodb.gpg && \
-    echo "deb https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org.list && \
+# Use signed-by for modern apt GPG key handling
+RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org.list && \
     apt-get update -qq && \
     apt-get install --no-install-recommends -y mongodb-database-tools && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
