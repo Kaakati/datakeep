@@ -32,6 +32,7 @@ resource "aws_ecs_task_definition" "web" {
       { name = "RAILS_MAX_THREADS", value = "3" },
       { name = "SKIP_DB_PREPARE", value = "true" },
       { name = "HTTP_PORT", value = "8080" },
+      { name = "APP_BASE_URL", value = "https://datakeep.ai" },
     ]
 
     secrets = [

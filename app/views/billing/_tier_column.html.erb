@@ -80,21 +80,21 @@
       </button>
     <% elsif !has_subscription || current_tier == :free %>
       <%# New subscription via checkout %>
-      <%= form_with url: subscription_path, method: :post, class: "w-full" do |f| %>
+      <%= form_with url: subscription_path, method: :post, data: { turbo: false }, class: "w-full" do |f| %>
         <%= f.hidden_field :plan_tier, value: tier_key %>
         <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
         <%= f.submit "Subscribe to #{tier[:label]}",
           class: "w-full rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition cursor-pointer" %>
       <% end %>
     <% elsif is_upgrade %>
-      <%= form_with url: subscription_path, method: :patch, class: "w-full" do |f| %>
+      <%= form_with url: subscription_path, method: :patch, data: { turbo: false }, class: "w-full" do |f| %>
         <%= f.hidden_field :plan_tier, value: tier_key %>
         <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
         <%= f.submit "Upgrade to #{tier[:label]}",
           class: "w-full rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600 transition cursor-pointer" %>
       <% end %>
     <% elsif is_downgrade %>
-      <%= form_with url: subscription_path, method: :patch, class: "w-full" do |f| %>
+      <%= form_with url: subscription_path, method: :patch, data: { turbo: false }, class: "w-full" do |f| %>
         <%= f.hidden_field :plan_tier, value: tier_key %>
         <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
         <%= f.submit "Downgrade to #{tier[:label]}",
