@@ -5,44 +5,44 @@
 
 /* Custom theme colors */
 @theme {
-  /* Primary (Purple) */
-  --color-primary-50: #faf5ff;
-  --color-primary-100: #f3e8ff;
-  --color-primary-200: #e9d5ff;
-  --color-primary-300: #d8b4fe;
-  --color-primary-400: #c084fc;
-  --color-primary-500: #9C35F9;
-  --color-primary-600: #8b2be0;
-  --color-primary-700: #7a24c7;
-  --color-primary-800: #691dae;
-  --color-primary-900: #581c87;
-  --color-primary-950: #3b0764;
+  /* Primary (#8B2BE0) */
+  --color-primary-50: #f9f3ff;
+  --color-primary-100: #f1e4ff;
+  --color-primary-200: #e4ccff;
+  --color-primary-300: #d0a5ff;
+  --color-primary-400: #b46ef5;
+  --color-primary-500: #8B2BE0;
+  --color-primary-600: #7a22c9;
+  --color-primary-700: #681bb0;
+  --color-primary-800: #561692;
+  --color-primary-900: #451278;
+  --color-primary-950: #2d0a52;
 
   /* Brand (alias for Primary - used by TailAdmin components) */
-  --color-brand-50: #faf5ff;
-  --color-brand-100: #f3e8ff;
-  --color-brand-200: #e9d5ff;
-  --color-brand-300: #d8b4fe;
-  --color-brand-400: #c084fc;
-  --color-brand-500: #9C35F9;
-  --color-brand-600: #8b2be0;
-  --color-brand-700: #7a24c7;
-  --color-brand-800: #691dae;
-  --color-brand-900: #581c87;
-  --color-brand-950: #3b0764;
+  --color-brand-50: #f9f3ff;
+  --color-brand-100: #f1e4ff;
+  --color-brand-200: #e4ccff;
+  --color-brand-300: #d0a5ff;
+  --color-brand-400: #b46ef5;
+  --color-brand-500: #8B2BE0;
+  --color-brand-600: #7a22c9;
+  --color-brand-700: #681bb0;
+  --color-brand-800: #561692;
+  --color-brand-900: #451278;
+  --color-brand-950: #2d0a52;
 
-  /* Accent (Teal) */
-  --color-accent-50: #edfcfd;
-  --color-accent-100: #d2f7f9;
-  --color-accent-200: #a4eef3;
-  --color-accent-300: #6de1ea;
-  --color-accent-400: #38cfd9;
-  --color-accent-500: #2EBCC7;
-  --color-accent-600: #239da7;
-  --color-accent-700: #1a7d86;
-  --color-accent-800: #145f66;
-  --color-accent-900: #0e4549;
-  --color-accent-950: #072a2d;
+  /* Accent / Secondary (#C084FC) */
+  --color-accent-50: #fdf5ff;
+  --color-accent-100: #f9e8ff;
+  --color-accent-200: #f2d0ff;
+  --color-accent-300: #e5acff;
+  --color-accent-400: #C084FC;
+  --color-accent-500: #ad6ef0;
+  --color-accent-600: #9955d6;
+  --color-accent-700: #8244b8;
+  --color-accent-800: #6b3797;
+  --color-accent-900: #572d7c;
+  --color-accent-950: #3a1556;
 
   /* Success (Green) */
   --color-success-50: #f0fdf4;
