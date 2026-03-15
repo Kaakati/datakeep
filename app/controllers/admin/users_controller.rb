@@ -2,7 +2,7 @@
 
 module Admin
   class UsersController < BaseController
-    before_action :set_user, only: [ :show, :edit, :update, :destroy ]
+    before_action :set_user, only: [ :show, :edit, :update, :destroy, :resend_verification ]
 
     def index
       @users = User.order(created_at: :desc)
@@ -38,6 +38,16 @@ module Admin
         redirect_to admin_user_path(@user), notice: "User updated successfully."
       else
         render :edit, status: :unprocessable_entity
+      end
+    end
+
+    # POST /admin/users/:id/resend_verification
+    def resend_verification
+      if @user.email_verified?
+        redirect_to admin_user_path(@user), notice: "#{@user.name}'s email is already verified."
+      else
+        @user.send_verification_email
+        redirect_to admin_user_path(@user), notice: "Verification email sent to #{@user.email}."
       end
     end
 

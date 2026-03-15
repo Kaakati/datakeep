@@ -9,7 +9,11 @@ Rails.application.routes.draw do
   # Admin namespace
   namespace :admin do
     root "dashboard#index"
-    resources :users
+    resources :users do
+      member do
+        post :resend_verification
+      end
+    end
     resources :database_configs, only: [ :index, :show ]
     resources :storage_backends do
       member do
