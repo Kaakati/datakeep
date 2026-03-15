@@ -11,6 +11,10 @@ module DataKeep
         return { success: true, invoice_id: @quote.stripe_invoice_id } if @quote.stripe_invoice_id.present?
 
         customer_id = CustomerService.find_or_create(user: @quote.user)
+        @quote.user.reload # Ensure stripe_customer_id is persisted
+        unless @quote.user.stripe_customer_id.present?
+          Rails.logger.warn("InvoiceService: stripe_customer_id not persisted on user #{@quote.user.id} after find_or_create")
+        end
         result = @quote.calculator_result
 
         # Create invoice

@@ -65,6 +65,8 @@ module DataKeep
         quote = EnterpriseQuote.find_by(stripe_subscription_id: stripe_sub.id)
         if quote && !quote.cancelled?
           quote.update!(status: :cancelled)
+          # Also cancel the local enterprise subscription record
+          quote.subscription&.update!(status: :canceled, canceled_at: Time.current)
           quote.admin_user.log_action(
             "enterprise_quote_cancelled",
             resource: quote,
@@ -73,7 +75,7 @@ module DataKeep
           return
         end
 
-        # Self-service subscription
+        # Self-service or enterprise subscription (found by stripe_subscription_id)
         sub = Subscription.find_by(stripe_subscription_id: stripe_sub.id)
         return unless sub
         return if sub.canceled?
@@ -127,9 +129,7 @@ module DataKeep
                      else sub.status
                      end
 
-        # Detect plan tier change from price
         price_id = stripe_sub.items.data.first&.price&.id
-        tier_info = DataKeep::Stripe::StripePriceMapping.tier_from_price_id(price_id)
 
         attrs = {
           status: new_status,
@@ -139,9 +139,14 @@ module DataKeep
           stripe_price_id: price_id
         }
 
-        if tier_info
-          attrs[:plan_tier] = tier_info[:plan_tier]
-          attrs[:billing_interval] = tier_info[:billing_interval]
+        # Only resolve tier from price mapping for self-service subscriptions
+        # Enterprise subscriptions have custom prices that won't be in the mapping
+        unless sub.enterprise?
+          tier_info = DataKeep::Stripe::StripePriceMapping.tier_from_price_id(price_id)
+          if tier_info
+            attrs[:plan_tier] = tier_info[:plan_tier]
+            attrs[:billing_interval] = tier_info[:billing_interval]
+          end
         end
 
         sub.update!(attrs)

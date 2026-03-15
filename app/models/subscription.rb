@@ -2,12 +2,13 @@
 
 class Subscription < ApplicationRecord
   # == Enums ================================================================
-  enum :plan_tier, { free: 0, starter: 1, professional: 2, business: 3 }
+  enum :plan_tier, { free: 0, starter: 1, professional: 2, business: 3, enterprise: 4 }
   enum :billing_interval, { monthly: 0, annual: 1 }
   enum :status, { active: 0, past_due: 1, canceled: 2, incomplete: 3 }
 
   # == Associations =========================================================
   belongs_to :user
+  belongs_to :enterprise_quote, optional: true
 
   # == Validations ==========================================================
   validates :plan_tier, presence: true

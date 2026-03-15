@@ -3,6 +3,7 @@
 class EnterpriseQuote < ApplicationRecord
   belongs_to :admin_user, class_name: "User"
   belongs_to :user
+  has_one :subscription, dependent: :nullify
 
   enum :status, { draft: 0, sent: 1, paid: 2, cancelled: 3, expired: 4 }
 
