@@ -17,6 +17,11 @@ class RestoreExecutionJob < ApplicationJob
     restore.update!(status: :running, started_at: Time.current)
 
     with_vpn_for(target_config) do
+      # Merge encryption key from the backup's job so RestoreService can decrypt
+      if restore.backup&.encrypted? && restore.backup.backup_job&.encryption_key.present?
+        options = options.symbolize_keys.merge(encryption_key: restore.backup.backup_job.encryption_key)
+      end
+
       # Determine the source - either from a backup or from uploaded file
       if restore.backup.present?
         service = RestoreService.new(

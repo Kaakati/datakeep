@@ -92,7 +92,6 @@ class BackupsController < ApplicationController
       return
     end
 
-    # Check if file exists using storage backend's exists? method
     unless @backup.storage_backend.exists?(@backup.file_path)
       redirect_to @backup, alert: "Backup file not found in storage."
       return
@@ -105,29 +104,54 @@ class BackupsController < ApplicationController
       ip_address: request.remote_ip
     )
 
-    case @backup.storage_backend
-    when StorageBackends::LocalStorage
-      # Use storage backend to get the full resolved path
-      base_path = @backup.storage_backend.base_path
-      file_path = @backup.file_path.start_with?(base_path) ? @backup.file_path : File.join(base_path, @backup.file_path)
+    # Fast path: unencrypted local storage — serve directly
+    if !@backup.encrypted? && @backup.storage_backend.is_a?(StorageBackends::LocalStorage)
+      file_path = resolve_local_path(@backup)
+      send_file file_path, filename: download_filename, type: "application/octet-stream"
+      return
+    end
 
-      send_file file_path, filename: @backup.file_name, type: "application/octet-stream"
-    when StorageBackends::S3Storage
-      # Download to temp file and serve
-      temp_file = File.join(Dir.tmpdir, "#{SecureRandom.hex(8)}_#{@backup.file_name}")
-      begin
-        @backup.storage_backend.retrieve(@backup.file_path, temp_file)
-        send_file temp_file, filename: @backup.file_name, type: "application/octet-stream"
-      ensure
-        # Clean up temp file after sending (Rails handles this via X-Sendfile or after response)
-        File.delete(temp_file) if File.exist?(temp_file) && !response.sending?
-      end
-    else
-      redirect_to @backup, alert: "Download not supported for this storage type."
+    # All other cases: download to temp, decrypt if needed, then serve
+    temp_file = download_to_temp(@backup)
+    begin
+      decrypt_temp_file(temp_file) if @backup.encrypted?
+      send_file temp_file, filename: download_filename, type: "application/octet-stream"
+    ensure
+      File.delete(temp_file) if File.exist?(temp_file) && !response.sending?
     end
   end
 
   private
+
+  def resolve_local_path(backup)
+    base_path = backup.storage_backend.base_path
+    backup.file_path.start_with?(base_path) ? backup.file_path : File.join(base_path, backup.file_path)
+  end
+
+  def download_to_temp(backup)
+    temp_file = File.join(Dir.tmpdir, "#{SecureRandom.hex(8)}_#{backup.file_name}")
+    case backup.storage_backend
+    when StorageBackends::LocalStorage
+      FileUtils.cp(resolve_local_path(backup), temp_file)
+    else
+      backup.storage_backend.retrieve(backup.file_path, temp_file)
+    end
+    temp_file
+  end
+
+  def decrypt_temp_file(temp_file)
+    encryption_key = @backup.backup_job.encryption_key
+    raise "Encryption key not available for this backup" unless encryption_key.present?
+
+    decrypted_path = "#{temp_file}.decrypted"
+    EncryptionService.decrypt_file(temp_file, decrypted_path, encryption_key)
+    File.delete(temp_file)
+    File.rename(decrypted_path, temp_file)
+  end
+
+  def download_filename
+    @backup.file_name.sub(/\.enc$/, "")
+  end
 
   def set_backup_job
     @backup_job = current_user.backup_jobs.find(params[:backup_job_id])

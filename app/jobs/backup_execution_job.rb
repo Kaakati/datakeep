@@ -48,6 +48,7 @@ class BackupExecutionJob < ApplicationJob
           options: {
             compression: backup_job.compression,
             encryption: backup_job.encryption,
+            encryption_key: backup_job.encryption_key,
             format: :custom
           }
         )

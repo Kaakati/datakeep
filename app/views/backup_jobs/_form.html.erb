@@ -202,6 +202,26 @@
           </label>
         </div>
 
+        <%# Encryption info callout — shown when encryption is enabled or being enabled %>
+        <div class="ml-8 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/50 dark:bg-blue-900/20">
+          <div class="flex">
+            <div class="shrink-0">
+              <svg class="h-5 w-5 text-blue-400 dark:text-blue-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">How encryption works</h4>
+              <ul class="mt-1.5 list-disc space-y-1 pl-5 text-sm text-blue-700 dark:text-blue-300">
+                <li>A unique encryption key is automatically generated and stored securely when you enable this option.</li>
+                <li>Backups are encrypted at rest using <strong>AES-256-GCM</strong> before being uploaded to storage.</li>
+                <li>Downloads and restores are automatically decrypted for you &mdash; no manual key management required.</li>
+                <li>Disabling encryption later will not affect existing encrypted backups &mdash; they remain downloadable and restorable.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         <div data-controller="checkbox" data-checkbox-checked-value="<%= backup_job.enabled? %>" data-checkbox-checked-class="border-success-500 bg-success-500" data-checkbox-unchecked-class="bg-transparent border-gray-300 dark:border-gray-700">
           <label for="backup_job_enabled" class="flex cursor-pointer items-center text-sm font-medium text-gray-700 select-none dark:text-gray-400" >
             <div class="relative">

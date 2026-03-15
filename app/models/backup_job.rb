@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class BackupJob < ApplicationRecord
+  encrypts :encryption_key
+
   belongs_to :user
   belongs_to :database_config
   belongs_to :storage_backend, optional: true
@@ -26,6 +28,7 @@ class BackupJob < ApplicationRecord
   scope :due, -> { enabled.where("next_run_at <= ?", Time.current) }
 
   before_create :calculate_next_run
+  before_save :manage_encryption_key
   after_save :reschedule_job, if: -> { saved_change_to_enabled? || saved_change_to_schedule_type? || saved_change_to_cron_expression? }
 
   def cron_schedule
@@ -140,6 +143,13 @@ class BackupJob < ApplicationRecord
     Fugit.parse(cron_expression)
   rescue ArgumentError => e
     errors.add(:cron_expression, "is invalid: #{e.message}")
+  end
+
+  def manage_encryption_key
+    if encryption? && encryption_key.blank?
+      self.encryption_key = SecureRandom.hex(32)
+    end
+    # Never clear key on disable — old encrypted backups need it for restore/download
   end
 
   def reschedule_job

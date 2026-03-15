@@ -109,14 +109,6 @@ class Backup < ApplicationRecord
   # Alias for view consistency
   alias_method :formatted_size, :formatted_file_size
 
-  def encrypted?
-    backup_job&.encryption?
-  end
-
-  def compressed?
-    backup_job&.compression?
-  end
-
   # Determines if this backup can be safely deleted.
   # Running and pending backups cannot be deleted to prevent data corruption.
   #
