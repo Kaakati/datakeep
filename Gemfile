@@ -46,6 +46,9 @@ gem "stripe", "~> 13.0"
 # Cloudflare Turnstile bot protection
 gem "turnstiled"
 
+# Exception notification for production error alerting
+gem "exception_notification", "~> 4.5"
+
 # Google OAuth authentication
 gem "omniauth", "~> 2.1"
 gem "omniauth-google-oauth2", "~> 1.2"
