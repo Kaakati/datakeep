@@ -31,7 +31,7 @@
             <tr>
               <th class="py-3 pr-4 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">User</p></th>
               <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Role</p></th>
-              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Databases</p></th>
+              <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Plan</p></th>
               <th class="px-4 py-3 text-left font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Joined</p></th>
               <th class="py-3 pl-4 text-right font-normal whitespace-nowrap"><p class="text-sm text-gray-500 dark:text-gray-400">Actions</p></th>
             </tr>
@@ -58,7 +58,19 @@
                   <% end %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap">
-                  <p class="text-sm text-gray-700 dark:text-gray-300"><%= user.database_configs.count %></p>
+                  <% tier = user.plan_tier_key %>
+                  <% case tier
+                     when :free %>
+                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">Free</span>
+                  <% when :starter %>
+                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Starter</span>
+                  <% when :professional %>
+                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Professional</span>
+                  <% when :business %>
+                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Business</span>
+                  <% when :enterprise %>
+                    <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Enterprise</span>
+                  <% end %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap">
                   <p class="text-sm text-gray-700 dark:text-gray-300"><%= user.created_at.strftime("%b %d, %Y") %></p>

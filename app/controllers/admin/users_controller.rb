@@ -5,7 +5,7 @@ module Admin
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :resend_verification ]
 
     def index
-      @users = User.order(created_at: :desc)
+      @users = User.includes(:subscription).order(created_at: :desc)
       @users = @users.where("name ILIKE :q OR email ILIKE :q", q: "%#{params[:search]}%") if params[:search].present?
     end
 
