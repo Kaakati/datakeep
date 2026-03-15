@@ -19,7 +19,7 @@
       </svg>
     <% end %>
 
-    <% if database_config.healthy? %>
+    <% if database_config.healthy? && database_config.database_type == "postgresql" %>
       <%= button_to vacuum_database_config_path(database_config),
           method: :post,
           data: { turbo_confirm: "Run VACUUM ANALYZE on this database? This may take a while on large databases." },

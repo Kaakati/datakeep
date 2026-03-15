@@ -182,7 +182,7 @@ class BackupExecutionJob < ApplicationJob
       storage_backend: storage_backend,
       file_name: generate_file_name(backup_job),
       database_name: backup_job.database_config.database_name,
-      pg_version: backup_job.database_config.pg_version,
+      engine_version: backup_job.database_config.engine_version,
       compressed: backup_job.compression,
       encrypted: backup_job.encryption
     )

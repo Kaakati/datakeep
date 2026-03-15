@@ -17,10 +17,14 @@ class DatabaseAdapterFactory
     end
   end
 
+  SUPPORTED_DATABASE_TYPES = %w[postgresql mysql mongodb].freeze
+
   # Built-in adapters — always available regardless of load order
   BUILT_IN_ADAPTERS = {
     postgresql: "DatabaseAdapters::Postgresql",
-    postgres: "DatabaseAdapters::Postgresql"
+    postgres: "DatabaseAdapters::Postgresql",
+    mysql: "DatabaseAdapters::Mysql",
+    mongodb: "DatabaseAdapters::Mongodb"
   }.freeze
 
   class << self

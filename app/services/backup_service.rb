@@ -117,16 +117,24 @@ class BackupService
   end
 
   def backup_extension
-    ext = case options[:format].to_sym
-    when :plain then ".sql"
-    when :custom then ".dump"
-    when :directory then ""
-    when :tar then ".tar"
-    else ".dump"
+    db_type = database_config.database_type || "postgresql"
+
+    ext = case db_type
+    when "mongodb"
+      ".archive"
+    when "mysql"
+      ".sql"
+    else # postgresql
+      case options[:format].to_sym
+      when :plain then ".sql"
+      when :custom then ".dump"
+      when :directory then ""
+      when :tar then ".tar"
+      else ".dump"
+      end
     end
 
     # Only add .gz for formats that need external compression
-    # Custom format has built-in compression for PostgreSQL
     if options[:compression] && needs_external_compression?
       ext += ".gz"
     end
@@ -136,8 +144,12 @@ class BackupService
   end
 
   def needs_external_compression?
+    db_type = database_config.database_type || "postgresql"
+
     # PostgreSQL custom format has built-in compression
-    return false if database_config.database_type == "postgresql" && options[:format].to_sym == :custom
+    return false if db_type == "postgresql" && options[:format].to_sym == :custom
+    # MongoDB's mongodump --gzip handles compression natively
+    return false if db_type == "mongodb"
     true
   end
 

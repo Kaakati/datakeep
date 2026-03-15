@@ -82,10 +82,10 @@
                   <p class="text-xs text-gray-500"><%= db.database_name %></p>
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap">
-                  <% if db.pg_version.present? %>
-                    <p class="text-sm text-gray-700">PostgreSQL <%= db.pg_version %></p>
+                  <% if db.engine_version.present? %>
+                    <p class="text-sm text-gray-700"><%= db.database_type.capitalize %> <%= db.engine_version %></p>
                   <% else %>
-                    <p class="text-sm text-gray-400">Not detected</p>
+                    <p class="text-sm text-gray-400"><%= db.database_type.capitalize %></p>
                   <% end %>
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap">

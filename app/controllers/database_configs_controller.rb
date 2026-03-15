@@ -108,7 +108,7 @@ class DatabaseConfigsController < ApplicationController
     )
 
     if result[:success]
-      redirect_to @database_config, notice: "Connection successful! PostgreSQL version: #{@database_config.pg_version}"
+      redirect_to @database_config, notice: "Connection successful! #{@database_config.database_type.capitalize} version: #{@database_config.engine_version}"
     else
       redirect_to @database_config, alert: "Connection failed: #{result[:error]}"
     end
@@ -166,7 +166,7 @@ class DatabaseConfigsController < ApplicationController
 
   def database_config_params
     params.require(:database_config).permit(
-      :name, :host, :port, :database_name, :username, :password, :ssl_mode,
+      :name, :host, :port, :database_name, :database_type, :username, :password, :ssl_mode,
       :vpn_enabled, :vpn_type, :vpn_config_data, :vpn_gateway_ip, :vpn_tunnel_name
     )
   end
@@ -198,7 +198,7 @@ class DatabaseConfigsController < ApplicationController
     )
 
     if result[:success]
-      { notice: "Database saved and connection verified! PostgreSQL #{@database_config.pg_version}", alert: nil }
+      { notice: "Database saved and connection verified! #{@database_config.database_type.capitalize} #{@database_config.engine_version}", alert: nil }
     else
       { notice: "Database saved.", alert: "Connection test failed: #{result[:error]}" }
     end

@@ -3,7 +3,7 @@
 <% if database_config.unhealthy? %>
   <% alerts << { type: :critical, message: "Connection failed. Database is unreachable.", action: :test_connection } %>
 <% end %>
-<% if db_stats && !db_stats[:error] %>
+<% if db_stats && !db_stats[:error] && database_config.database_type == "postgresql" %>
   <% if db_stats[:dead_tuples] && db_stats[:dead_tuples] > 10_000 %>
     <% alerts << { type: :warning, message: "High dead tuple count (#{number_with_delimiter(db_stats[:dead_tuples])}). Consider running VACUUM.", action: :vacuum } %>
   <% end %>
@@ -12,7 +12,7 @@
     <% alerts << { type: severity, message: "XID wraparound risk at #{db_stats[:xid_percent]}%. Run VACUUM to prevent transaction ID exhaustion.", action: :vacuum } %>
   <% end %>
 <% end %>
-<% if long_running_queries&.any? %>
+<% if long_running_queries&.any? && database_config.database_type == "postgresql" %>
   <% long_running_queries.each do |query| %>
     <% alerts << { type: :warning, message: "Long running query (PID: #{query[:pid]}) running for #{query[:duration_seconds] / 60} minutes.", action: :kill_query, pid: query[:pid] } %>
   <% end %>

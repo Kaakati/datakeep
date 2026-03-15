@@ -24,13 +24,21 @@ RUN apt-get update -qq && \
     apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
-# Install build essentials and PostgreSQL client tools
+# Install build essentials, database client tools, and MongoDB tools
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
       build-essential git libyaml-dev pkg-config curl \
       libpq-dev postgresql-client-17 \
+      default-mysql-client libmariadb-dev \
       gzip bzip2 xz-utils \
       libvips nodejs npm && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install MongoDB Database Tools (mongodump, mongorestore)
+RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/mongodb.gpg && \
+    echo "deb https://repo.mongodb.org/apt/debian $(lsb_release -cs)/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org.list && \
+    apt-get update -qq && \
+    apt-get install --no-install-recommends -y mongodb-database-tools && \
     rm -rf /var/lib/apt/lists/*
 
 # Install VPN client tools (separate layer to isolate potential conflicts)

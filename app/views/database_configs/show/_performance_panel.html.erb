@@ -35,56 +35,72 @@
           </div>
         </article>
 
-        <article class="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
-          <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= db_stats[:dead_tuples] > 10000 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : 'bg-purple-50 text-purple-500 dark:bg-purple-900/20 dark:text-purple-400' %>">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Live / Dead Rows</p>
-            <span class="text-lg font-semibold text-gray-800 dark:text-white/90">
-              <%= number_with_delimiter(db_stats[:total_rows]) %> /
-              <span class="<%= db_stats[:dead_tuples] > 10000 ? 'text-yellow-600 dark:text-yellow-400' : '' %>"><%= number_with_delimiter(db_stats[:dead_tuples]) %></span>
-            </span>
-          </div>
-        </article>
+        <% if database_config.database_type == "postgresql" %>
+          <article class="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+            <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= db_stats[:dead_tuples].to_i > 10000 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : 'bg-purple-50 text-purple-500 dark:bg-purple-900/20 dark:text-purple-400' %>">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Live / Dead Rows</p>
+              <span class="text-lg font-semibold text-gray-800 dark:text-white/90">
+                <%= number_with_delimiter(db_stats[:total_rows]) %> /
+                <span class="<%= db_stats[:dead_tuples].to_i > 10000 ? 'text-yellow-600 dark:text-yellow-400' : '' %>"><%= number_with_delimiter(db_stats[:dead_tuples]) %></span>
+              </span>
+            </div>
+          </article>
 
-        <article class="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
-          <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= db_stats[:xid_percent] && db_stats[:xid_percent] > 50 ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' : db_stats[:xid_percent] && db_stats[:xid_percent] > 25 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : 'bg-teal-50 text-teal-500 dark:bg-teal-900/20 dark:text-teal-400' %>">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">XID Age</p>
-            <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= db_stats[:xid_percent] || 0 %>%</span>
-          </div>
-        </article>
+          <article class="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+            <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= db_stats[:xid_percent] && db_stats[:xid_percent] > 50 ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' : db_stats[:xid_percent] && db_stats[:xid_percent] > 25 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : 'bg-teal-50 text-teal-500 dark:bg-teal-900/20 dark:text-teal-400' %>">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">XID Age</p>
+              <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= db_stats[:xid_percent] || 0 %>%</span>
+            </div>
+          </article>
+        <% else %>
+          <article class="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
+            <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-purple-50 text-purple-500 dark:bg-purple-900/20 dark:text-purple-400">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Total Rows</p>
+              <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= number_with_delimiter(db_stats[:total_rows]) %></span>
+            </div>
+          </article>
+        <% end %>
       </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-4">
-        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Vacuum</dt>
-          <dd class="mt-1 text-sm text-gray-900 dark:text-white/90">
-            <% if db_stats[:last_vacuum] %>
-              <%= time_ago_in_words(Time.parse(db_stats[:last_vacuum])) %> ago
-            <% else %>
-              <span class="text-yellow-600 dark:text-yellow-400">Never</span>
-            <% end %>
-          </dd>
+      <% if database_config.database_type == "postgresql" %>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-4">
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Vacuum</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90">
+              <% if db_stats[:last_vacuum] %>
+                <%= time_ago_in_words(Time.parse(db_stats[:last_vacuum])) %> ago
+              <% else %>
+                <span class="text-yellow-600 dark:text-yellow-400">Never</span>
+              <% end %>
+            </dd>
+          </div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Analyze</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white/90">
+              <% if db_stats[:last_analyze] %>
+                <%= time_ago_in_words(Time.parse(db_stats[:last_analyze])) %> ago
+              <% else %>
+                <span class="text-yellow-600 dark:text-yellow-400">Never</span>
+              <% end %>
+            </dd>
+          </div>
         </div>
-        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
-          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Analyze</dt>
-          <dd class="mt-1 text-sm text-gray-900 dark:text-white/90">
-            <% if db_stats[:last_analyze] %>
-              <%= time_ago_in_words(Time.parse(db_stats[:last_analyze])) %> ago
-            <% else %>
-              <span class="text-yellow-600 dark:text-yellow-400">Never</span>
-            <% end %>
-          </dd>
-        </div>
-      </div>
+      <% end %>
     </section>
 
     <%# Connection States %>
@@ -100,14 +116,16 @@
           <p class="text-2xl font-semibold text-gray-600 dark:text-gray-300"><%= db_stats[:connections][:idle] %></p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Idle</p>
         </div>
-        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/30">
-          <p class="text-2xl font-semibold <%= db_stats[:connections][:idle_in_transaction] > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-300' %>"><%= db_stats[:connections][:idle_in_transaction] %></p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Idle in Txn</p>
-        </div>
-        <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/30">
-          <p class="text-2xl font-semibold <%= db_stats[:connections][:waiting] > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-300' %>"><%= db_stats[:connections][:waiting] %></p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Waiting</p>
-        </div>
+        <% if database_config.database_type == "postgresql" %>
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/30">
+            <p class="text-2xl font-semibold <%= db_stats[:connections][:idle_in_transaction].to_i > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-600 dark:text-gray-300' %>"><%= db_stats[:connections][:idle_in_transaction] %></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Idle in Txn</p>
+          </div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/30">
+            <p class="text-2xl font-semibold <%= db_stats[:connections][:waiting].to_i > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-300' %>"><%= db_stats[:connections][:waiting] %></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Waiting</p>
+          </div>
+        <% end %>
         <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/30">
           <p class="text-2xl font-semibold text-primary-600 dark:text-primary-400"><%= db_stats[:connections][:total] %></p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total</p>
@@ -170,8 +188,8 @@
       </div>
     </section>
 
-    <%# Longest Running Query %>
-    <% if db_stats[:longest_query] %>
+    <%# Longest Running Query (PostgreSQL only) %>
+    <% if db_stats[:longest_query] && database_config.database_type == "postgresql" %>
     <section aria-labelledby="longest-query-heading">
       <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800/50">
         <div class="flex items-center justify-between mb-3">

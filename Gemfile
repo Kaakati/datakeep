@@ -25,6 +25,12 @@ gem "bcrypt", "~> 3.1.7"
 # PostgreSQL client for connecting to target databases
 gem "pg", "~> 1.5"
 
+# MySQL client for connecting to MySQL databases
+gem "mysql2", "~> 0.5"
+
+# MongoDB driver for connecting to MongoDB databases
+gem "mongo", "~> 2.20"
+
 # AWS S3 for cloud storage backend
 gem "aws-sdk-s3", "~> 1.143"
 
