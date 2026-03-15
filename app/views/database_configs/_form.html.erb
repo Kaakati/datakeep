@@ -1,4 +1,4 @@
-<%= form_with model: database_config, class: "space-y-6", data: { controller: "database-url database-type" } do |f| %>
+<%= form_with model: database_config, class: "space-y-6", data: { controller: "database-url" } do |f| %>
   <% if database_config.errors.any? %>
     <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
       <div class="flex">
@@ -21,7 +21,75 @@
     </div>
   <% end %>
 
-  <%# Quick Connect URL Section %>
+  <%# Step 1: Engine Selector — top-level card with visual cards %>
+  <% current_engine = database_config.database_type || "postgresql" %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Choose Database Engine</h3>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <%# Hidden select stays synced for form submission %>
+      <div class="hidden">
+        <%= f.select :database_type,
+          engine_select_options,
+          {},
+          data: { database_type_target: "select", action: "change->database-type#changed" },
+          class: "hidden" %>
+      </div>
+
+      <div role="radiogroup" aria-label="Database engine" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <% %w[postgresql mysql mongodb].each do |engine| %>
+          <% colors = engine_card_colors(engine) %>
+          <% is_selected = current_engine == engine %>
+          <label
+            data-database-type-target="engineCard"
+            data-engine="<%= engine %>"
+            data-action="click->database-type#selectEngine"
+            data-selected="<%= is_selected %>"
+            role="radio"
+            aria-checked="<%= is_selected %>"
+            aria-label="<%= engine_label(engine) %>"
+            tabindex="<%= engine == current_engine ? '0' : '-1' %>"
+            class="relative flex cursor-pointer rounded-xl border-2 p-4 transition-all duration-150
+              <%= is_selected ? colors[:selected] : colors[:unselected] %>"
+          >
+            <input type="radio" name="engine_card" value="<%= engine %>" class="sr-only" <%= "checked" if is_selected %> tabindex="-1" />
+            <div class="flex w-full items-start gap-3">
+              <div class="shrink-0 mt-0.5">
+                <svg class="h-8 w-8 <%= colors[:icon] %>" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-white/90"><%= engine_label(engine) %></span>
+                  <svg data-check-icon class="h-5 w-5 text-current <%= colors[:icon] %>" viewBox="0 0 20 20" fill="currentColor" <% unless is_selected %>style="display: none;"<% end %>>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400"><%= engine_description(engine) %></p>
+                <p class="mt-1 text-xs font-medium text-gray-400 dark:text-gray-500">Port <%= engine_default_port(engine) %></p>
+              </div>
+            </div>
+          </label>
+        <% end %>
+      </div>
+
+      <%# Engine change warning for edit flow %>
+      <% if database_config.persisted? %>
+        <div data-database-type-target="engineWarning" class="mt-3 hidden rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
+          <div class="flex items-center gap-2">
+            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+            Changing the engine will reset port and SSL settings.
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Step 2: Quick Connect URL Section — now below engine selector %>
   <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="px-5 py-4 sm:px-6 sm:py-5">
       <div class="flex items-center gap-2">
@@ -30,7 +98,7 @@
         </svg>
         <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Quick Connect</h3>
       </div>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Paste a connection URL to auto-fill all fields below</p>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" data-database-type-target="urlHelpText">Paste a <strong><%= engine_label(current_engine) %></strong> connection URL to auto-fill all fields below</p>
     </div>
     <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
       <div>
@@ -39,7 +107,7 @@
           <input
             type="text"
             id="connection_url"
-            placeholder="postgresql://user:pass@host:5432/db  or  mysql://  or  mongodb://"
+            placeholder="<%= "#{current_engine}://user:pass@host:#{engine_default_port(current_engine)}/db" %>"
             data-database-url-target="url"
             data-action="input->database-url#parse"
             class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 transition-colors"
@@ -98,35 +166,22 @@
     </div>
   <% end %>
 
+  <%# Step 3: Connection Details — engine selector removed, fields reordered %>
   <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="px-5 py-4 sm:px-6 sm:py-5">
       <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Database Connection</h3>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" data-database-type-target="descriptionText">Configure your <strong><%= engine_label(database_config.database_type || 'postgresql') %></strong> connection details</p>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" data-database-type-target="descriptionText">Configure your <strong><%= engine_label(current_engine) %></strong> connection details</p>
     </div>
     <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <%# Row 1: Configuration Name (full width) — identity %>
         <div class="sm:col-span-2">
           <%= f.label :name, "Configuration Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <%= f.text_field :name, placeholder: "My Production Database", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
           <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">A friendly name to identify this database configuration</p>
         </div>
 
-        <div class="sm:col-span-2">
-          <%= f.label :database_type, "Database Engine", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <div class="relative">
-            <%= f.select :database_type,
-              engine_select_options,
-              {},
-              data: { database_type_target: "select", action: "change->database-type#changed" },
-              class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
-            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </span>
-          </div>
-        </div>
-
+        <%# Row 2: Host + Port — "where is it?" %>
         <div>
           <%= f.label :host, "Host", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <%= f.text_field :host, placeholder: "localhost or db.example.com", data: { database_url_target: "host" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
@@ -137,10 +192,11 @@
           <%= f.number_field :port, data: { database_url_target: "port" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
+        <%# Row 3: Database Name + Username — "which DB, who are you?" %>
         <div>
           <%= f.label :database_name, "Database Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <%= f.text_field :database_name, placeholder: "myapp_production", data: { database_url_target: "database", database_type_target: "databaseNameField" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
-          <% db_name_example = case database_config.database_type
+          <% db_name_example = case current_engine
              when "mysql" then "e.g. myapp"
              when "mongodb" then "e.g. mydb"
              else "e.g. myapp_production"
@@ -153,6 +209,7 @@
           <%= f.text_field :username, autocomplete: "off", data: { database_url_target: "username" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
         </div>
 
+        <%# Row 4: Password + SSL Mode — "credentials & security" %>
         <div x-data="{ showPassword: false }">
           <%= f.label :password, "Password", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <div class="relative">
@@ -267,8 +324,11 @@
     </div>
   </div>
 
+  <%# Step 5: Engine-aware submit button %>
   <div class="flex justify-end space-x-3">
     <%= link_to "Cancel", database_configs_path, class: "inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]" %>
-    <%= f.submit database_config.persisted? ? "Update Database" : "Create Database", class: "inline-flex items-center justify-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-primary-600 cursor-pointer" %>
+    <%= f.submit database_config.persisted? ? "Update #{engine_label(current_engine)} Database" : "Create #{engine_label(current_engine)} Database",
+      data: { database_type_target: "submitButton" },
+      class: "inline-flex items-center justify-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-primary-600 cursor-pointer" %>
   </div>
 <% end %>

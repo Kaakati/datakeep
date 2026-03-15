@@ -19,6 +19,39 @@ module DatabaseEngineHelper
     "mongodb" => "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
   }.freeze
 
+  ENGINE_DESCRIPTIONS = {
+    "postgresql" => "Relational, ACID-compliant",
+    "mysql" => "Relational, widely deployed",
+    "mongodb" => "Document store, flexible schema"
+  }.freeze
+
+  ENGINE_DEFAULT_PORTS = {
+    "postgresql" => "5432",
+    "mysql" => "3306",
+    "mongodb" => "27017"
+  }.freeze
+
+  ENGINE_CARD_COLORS = {
+    "postgresql" => {
+      selected: "border-blue-500 bg-blue-50 ring-2 ring-blue-500/20 dark:border-blue-400 dark:bg-blue-900/20",
+      unselected: "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600",
+      icon: "text-blue-600 dark:text-blue-400",
+      dot: "bg-blue-500"
+    },
+    "mysql" => {
+      selected: "border-orange-500 bg-orange-50 ring-2 ring-orange-500/20 dark:border-orange-400 dark:bg-orange-900/20",
+      unselected: "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600",
+      icon: "text-orange-600 dark:text-orange-400",
+      dot: "bg-orange-500"
+    },
+    "mongodb" => {
+      selected: "border-green-500 bg-green-50 ring-2 ring-green-500/20 dark:border-green-400 dark:bg-green-900/20",
+      unselected: "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600",
+      icon: "text-green-600 dark:text-green-400",
+      dot: "bg-green-500"
+    }
+  }.freeze
+
   ENGINE_CACHE_LABELS = {
     "postgresql" => "Cache Hit Ratio",
     "mysql" => "Buffer Pool Hit Ratio",
@@ -54,6 +87,18 @@ module DatabaseEngineHelper
 
   def database_select_name(db)
     "#{db.name} (#{engine_label(db.database_type)})"
+  end
+
+  def engine_description(type)
+    ENGINE_DESCRIPTIONS[type.to_s] || ""
+  end
+
+  def engine_default_port(type)
+    ENGINE_DEFAULT_PORTS[type.to_s] || "5432"
+  end
+
+  def engine_card_colors(type)
+    ENGINE_CARD_COLORS[type.to_s] || ENGINE_CARD_COLORS["postgresql"]
   end
 
   def engine_select_options
