@@ -140,6 +140,8 @@ class User < ApplicationRecord
   end
 
   def email_verified?
+    return true unless self.class.column_names.include?("email_verified_at")
+
     email_verified_at.present?
   end
 
