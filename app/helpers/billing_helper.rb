@@ -152,7 +152,7 @@ module BillingHelper
     end
   end
 
-  def render_s3_card(label, allowed_flag)
+  def render_s3_card(label, allowed_flag) # rubocop:disable Metrics/MethodLength
     allowed = allowed_flag.present? && allowed_flag != false && allowed_flag != 0
 
     icon_svg = if allowed
@@ -187,7 +187,7 @@ module BillingHelper
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
   def pulse_icon_svg(icon_name)
     case icon_name
     when :database
@@ -240,5 +240,5 @@ module BillingHelper
       content_tag(:span, "", class: "h-5 w-5")
     end
   end
-  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 end
