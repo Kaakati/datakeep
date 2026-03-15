@@ -25,7 +25,6 @@ WORKDIR /rails
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
       curl \
-      gnupg \
       libjemalloc2 \
       libvips \
       # PostgreSQL client tools (pg_dump, pg_restore, psql)
@@ -44,13 +43,12 @@ RUN apt-get update -qq && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Install MongoDB Database Tools (mongodump, mongorestore)
-# Pin to bookworm repo — MongoDB doesn't publish packages for trixie yet
-# Use signed-by for modern apt GPG key handling
-RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org.list && \
+# Install MongoDB Database Tools (mongodump, mongorestore) via direct download
+# Avoids apt repo GPG issues on Debian Trixie
+RUN curl -fsSL https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian12-x86_64-100.12.0.deb -o /tmp/mongodb-tools.deb && \
     apt-get update -qq && \
-    apt-get install --no-install-recommends -y mongodb-database-tools && \
+    apt-get install --no-install-recommends -y /tmp/mongodb-tools.deb && \
+    rm -f /tmp/mongodb-tools.deb && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment variables and enable jemalloc for reduced memory usage and latency.
