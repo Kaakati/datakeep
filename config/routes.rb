@@ -62,13 +62,18 @@ Rails.application.routes.draw do
   post "login", to: "sessions#create"
   delete "logout", to: "sessions#destroy"
 
-  # Registration (simple, no email confirmation)
+  # Registration
   get "signup", to: "registrations#new"
   post "signup", to: "registrations#create"
 
   # OAuth callbacks
   get "auth/google_oauth2/callback", to: "oauth_callbacks#google_oauth2"
   get "auth/failure", to: "oauth_callbacks#failure"
+
+  # Email verification
+  get  "verify_email",         to: "email_verifications#show",   as: :email_verification
+  get  "verify_email/confirm", to: "email_verifications#update", as: :confirm_email_verification
+  post "verify_email/resend",  to: "email_verifications#create", as: :resend_email_verification
 
   # Database configurations
   resources :database_configs do
@@ -136,7 +141,15 @@ Rails.application.routes.draw do
   post "stripe_portal", to: "stripe_portal#create"
 
   # Profile
-  resource :profile, only: [:edit, :update]
+  resource :profile, only: [:show, :edit, :update] do
+    post :enable_otp
+    delete :disable_otp
+  end
+
+  # OTP verification (login 2FA)
+  get  "otp_verify",        to: "otp_verifications#show",   as: :otp_verification
+  post "otp_verify",        to: "otp_verifications#create"
+  post "otp_verify/resend", to: "otp_verifications#resend", as: :resend_otp_verification
 
   # Audit logs
   resources :audit_logs, only: [ :index, :show ]

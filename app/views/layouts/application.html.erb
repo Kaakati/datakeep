@@ -40,9 +40,12 @@
           <%# Mobile header %>
           <%= render "layouts/mobile_header" %>
 
+          <%# Top header with plan badge and user dropdown %>
+          <%= render "layouts/top_header" %>
+
           <%# Main content area %>
           <main class="flex-1">
-            <div class="mx-auto max-w-screen-2xl p-4 pb-20 md:p-6 2xl:p-10">
+            <div class="w-full p-4 pb-20 md:p-6 2xl:p-10">
               <%= render "layouts/flash" %>
               <%= yield %>
             </div>
@@ -54,6 +57,15 @@
         <%= render "layouts/flash" %>
         <%= yield %>
       </main>
+      <% unless content_for?(:custom_footer) %>
+        <footer class="py-6 text-center text-xs text-gray-400 dark:text-gray-500">
+          <div class="space-x-3">
+            <%= link_to "Terms of Service", terms_path, class: "hover:text-gray-600 dark:hover:text-gray-300" %>
+            <span>&middot;</span>
+            <%= link_to "Privacy Policy", privacy_path, class: "hover:text-gray-600 dark:hover:text-gray-300" %>
+          </div>
+        </footer>
+      <% end %>
     <% end %>
   </body>
 </html>

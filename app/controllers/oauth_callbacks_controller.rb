@@ -7,6 +7,7 @@ class OauthCallbacksController < ApplicationController
     user = User.find_or_create_from_oauth(auth_hash)
 
     log_in(user)
+    user.verify_email!
 
     AuditLog.log(
       action: "oauth_login",
@@ -15,7 +16,7 @@ class OauthCallbacksController < ApplicationController
       ip_address: request.remote_ip
     )
 
-    redirect_to user.admin? ? admin_root_path : root_path,
+    redirect_to user.admin? ? admin_root_path : dashboard_path,
                 notice: "Signed in with Google."
   end
 

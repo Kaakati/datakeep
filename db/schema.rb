@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_164646) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_164646) do
     t.bigint "database_config_id", null: false
     t.boolean "enabled", default: true, null: false
     t.boolean "encryption", default: false, null: false
+    t.text "encryption_key"
     t.datetime "last_run_at"
     t.string "name", null: false
     t.datetime "next_run_at"
@@ -94,6 +95,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_164646) do
     t.index ["created_at"], name: "index_backups_on_created_at"
     t.index ["status"], name: "index_backups_on_status"
     t.index ["storage_backend_id"], name: "index_backups_on_storage_backend_id"
+  end
+
+  create_table "coupons", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "applicable_plans", default: "all"
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "usd"
+    t.integer "discount_type", default: 0, null: false
+    t.integer "discount_value", null: false
+    t.integer "duration", default: 0, null: false
+    t.integer "duration_in_months"
+    t.datetime "expires_at"
+    t.integer "max_redemptions"
+    t.integer "redemptions_count", default: 0, null: false
+    t.string "stripe_coupon_id"
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_coupons_on_active"
+    t.index ["code"], name: "index_coupons_on_code", unique: true
+    t.index ["stripe_coupon_id"], name: "index_coupons_on_stripe_coupon_id", unique: true
   end
 
   create_table "database_configs", force: :cascade do |t|
@@ -307,7 +328,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_164646) do
     t.string "avatar_url"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.datetime "email_verified_at"
     t.string "name", null: false
+    t.boolean "otp_required", default: false, null: false
     t.string "password_digest"
     t.string "provider"
     t.integer "role", default: 0, null: false

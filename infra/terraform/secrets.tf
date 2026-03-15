@@ -129,6 +129,27 @@ resource "aws_secretsmanager_secret_version" "google_client_secret" {
   lifecycle { ignore_changes = [secret_string] }
 }
 
+# AWS SES SMTP credentials (notifications.datakeep.ai)
+resource "aws_secretsmanager_secret" "smtp_username" {
+  name = "datakeep/smtp-username"
+  tags = { Name = "${local.name_prefix}-smtp-username" }
+}
+
+resource "aws_secretsmanager_secret_version" "smtp_username" {
+  secret_id     = aws_secretsmanager_secret.smtp_username.id
+  secret_string = var.smtp_username
+}
+
+resource "aws_secretsmanager_secret" "smtp_password" {
+  name = "datakeep/smtp-password"
+  tags = { Name = "${local.name_prefix}-smtp-password" }
+}
+
+resource "aws_secretsmanager_secret_version" "smtp_password" {
+  secret_id     = aws_secretsmanager_secret.smtp_password.id
+  secret_string = var.smtp_password
+}
+
 # Active Record Encryption keys (auto-generated, do not change after data is encrypted)
 resource "aws_secretsmanager_secret" "ar_encryption_primary_key" {
   name = "datakeep/ar-encryption-primary-key"

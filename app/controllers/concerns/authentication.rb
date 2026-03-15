@@ -5,12 +5,18 @@ module Authentication
 
   included do
     before_action :require_authentication
+    before_action :require_email_verification
     helper_method :current_user, :logged_in?
   end
 
   class_methods do
     def allow_unauthenticated_access(**options)
       skip_before_action :require_authentication, **options
+      skip_before_action :require_email_verification, **options
+    end
+
+    def skip_email_verification(**options)
+      skip_before_action :require_email_verification, **options
     end
   end
 
@@ -20,8 +26,15 @@ module Authentication
     redirect_to login_path, alert: "Please log in to continue." unless logged_in?
   end
 
+  def require_email_verification
+    return unless logged_in?
+    return if current_user.email_verified?
+    return if current_user.admin?
+    redirect_to email_verification_path
+  end
+
   def require_admin
-    redirect_to root_path, alert: "Not authorized." unless current_user&.admin?
+    redirect_to dashboard_path, alert: "Not authorized." unless current_user&.admin?
   end
 
   def current_user

@@ -46,6 +46,9 @@ class User < ApplicationRecord
 
   normalizes :email, with: ->(email) { email.strip.downcase }
 
+  scope :email_verified, -> { where.not(email_verified_at: nil) }
+  scope :email_unverified, -> { where(email_verified_at: nil) }
+
   def available_storage_backends
     StorageBackend.where("user_id = ? OR managed = true", id)
   end
@@ -133,6 +136,18 @@ class User < ApplicationRecord
         uid: auth_hash["uid"],
         avatar_url: info["image"]
       )
+  end
+
+  def email_verified?
+    email_verified_at.present?
+  end
+
+  def verify_email!
+    update!(email_verified_at: Time.current) unless email_verified?
+  end
+
+  def send_verification_email
+    UserMailer.email_verification(self).deliver_later
   end
 
   def log_action(action, resource: nil, details: nil, ip_address: nil)

@@ -3,10 +3,13 @@
 module DataKeep
   module Stripe
     class CheckoutService
-      def initialize(user:, plan_tier:, billing_interval:)
+      class CouponError < StandardError; end
+
+      def initialize(user:, plan_tier:, billing_interval:, coupon_code: nil)
         @user = user
         @plan_tier = plan_tier
         @billing_interval = billing_interval
+        @coupon_code = coupon_code
       end
 
       def call
@@ -16,7 +19,7 @@ module DataKeep
           billing_interval: @billing_interval
         )
 
-        session = ::Stripe::Checkout::Session.create(
+        session_params = {
           customer: customer_id,
           mode: "subscription",
           line_items: [{ price: price_id, quantity: 1 }],
@@ -34,12 +37,24 @@ module DataKeep
               billing_interval: @billing_interval
             }
           }
-        )
+        }
+
+        apply_coupon!(session_params) if @coupon_code.present?
+
+        session = ::Stripe::Checkout::Session.create(session_params)
 
         session.url
       end
 
       private
+
+      def apply_coupon!(session_params)
+        coupon = Coupon.find_by(code: @coupon_code)
+        raise CouponError, "Invalid or expired coupon code." unless coupon&.valid_for_checkout?(@plan_tier)
+
+        session_params[:discounts] = [{ coupon: coupon.stripe_coupon_id }]
+        coupon.record_redemption!
+      end
 
       def base_url
         ENV.fetch("APP_BASE_URL", "http://localhost:3000")

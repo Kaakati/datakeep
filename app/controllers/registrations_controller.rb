@@ -5,7 +5,7 @@ class RegistrationsController < ApplicationController
   # verify_turnstile_request only: [ :create ] # Temporarily disabled — widget not loading on production
 
   def new
-    redirect_to root_path if logged_in?
+    redirect_to dashboard_path if logged_in?
     @user = User.new
   end
 
@@ -14,7 +14,8 @@ class RegistrationsController < ApplicationController
 
     if @user.save
       log_in(@user)
-      redirect_to root_path, notice: "Welcome to DataKeep! Your account has been created."
+      @user.send_verification_email
+      redirect_to email_verification_path, notice: "Account created! Check your email to verify."
     else
       render :new, status: :unprocessable_entity
     end

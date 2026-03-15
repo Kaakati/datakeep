@@ -14,10 +14,13 @@ class SubscriptionsController < ApplicationController
     checkout_url = DataKeep::Stripe::CheckoutService.new(
       user: current_user,
       plan_tier: plan_tier,
-      billing_interval: billing_interval
+      billing_interval: billing_interval,
+      coupon_code: params[:coupon_code].presence&.strip&.upcase
     ).call
 
     redirect_to checkout_url, allow_other_host: true
+  rescue DataKeep::Stripe::CheckoutService::CouponError => e
+    redirect_to billing_path, alert: e.message
   rescue StandardError => e
     Rails.logger.error("Checkout failed: #{e.message}")
     redirect_to billing_path, alert: "Unable to start checkout. Please try again."

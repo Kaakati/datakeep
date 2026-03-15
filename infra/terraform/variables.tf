@@ -49,3 +49,14 @@ variable "turnstile_secret_key" {
   type        = string
   sensitive   = true
 }
+
+variable "smtp_username" {
+  description = "AWS SES SMTP username (IAM access key ID)"
+  type        = string
+}
+
+variable "smtp_password" {
+  description = "AWS SES SMTP password (derived from IAM secret key)"
+  type        = string
+  sensitive   = true
+}

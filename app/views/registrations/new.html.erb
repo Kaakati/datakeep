@@ -123,6 +123,13 @@
 
         <%= turnstile_tag %>
 
+        <p class="text-xs text-center text-gray-500 dark:text-gray-400">
+          By creating an account, you agree to our
+          <%= link_to "Terms of Service", terms_path, class: "text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 underline", target: "_blank" %>
+          and
+          <%= link_to "Privacy Policy", privacy_path, class: "text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 underline", target: "_blank" %>.
+        </p>
+
         <div>
           <%= f.submit "Create account", class: "flex w-full justify-center rounded-lg bg-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-theme-xs hover:bg-primary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 cursor-pointer transition-colors duration-150" %>
         </div>

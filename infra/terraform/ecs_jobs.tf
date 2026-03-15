@@ -98,6 +98,8 @@ resource "aws_ecs_task_definition" "jobs" {
       { name = "RAILS_LOG_TO_STDOUT", value = "true" },
       { name = "SIDEKIQ_CONCURRENCY", value = "5" },
       { name = "SKIP_DB_PREPARE", value = "true" },
+      { name = "APP_HOST", value = "datakeep.ai" },
+      { name = "SMTP_ADDRESS", value = "email-smtp.eu-south-1.amazonaws.com" },
     ]
 
     secrets = [
@@ -110,6 +112,8 @@ resource "aws_ecs_task_definition" "jobs" {
       { name = "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY", valueFrom = aws_secretsmanager_secret.ar_encryption_primary_key.arn },
       { name = "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY", valueFrom = aws_secretsmanager_secret.ar_encryption_deterministic_key.arn },
       { name = "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT", valueFrom = aws_secretsmanager_secret.ar_encryption_key_derivation_salt.arn },
+      { name = "SMTP_USERNAME", valueFrom = aws_secretsmanager_secret.smtp_username.arn },
+      { name = "SMTP_PASSWORD", valueFrom = aws_secretsmanager_secret.smtp_password.arn },
     ]
 
     mountPoints = [

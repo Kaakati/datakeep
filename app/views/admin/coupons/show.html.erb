@@ -1,0 +1,167 @@
+<div class="space-y-6">
+  <div class="sm:flex sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">
+        <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"><%= @coupon.code %></code>
+      </h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <%= @coupon.discount_display %> &middot; <%= @coupon.duration.humanize %>
+        <% if @coupon.repeating? %>(for <%= @coupon.duration_in_months %> months)<% end %>
+        &middot;
+        <% if @coupon.redeemable? %>
+          <span class="text-green-600 dark:text-green-400">Redeemable</span>
+        <% else %>
+          <span class="text-red-500">Not redeemable</span>
+        <% end %>
+      </p>
+    </div>
+    <div class="mt-4 flex items-center gap-2 sm:mt-0">
+      <%= link_to "Edit", edit_admin_coupon_path(@coupon),
+        class: "inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+      <% unless @coupon.stripe_synced? %>
+        <%= button_to "Sync to Stripe", sync_to_stripe_admin_coupon_path(@coupon),
+          method: :post,
+          class: "inline-flex items-center rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Discount Info Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Discount Details</h3>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Type</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @coupon.discount_type.humanize %></p>
+        </div>
+        <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Value</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @coupon.discount_display %></p>
+        </div>
+        <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Duration</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-white">
+            <%= @coupon.duration.humanize %>
+            <%= "(#{@coupon.duration_in_months}mo)" if @coupon.repeating? %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Restrictions Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Restrictions</h3>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Applicable Plans</span>
+          <span class="font-medium text-gray-700 dark:text-gray-300">
+            <% if @coupon.applicable_plans == "all" %>
+              All plans
+            <% else %>
+              <%= @coupon.applicable_plan_list.map(&:titleize).join(", ") %>
+            <% end %>
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Max Redemptions</span>
+          <span class="font-medium text-gray-700 dark:text-gray-300"><%= @coupon.max_redemptions || "Unlimited" %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Expires</span>
+          <span class="font-medium text-gray-700 dark:text-gray-300">
+            <% if @coupon.expires_at.present? %>
+              <%= @coupon.expires_at.strftime("%b %d, %Y at %I:%M %p") %>
+              <% if @coupon.expired? %>
+                <span class="text-red-500 ml-1">(expired)</span>
+              <% end %>
+            <% else %>
+              Never
+            <% end %>
+          </span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Status</span>
+          <span class="font-medium text-gray-700 dark:text-gray-300"><%= @coupon.active? ? "Active" : "Inactive" %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Stripe Integration Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Stripe Integration</h3>
+        <% if @coupon.stripe_synced? %>
+          <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Synced</span>
+        <% else %>
+          <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Not synced</span>
+        <% end %>
+      </div>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Stripe Coupon ID</span>
+          <span class="font-mono text-xs text-gray-600 dark:text-gray-400"><%= @coupon.stripe_coupon_id || "\u2014" %></span>
+        </div>
+      </div>
+      <% unless @coupon.stripe_synced? %>
+        <div class="mt-4 rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
+          <p class="text-sm text-amber-800 dark:text-amber-300">
+            This coupon has not been synced to Stripe yet. Users cannot apply it during checkout until synced.
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Usage Stats Card %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Usage</h3>
+    </div>
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl font-bold text-gray-900 dark:text-white"><%= @coupon.redemptions_count %></span>
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+          redemption<%= @coupon.redemptions_count == 1 ? '' : 's' %>
+          <% if @coupon.max_redemptions.present? %>
+            of <%= @coupon.max_redemptions %> max
+          <% end %>
+        </span>
+      </div>
+      <% if @coupon.max_redemptions.present? && @coupon.max_redemptions > 0 %>
+        <div class="mt-3 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+          <div class="bg-primary-500 h-2 rounded-full" style="width: <%= [(@coupon.redemptions_count.to_f / @coupon.max_redemptions * 100), 100].min %>%"></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Danger Zone %>
+  <div class="rounded-2xl border border-red-200 bg-white dark:border-red-900/50 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <h3 class="text-base font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
+    </div>
+    <div class="border-t border-red-100 p-5 sm:p-6 dark:border-red-900/50">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Delete this coupon</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Only possible if the coupon has never been redeemed.</p>
+        </div>
+        <%= button_to "Delete Coupon", admin_coupon_path(@coupon),
+          method: :delete,
+          class: "inline-flex items-center rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-red-900/20",
+          data: { turbo_confirm: "Are you sure? This cannot be undone." } %>
+      </div>
+    </div>
+  </div>
+</div>

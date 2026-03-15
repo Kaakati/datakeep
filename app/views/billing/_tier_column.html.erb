@@ -83,6 +83,7 @@
       <%= form_with url: subscription_path, method: :post, data: { turbo: false }, class: "w-full" do |f| %>
         <%= f.hidden_field :plan_tier, value: tier_key %>
         <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+        <input type="hidden" name="coupon_code" value="" data-coupon-code-target="hiddenFields">
         <%= f.submit "Subscribe to #{tier[:label]}",
           class: "w-full rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition cursor-pointer" %>
       <% end %>
@@ -90,6 +91,7 @@
       <%= form_with url: subscription_path, method: :patch, data: { turbo: false }, class: "w-full" do |f| %>
         <%= f.hidden_field :plan_tier, value: tier_key %>
         <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+        <input type="hidden" name="coupon_code" value="" data-coupon-code-target="hiddenFields">
         <%= f.submit "Upgrade to #{tier[:label]}",
           class: "w-full rounded-lg bg-green-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-600 transition cursor-pointer" %>
       <% end %>
@@ -97,6 +99,7 @@
       <%= form_with url: subscription_path, method: :patch, data: { turbo: false }, class: "w-full" do |f| %>
         <%= f.hidden_field :plan_tier, value: tier_key %>
         <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+        <input type="hidden" name="coupon_code" value="" data-coupon-code-target="hiddenFields">
         <%= f.submit "Downgrade to #{tier[:label]}",
           class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
       <% end %>

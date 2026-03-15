@@ -1,0 +1,88 @@
+<div class="w-full max-w-2xl space-y-6">
+  <div class="flex items-center gap-3">
+    <%= link_to profile_path, class: "flex items-center justify-center h-9 w-9 rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200" do %>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+    <% end %>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Edit Profile</h1>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update your personal information</p>
+    </div>
+  </div>
+
+  <%# Personal Information %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <h3 class="text-base font-semibold text-gray-900 dark:text-white">Personal Information</h3>
+    </div>
+    <div class="p-6">
+      <%= form_with model: @user, url: profile_path, method: :patch, class: "space-y-5" do |f| %>
+        <% if @user.errors.any? && @user.errors.attribute_names.intersect?([:name, :email]) %>
+          <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+            <ul class="list-disc space-y-1 pl-5 text-sm text-red-700 dark:text-red-300">
+              <% @user.errors.full_messages_for(:name, :email).each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div>
+          <%= f.label :name, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+          <%= f.text_field :name, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white", required: true %>
+        </div>
+
+        <div>
+          <%= f.label :email, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+          <%= f.email_field :email, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white", required: true %>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <%= f.submit "Save Changes", class: "rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Change Password — non-OAuth users only %>
+  <% unless @user.oauth_user? %>
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]" id="password">
+      <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Change Password</h3>
+      </div>
+      <div class="p-6">
+        <%= form_with model: @user, url: profile_path, method: :patch, class: "space-y-5" do |f| %>
+          <% if @user.errors[:current_password].any? %>
+            <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+              <p class="text-sm text-red-700 dark:text-red-300">Current password <%= @user.errors[:current_password].first %></p>
+            </div>
+          <% end %>
+
+          <div>
+            <label for="user_current_password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Current password</label>
+            <input type="password" name="user[current_password]" id="user_current_password" autocomplete="current-password" required class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+          </div>
+
+          <div>
+            <%= f.label :password, "New password", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+            <%= f.password_field :password, autocomplete: "new-password", required: true, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimum 8 characters</p>
+            <% if @user.errors[:password].any? %>
+              <p class="mt-1 text-sm text-red-600"><%= @user.errors[:password].first %></p>
+            <% end %>
+          </div>
+
+          <div>
+            <%= f.label :password_confirmation, "Confirm new password", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password", required: true, class: "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" %>
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <%= f.submit "Update Password", class: "rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-600 transition-colors cursor-pointer" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
