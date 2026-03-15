@@ -152,38 +152,32 @@ module BillingHelper
     end
   end
 
-  def render_s3_card(label, allowed_flag) # rubocop:disable Metrics/MethodLength
+  def render_s3_card(label, allowed_flag)
     allowed = allowed_flag.present? && allowed_flag != false && allowed_flag != 0
-
-    icon_svg = if allowed
-                 # Checkmark icon
-                 content_tag(:svg, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24",
-                   stroke_width: "1.5", stroke: "currentColor", class: "h-5 w-5 text-emerald-500") do
-                   tag.path(stroke_linecap: "round", stroke_linejoin: "round",
-                     d: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z")
-                 end
-               else
-                 # Lock icon
-                 content_tag(:svg, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24",
-                   stroke_width: "1.5", stroke: "currentColor", class: "h-5 w-5 text-gray-400") do
-                   tag.path(stroke_linecap: "round", stroke_linejoin: "round",
-                     d: "M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z")
-                 end
-               end
-
+    icon_svg = s3_icon_svg(allowed)
     status_text = allowed ? "Enabled" : "Locked"
     status_class = allowed ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
 
     content_tag(:div, class: "rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-4 flex flex-col gap-2") do
       safe_join([
         content_tag(:div, class: "flex items-center gap-2") do
-          safe_join([
-            icon_svg,
-            content_tag(:span, label, class: "text-sm font-medium text-gray-700 dark:text-gray-300")
-          ])
+          safe_join([icon_svg, content_tag(:span, label, class: "text-sm font-medium text-gray-700 dark:text-gray-300")])
         end,
         content_tag(:span, status_text, class: "text-2xl font-semibold #{status_class}")
       ])
+    end
+  end
+
+  def s3_icon_svg(allowed)
+    path_d = if allowed
+               "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+             else
+               "M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+             end
+    color = allowed ? "text-emerald-500" : "text-gray-400"
+    content_tag(:svg, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24",
+      stroke_width: "1.5", stroke: "currentColor", class: "h-5 w-5 #{color}") do
+      tag.path(stroke_linecap: "round", stroke_linejoin: "round", d: path_d)
     end
   end
 
