@@ -4,6 +4,7 @@
 # Sends unhandled exception alerts to Discord via webhook.
 if Rails.env.production?
   require "exception_notification/rails"
+  require_relative "../../app/services/exception_notifier/discord_notifier"
 
   ExceptionNotification.configure do |config|
     # Ignore exceptions that are commonly caused by bots/crawlers
