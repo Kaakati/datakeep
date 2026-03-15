@@ -140,13 +140,12 @@
         <div>
           <%= f.label :database_name, "Database Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <%= f.text_field :database_name, placeholder: "myapp_production", data: { database_url_target: "database", database_type_target: "databaseNameField" }, class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
-          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400" data-database-type-target="databaseNameHelp">
-            <% case database_config.database_type %>
-            <% when "mysql" %>e.g. myapp
-            <% when "mongodb" %>e.g. mydb
-            <% else %>e.g. myapp_production
-            <% end %>
-          </p>
+          <% db_name_example = case database_config.database_type
+             when "mysql" then "e.g. myapp"
+             when "mongodb" then "e.g. mydb"
+             else "e.g. myapp_production"
+             end %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400" data-database-type-target="databaseNameHelp"><%= db_name_example %></p>
         </div>
 
         <div>
