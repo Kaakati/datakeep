@@ -35,8 +35,14 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 # Install MongoDB Database Tools (mongodump, mongorestore) via direct download
-# Avoids apt repo GPG issues on Debian Trixie
-RUN curl -fsSL https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian12-x86_64-100.12.0.deb -o /tmp/mongodb-tools.deb && \
+# Avoids apt repo GPG issues on Debian Trixie; auto-detect arch for Apple Silicon
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "arm64" ]; then \
+      MONGO_URL="https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-arm64-100.12.0.deb"; \
+    else \
+      MONGO_URL="https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian12-x86_64-100.12.0.deb"; \
+    fi && \
+    curl -fsSL "$MONGO_URL" -o /tmp/mongodb-tools.deb && \
     apt-get update -qq && \
     apt-get install --no-install-recommends -y /tmp/mongodb-tools.deb && \
     rm -f /tmp/mongodb-tools.deb && \
