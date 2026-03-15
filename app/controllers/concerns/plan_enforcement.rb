@@ -7,7 +7,8 @@ module PlanEnforcement
     database_config: "databases",
     backup_job: "backup jobs",
     storage_backend: "storage backends",
-    notification_channel: "notification channels"
+    notification_channel: "notification channels",
+    sync_job: "sync jobs"
   }.freeze
 
   class_methods do

@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-5xl space-y-6">
+<div class="w-full space-y-6">
   <%# Page Header %>
   <div>
     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Billing & Plan</h2>
@@ -21,7 +21,12 @@
     <%= render "billing/enterprise_card" %>
   <% else %>
     <%# Section 1: Current Plan Card %>
-    <%= render "billing/current_plan_card" %>
+    <%= render "billing/current_plan_card",
+               plan_limits: @plan_limits,
+               usage: @usage,
+               current_tier: @current_tier,
+               tier_definitions: @tier_definitions,
+               subscription: @subscription %>
 
     <%# Section 2: Pricing Grid %>
     <%= render "billing/pricing_grid" %>

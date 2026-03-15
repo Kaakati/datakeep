@@ -15,6 +15,10 @@ module PlanTierLimits
       max_zones: 1,
       max_jobs_per_month: 31,
       min_backup_interval: "daily",
+      min_backup_interval_minutes: 1440,
+      max_sync_jobs: 0,
+      min_sync_interval_minutes: nil,
+      max_restores_per_month: 2,
       s3_allowed: false,
       monthly_price_cents: 0,
       annual_price_cents: 0
@@ -30,6 +34,10 @@ module PlanTierLimits
       max_zones: 1,
       max_jobs_per_month: 5_000,
       min_backup_interval: "daily",
+      min_backup_interval_minutes: 1440,
+      max_sync_jobs: 2,
+      min_sync_interval_minutes: 60,
+      max_restores_per_month: 20,
       s3_allowed: true,
       monthly_price_cents: 3_900,
       annual_price_cents: 37_440
@@ -45,6 +53,10 @@ module PlanTierLimits
       max_zones: 2,
       max_jobs_per_month: 50_000,
       min_backup_interval: "hourly",
+      min_backup_interval_minutes: 60,
+      max_sync_jobs: 10,
+      min_sync_interval_minutes: 15,
+      max_restores_per_month: 100,
       s3_allowed: true,
       monthly_price_cents: 9_900,
       annual_price_cents: 95_040
@@ -60,6 +72,10 @@ module PlanTierLimits
       max_zones: 3,
       max_jobs_per_month: 500_000,
       min_backup_interval: "every_15_min",
+      min_backup_interval_minutes: 15,
+      max_sync_jobs: nil,
+      min_sync_interval_minutes: 5,
+      max_restores_per_month: nil,
       s3_allowed: true,
       monthly_price_cents: 29_900,
       annual_price_cents: 287_040

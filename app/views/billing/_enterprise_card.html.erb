@@ -49,7 +49,7 @@
 
     <%# Usage Summary %>
     <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Usage Summary</h4>
-    <div class="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-4">
+    <div class="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-3 lg:grid-cols-6">
       <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
         <p class="text-xs text-gray-500 dark:text-gray-400">Databases</p>
         <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @usage[:database_configs] %>/<%= @plan_limits[:max_database_configs] %></p>
@@ -57,6 +57,16 @@
       <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
         <p class="text-xs text-gray-500 dark:text-gray-400">Backup Jobs</p>
         <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @usage[:backup_jobs] %></p>
+        <p class="text-xs text-gray-400">Unlimited</p>
+      </div>
+      <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Sync Jobs</p>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @usage[:sync_jobs] %></p>
+        <p class="text-xs text-gray-400">Unlimited</p>
+      </div>
+      <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Restores (30d)</p>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= @usage[:restores_this_month] %></p>
         <p class="text-xs text-gray-400">Unlimited</p>
       </div>
       <div class="rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">

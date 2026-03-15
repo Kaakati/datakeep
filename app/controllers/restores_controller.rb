@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class RestoresController < ApplicationController
+  MAX_UPLOAD_SIZE = 500.megabytes
+
   before_action :set_restore, only: [:show]
+  before_action :enforce_restore_limit, only: [:create, :upload]
 
   def index
     @restores = Restore.joins(:database_config)
@@ -57,6 +60,11 @@ class RestoresController < ApplicationController
     target_config = current_user.database_configs.find(params[:database_config_id])
     uploaded_file = params[:dump_file]
 
+    if uploaded_file.size > MAX_UPLOAD_SIZE
+      redirect_to new_restore_path, alert: "Upload file size exceeds the #{MAX_UPLOAD_SIZE / 1.megabyte}MB limit."
+      return
+    end
+
     # Save uploaded file to a permanent location
     upload_dir = Rails.root.join("storage", "uploads", current_user.id.to_s)
     FileUtils.mkdir_p(upload_dir)
@@ -81,6 +89,18 @@ class RestoresController < ApplicationController
   end
 
   private
+
+  def enforce_restore_limit
+    return if current_user.admin?
+    limit = current_user.plan_limits[:max_restores_per_month]
+    return if limit.nil?
+    count = current_user.restores.where("created_at > ?", 30.days.ago).count
+    if count >= limit
+      flash[:alert] = "You've reached your plan's limit of #{limit} restores per month. " \
+                       "Upgrade your plan to restore more."
+      redirect_to billing_path
+    end
+  end
 
   def set_restore
     @restore = Restore.joins(:database_config)

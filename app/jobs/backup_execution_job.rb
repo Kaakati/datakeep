@@ -25,6 +25,19 @@ class BackupExecutionJob < ApplicationJob
       end
     end
 
+    # Check monthly job execution limit
+    if monthly_limit_reached?(backup_job)
+      Rails.logger.info "[BackupExecutionJob] Job #{backup_job_id} monthly execution limit reached, skipping"
+      SchedulerService.update_next_run(backup_job)
+      AuditLog.log(
+        action: "backup_monthly_limit_reached",
+        user: backup_job.user,
+        resource: backup_job,
+        details: { limit: backup_job.user.plan_limits[:max_jobs_per_month] }
+      )
+      return
+    end
+
     backup_job.update!(status: "running", last_run_at: Time.current)
 
     backends = backup_job.effective_storage_backends
@@ -170,6 +183,13 @@ class BackupExecutionJob < ApplicationJob
     )
 
     true
+  end
+
+  def monthly_limit_reached?(backup_job)
+    return false if backup_job.user.admin?
+    limit = backup_job.user.plan_limits[:max_jobs_per_month]
+    return false if limit.nil?
+    backup_job.backups.where("created_at > ?", 30.days.ago).count >= limit
   end
 
   def stale_running_job?(backup_job)

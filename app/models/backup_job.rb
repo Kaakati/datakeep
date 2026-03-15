@@ -17,6 +17,7 @@ class BackupJob < ApplicationRecord
   validates :schedule_type, presence: true, inclusion: { in: %w[hourly daily weekly monthly custom] }
   validates :retention_days, numericality: { only_integer: true, greater_than: 0 }
   validate :retention_within_plan_limit
+  validate :frequency_within_plan_limit
   validates :cron_expression, presence: true, if: -> { schedule_type == "custom" }
   validate :validate_cron_expression, if: -> { cron_expression.present? }
 
@@ -122,6 +123,49 @@ class BackupJob < ApplicationRecord
   end
 
   private
+
+  SCHEDULE_INTERVAL_MINUTES = {
+    "hourly" => 60,
+    "daily" => 1440,
+    "weekly" => 10_080,
+    "monthly" => 43_200
+  }.freeze
+
+  def frequency_within_plan_limit
+    return unless user && schedule_type.present?
+    min_minutes = user.plan_limits[:min_backup_interval_minutes]
+    return unless min_minutes
+
+    effective_minutes = SCHEDULE_INTERVAL_MINUTES[schedule_type]
+    # For custom cron, estimate from expression
+    if schedule_type == "custom" && cron_expression.present?
+      effective_minutes = estimate_cron_interval_minutes
+    end
+    return unless effective_minutes
+
+    if effective_minutes < min_minutes
+      human = if min_minutes >= 1440
+                "#{min_minutes / 1440} day(s)"
+              elsif min_minutes >= 60
+                "#{min_minutes / 60} hour(s)"
+              else
+                "#{min_minutes} minutes"
+              end
+      errors.add(:schedule_type, "interval is too frequent for your plan. Minimum interval is #{human}.")
+    end
+  end
+
+  def estimate_cron_interval_minutes
+    parsed = Fugit.parse(cron_expression)
+    return nil unless parsed
+    # Get next two occurrences and compute difference
+    first = parsed.next_time
+    second = parsed.next_time(first)
+    return nil unless first && second
+    ((second.to_f - first.to_f) / 60).round
+  rescue
+    nil
+  end
 
   def retention_within_plan_limit
     return unless user && retention_days

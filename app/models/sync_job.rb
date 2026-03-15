@@ -11,6 +11,7 @@ class SyncJob < ApplicationRecord
   validates :interval_minutes, numericality: { only_integer: true, greater_than: 0 }
   validate :targets_must_differ_from_source
   validate :targets_same_engine_as_source
+  validate :interval_within_plan_limit
 
   STATUSES = %w[idle running failed].freeze
 
@@ -94,6 +95,15 @@ class SyncJob < ApplicationRecord
 
     if sync_job_targets.any? { |t| t.database_config_id == source_database_config_id }
       errors.add(:base, "Target databases cannot include the source database")
+    end
+  end
+
+  def interval_within_plan_limit
+    return unless user
+    min = user.plan_limits[:min_sync_interval_minutes]
+    return unless min
+    if interval_minutes < min
+      errors.add(:interval_minutes, "must be at least #{min} minutes on your current plan")
     end
   end
 

@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class SyncJobsController < ApplicationController
+  include PlanEnforcement
+
   before_action :set_sync_job, only: [ :show, :edit, :update, :destroy, :run_now, :pause, :resume ]
+  enforce_plan_limit :sync_job, only: [ :new, :create ]
 
   def index
     @sync_jobs = current_user.sync_jobs

@@ -30,6 +30,7 @@ module StorageBackends
     ].freeze
 
     validates :encrypted_config, presence: true
+    validate :s3_allowed_by_plan
 
     def bucket_name
       config[:bucket]
@@ -105,6 +106,14 @@ module StorageBackends
     end
 
     private
+
+    def s3_allowed_by_plan
+      return unless user
+      return if user.admin?
+      unless user.plan_limits[:s3_allowed]
+        errors.add(:base, "S3 storage requires an upgraded plan")
+      end
+    end
 
     def build_key(name)
       return name if prefix.blank?

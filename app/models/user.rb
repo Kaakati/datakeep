@@ -3,6 +3,27 @@
 class User < ApplicationRecord
   include PlanTierLimits
 
+  # Keys exposed via plan_limits — single source of truth.
+  # When adding a new limit, add it here and in TIER_DEFINITIONS.
+  PLAN_LIMIT_KEYS = %i[
+    max_database_configs max_backup_jobs max_storage_backends
+    max_notification_channels max_retention_days max_sync_jobs
+    min_sync_interval_minutes max_restores_per_month max_jobs_per_month
+    min_backup_interval_minutes s3_allowed
+  ].freeze
+
+  ENTERPRISE_DEFAULTS = {
+    max_backup_jobs: nil,
+    max_storage_backends: nil,
+    max_notification_channels: nil,
+    max_sync_jobs: nil,
+    min_sync_interval_minutes: 5,
+    max_restores_per_month: nil,
+    max_jobs_per_month: nil,
+    min_backup_interval_minutes: 15,
+    s3_allowed: true
+  }.freeze
+
   has_secure_password validations: false
 
   enum :role, { user: 0, admin: 1 }, default: :user
@@ -12,6 +33,7 @@ class User < ApplicationRecord
   has_many :backup_jobs, dependent: :destroy
   has_many :sync_jobs, dependent: :destroy
   has_many :notification_channels, dependent: :destroy
+  has_many :restores, dependent: :destroy
   has_many :enterprise_quotes
   has_many :audit_logs, dependent: :nullify
   has_one  :subscription, dependent: :destroy
@@ -59,29 +81,9 @@ class User < ApplicationRecord
 
   def plan_limits
     if enterprise_plan?
-      quote = active_enterprise_quote
-      databases = quote.quote_params["databases"] || []
-      retention = (quote.quote_params["retention_days"] || 365).to_i
-      {
-        max_database_configs: databases.size,
-        max_backup_jobs: nil,
-        max_storage_backends: nil,
-        max_notification_channels: nil,
-        max_retention_days: retention,
-        s3_allowed: true,
-        default_size_gb: nil
-      }
+      enterprise_plan_limits
     else
-      tier = resolve_tier_limits(plan_tier_key)
-      {
-        max_database_configs: tier[:max_database_configs],
-        max_backup_jobs: tier[:max_backup_jobs],
-        max_storage_backends: tier[:max_storage_backends],
-        max_notification_channels: tier[:max_notification_channels],
-        max_retention_days: tier[:max_retention_days],
-        s3_allowed: tier[:s3_allowed],
-        default_size_gb: tier[:max_storage_gb]
-      }
+      tier_plan_limits
     end
   end
 
@@ -96,7 +98,9 @@ class User < ApplicationRecord
       database_configs: database_configs.count,
       backup_jobs: backup_jobs.count,
       storage_backends: storage_backends.count,
-      notification_channels: notification_channels.count
+      notification_channels: notification_channels.count,
+      sync_jobs: sync_jobs.count,
+      restores_this_month: restores.where("created_at > ?", 30.days.ago).count
     }
   end
 
@@ -142,6 +146,27 @@ class User < ApplicationRecord
   end
 
   private
+
+  def enterprise_plan_limits
+    quote = active_enterprise_quote
+    databases = quote.quote_params["databases"] || []
+    retention = (quote.quote_params["retention_days"] || 365).to_i
+
+    ENTERPRISE_DEFAULTS.merge(
+      max_database_configs: databases.size,
+      max_retention_days: retention,
+      default_size_gb: nil
+    )
+  end
+
+  def tier_plan_limits
+    tier = resolve_tier_limits(plan_tier_key)
+    limits = PLAN_LIMIT_KEYS.each_with_object({}) do |key, hash|
+      hash[key] = tier[key]
+    end
+    limits[:default_size_gb] = tier[:max_storage_gb]
+    limits
+  end
 
   def resolve_tier_limits(key)
     db_plan = SubscriptionPlan.for_tier(key) if key != :free
