@@ -10,6 +10,15 @@ class DatabaseConfig < ApplicationRecord
 
   encrypts :encrypted_password
   encrypts :vpn_config_data
+  encrypts :ssh_private_key
+  encrypts :proxy_password
+  encrypts :vpn_preshared_key
+  encrypts :vpn_password
+
+  DATABASE_TYPES = DatabaseAdapterFactory::SUPPORTED_DATABASE_TYPES.freeze
+  SSL_MODES = %w[disable allow prefer require verify-ca verify-full].freeze
+  VPN_TYPES = %w[openvpn ipsec ipsec_simple wireguard ssh_tunnel socks5_proxy http_proxy].freeze
+  DEFAULT_PORTS = { "postgresql" => 5432, "mysql" => 3306, "mongodb" => 27017 }.freeze
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :host, presence: true
@@ -18,19 +27,18 @@ class DatabaseConfig < ApplicationRecord
   validates :username, presence: true
   validates :database_type, presence: true, inclusion: { in: DatabaseAdapterFactory::SUPPORTED_DATABASE_TYPES }
   validates :ssl_mode, inclusion: { in: %w[disable allow prefer require verify-ca verify-full] }, allow_blank: true
-  validates :vpn_type, inclusion: { in: %w[openvpn ipsec] }, if: :vpn_enabled?
-  validates :vpn_config_data, presence: true, if: :vpn_enabled?
-  validates :vpn_gateway_ip, presence: true, if: :vpn_enabled?
-  validates :vpn_tunnel_name, presence: true, if: :vpn_enabled?
+  validates :vpn_type, inclusion: { in: VPN_TYPES }, if: :vpn_enabled?
+  validates :vpn_config_data, presence: true, if: -> { vpn_enabled? && vpn_type.in?(%w[openvpn ipsec wireguard]) }
+  validates :vpn_gateway_ip, presence: true, if: -> { vpn_enabled? && vpn_type.in?(%w[openvpn ipsec wireguard ipsec_simple]) }
+  validates :vpn_tunnel_name, presence: true, if: -> { vpn_enabled? && vpn_type.in?(%w[openvpn ipsec wireguard]) }
+  validates :ssh_host, :ssh_user, presence: true, if: -> { vpn_type == "ssh_tunnel" }
+  validates :proxy_host, :proxy_port, presence: true, if: -> { vpn_type&.end_with?("_proxy") }
+  validates :vpn_preshared_key, presence: true, if: -> { vpn_type == "ipsec_simple" }
   validates :quote_database_index, uniqueness: { scope: :enterprise_quote_id, message: "slot already assigned" },
             if: -> { enterprise_quote_id.present? }
 
   before_validation :generate_vpn_tunnel_name, if: -> { vpn_enabled? && vpn_tunnel_name.blank? && name.present? }
 
-  DATABASE_TYPES = DatabaseAdapterFactory::SUPPORTED_DATABASE_TYPES.freeze
-  SSL_MODES = %w[disable allow prefer require verify-ca verify-full].freeze
-  VPN_TYPES = %w[openvpn ipsec].freeze
-  DEFAULT_PORTS = { "postgresql" => 5432, "mysql" => 3306, "mongodb" => 27017 }.freeze
   HEALTH_STATUSES = %w[unknown healthy unhealthy].freeze
 
   scope :healthy, -> { where(health_status: "healthy") }
@@ -58,8 +66,8 @@ class DatabaseConfig < ApplicationRecord
 
   def connection_params
     {
-      host: host,
-      port: port,
+      host: @tunneled_host || host,
+      port: @tunneled_port || port,
       dbname: database_name,
       user: username,
       password: password,
@@ -114,7 +122,79 @@ class DatabaseConfig < ApplicationRecord
   end
 
   def vpn_configured?
-    vpn_enabled? && vpn_type.present? && vpn_config_data.present?
+    return false unless vpn_enabled? && vpn_type.present?
+
+    case vpn_type
+    when "ssh_tunnel"
+      ssh_host.present? && ssh_user.present?
+    when "socks5_proxy", "http_proxy"
+      proxy_host.present? && proxy_port.present?
+    when "ipsec_simple"
+      vpn_gateway_ip.present? && vpn_preshared_key.present?
+    else
+      vpn_config_data.present?
+    end
+  end
+
+  # Auto-generate swanctl config from simple IPSec credentials
+  def ipsec_simple_config
+    return nil unless vpn_type == "ipsec_simple"
+
+    conn_name = vpn_tunnel_name.presence || "datakeep"
+    config = <<~SWANCTL
+      connections {
+        #{conn_name} {
+          version = 2
+          remote_addrs = #{vpn_gateway_ip}
+          local {
+            auth = psk
+    SWANCTL
+
+    if vpn_username.present?
+      config += <<~SWANCTL.indent(8)
+        id = #{vpn_username}
+      SWANCTL
+    end
+
+    config += <<~SWANCTL
+          }
+          remote {
+            auth = psk
+          }
+          children {
+            #{conn_name} {
+              remote_ts = 0.0.0.0/0
+              start_action = start
+            }
+          }
+        }
+      }
+      secrets {
+        ike-#{conn_name} {
+          secret = "#{vpn_preshared_key}"
+    SWANCTL
+
+    if vpn_username.present?
+      config += <<~SWANCTL.indent(6)
+        id = #{vpn_username}
+      SWANCTL
+    end
+
+    config += <<~SWANCTL
+        }
+    SWANCTL
+
+    if vpn_username.present? && vpn_password.present?
+      config += <<~SWANCTL
+        eap-#{conn_name} {
+          secret = "#{vpn_password}"
+          id = #{vpn_username}
+        }
+      SWANCTL
+    end
+
+    config += "}\n"
+    config
   end
 
   def display_engine_name
