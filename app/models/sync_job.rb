@@ -10,6 +10,7 @@ class SyncJob < ApplicationRecord
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :interval_minutes, numericality: { only_integer: true, greater_than: 0 }
   validate :targets_must_differ_from_source
+  validate :targets_same_engine_as_source
 
   STATUSES = %w[idle running failed].freeze
 
@@ -93,6 +94,19 @@ class SyncJob < ApplicationRecord
 
     if sync_job_targets.any? { |t| t.database_config_id == source_database_config_id }
       errors.add(:base, "Target databases cannot include the source database")
+    end
+  end
+
+  def targets_same_engine_as_source
+    return unless source_database_config.present?
+
+    source_type = source_database_config.database_type
+    incompatible = sync_job_targets.select do |t|
+      t.database_config&.database_type != source_type
+    end
+
+    if incompatible.any?
+      errors.add(:base, "All target databases must be the same engine as the source (#{source_database_config.display_engine_name})")
     end
   end
 end

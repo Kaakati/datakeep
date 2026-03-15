@@ -213,6 +213,27 @@ module DatabaseAdapters
     # MAINTENANCE OPERATIONS
     # =========================================================================
 
+    def compact_database
+      with_connection do |client|
+        collections = client.database.list_collections.map { |c| c["name"] }
+        return { success: true, message: "No collections to compact" } if collections.empty?
+
+        results = []
+        collections.each do |col|
+          begin
+            client.database.command(compact: col)
+            results << { collection: col, status: "OK" }
+          rescue StandardError => e
+            results << { collection: col, status: "Error: #{e.message}" }
+          end
+        end
+
+        { success: true, collections_compacted: results.size, details: results }
+      end
+    rescue StandardError => e
+      { success: false, error: e.message }
+    end
+
     def terminate_connections(database_name = nil)
       with_connection do |client|
         # MongoDB doesn't have a direct way to kill all connections to a DB.

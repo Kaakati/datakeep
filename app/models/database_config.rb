@@ -117,6 +117,14 @@ class DatabaseConfig < ApplicationRecord
     vpn_enabled? && vpn_type.present? && vpn_config_data.present?
   end
 
+  def display_engine_name
+    DatabaseEngineHelper::ENGINE_LABELS[database_type] || database_type.to_s.capitalize
+  end
+
+  def same_engine_as?(other)
+    database_type == other.database_type
+  end
+
   def fetch_statistics
     stats = {}
     stats[:database_size] = adapter.database_size

@@ -15,7 +15,7 @@
           <div>
             <%= f.label :database_config_id, "Target Database", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
             <div class="relative">
-              <%= f.collection_select :database_config_id, current_user.database_configs, :id, :name, { prompt: "Select a database" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
+              <%= f.collection_select :database_config_id, current_user.database_configs, :id, ->(db) { database_select_name(db) }, { prompt: "Select a database" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
               <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -47,14 +47,14 @@
     <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
       <div class="px-5 py-4 sm:px-6 sm:py-5">
         <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Restore from Uploaded File</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a PostgreSQL dump file to restore</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a database dump file to restore</p>
       </div>
       <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
-        <%= form_with url: upload_restore_path, method: :post, multipart: true, class: "space-y-5" do |f| %>
+        <%= form_with url: upload_restore_path, method: :post, multipart: true, class: "space-y-5", data: { controller: "restore-form", restore_form_engine_map_value: current_user.database_configs.pluck(:id, :database_type).to_h.to_json } do |f| %>
           <div>
             <%= f.label :database_config_id, "Target Database", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
             <div class="relative">
-              <%= f.collection_select :database_config_id, current_user.database_configs, :id, :name, { prompt: "Select a database" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" %>
+              <%= f.collection_select :database_config_id, current_user.database_configs, :id, ->(db) { database_select_name(db) }, { prompt: "Select a database" }, class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90", data: { action: "change->restore-form#updateFileAccept", restore_form_target: "databaseSelect" } %>
               <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
                 <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -66,9 +66,9 @@
           <div>
             <%= f.label :dump_file, "Dump File", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
             <div class="relative">
-              <%= f.file_field :dump_file, accept: ".sql,.dump,.gz,.sql.gz", class: "shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent text-sm text-gray-500 file:mr-4 file:h-full file:border-0 file:bg-brand-50 file:px-4 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 focus:border-brand-300 focus:ring-brand-500/10 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/70 dark:file:bg-gray-800 dark:file:text-white/90" %>
+              <%= f.file_field :dump_file, accept: ".sql,.dump,.gz,.sql.gz", class: "shadow-theme-xs h-11 w-full rounded-lg border border-gray-300 bg-transparent text-sm text-gray-500 file:mr-4 file:h-full file:border-0 file:bg-brand-50 file:px-4 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 focus:border-brand-300 focus:ring-brand-500/10 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/70 dark:file:bg-gray-800 dark:file:text-white/90", data: { restore_form_target: "fileInput" } %>
             </div>
-            <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Accepts .sql, .dump, .gz, or .sql.gz files</p>
+            <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400" data-restore-form-target="fileHelp">Accepts .sql, .dump, .gz, or .sql.gz files</p>
           </div>
 
           <div class="pt-2">

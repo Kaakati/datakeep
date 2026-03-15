@@ -1,8 +1,14 @@
 import { Controller } from "@hotwired/stimulus";
 
-// Updates default port, URL placeholder, and field visibility based on selected database type
+// Updates default port, URL placeholder, field visibility, and descriptions based on selected database type
 export default class extends Controller {
-  static targets = ["select", "sslField"];
+  static targets = [
+    "select",
+    "sslField",
+    "descriptionText",
+    "databaseNameHelp",
+    "databaseNameField",
+  ];
 
   static defaultPorts = {
     postgresql: 5432,
@@ -14,6 +20,24 @@ export default class extends Controller {
     postgresql: "postgresql://user:pass@host:5432/db",
     mysql: "mysql://user:pass@host:3306/db",
     mongodb: "mongodb://user:pass@host:27017/db",
+  };
+
+  static engineLabels = {
+    postgresql: "PostgreSQL",
+    mysql: "MySQL",
+    mongodb: "MongoDB",
+  };
+
+  static databaseNameExamples = {
+    postgresql: "e.g. myapp_production",
+    mysql: "e.g. myapp",
+    mongodb: "e.g. mydb",
+  };
+
+  static databaseNamePlaceholders = {
+    postgresql: "myapp_production",
+    mysql: "myapp",
+    mongodb: "mydb",
   };
 
   connect() {
@@ -28,6 +52,8 @@ export default class extends Controller {
     this.updatePort(type);
     this.updateUrlPlaceholder(type);
     this.updateSslVisibility(type);
+    this.updateDescription(type);
+    this.updateDatabaseNameHelp(type);
   }
 
   updatePort(type) {
@@ -58,5 +84,24 @@ export default class extends Controller {
 
     // SSL mode is relevant for PostgreSQL and MySQL, hidden for MongoDB
     this.sslFieldTarget.style.display = type === "mongodb" ? "none" : "";
+  }
+
+  updateDescription(type) {
+    if (!this.hasDescriptionTextTarget) return;
+
+    const label = this.constructor.engineLabels[type] || type;
+    this.descriptionTextTarget.innerHTML = `Configure your <strong>${label}</strong> connection details`;
+  }
+
+  updateDatabaseNameHelp(type) {
+    if (!this.hasDatabaseNameHelpTarget) return;
+
+    this.databaseNameHelpTarget.textContent =
+      this.constructor.databaseNameExamples[type] || "e.g. myapp_production";
+
+    if (this.hasDatabaseNameFieldTarget) {
+      this.databaseNameFieldTarget.placeholder =
+        this.constructor.databaseNamePlaceholders[type] || "myapp_production";
+    }
   }
 }

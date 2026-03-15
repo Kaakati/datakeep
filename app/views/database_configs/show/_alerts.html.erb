@@ -17,6 +17,19 @@
     <% alerts << { type: :warning, message: "Long running query (PID: #{query[:pid]}) running for #{query[:duration_seconds] / 60} minutes.", action: :kill_query, pid: query[:pid] } %>
   <% end %>
 <% end %>
+<% if db_stats && !db_stats[:error] && database_config.database_type == "mysql" %>
+  <% if db_stats[:slow_queries].to_i > 100 %>
+    <% alerts << { type: :warning, message: "High slow query count (#{number_with_delimiter(db_stats[:slow_queries])}). Consider optimizing queries or enabling the slow query log." } %>
+  <% end %>
+  <% if db_stats[:aborted_connections].to_i > 50 %>
+    <% alerts << { type: :warning, message: "High aborted connection count (#{number_with_delimiter(db_stats[:aborted_connections])}). Check client connection settings." } %>
+  <% end %>
+<% end %>
+<% if db_stats && !db_stats[:error] && database_config.database_type == "mongodb" %>
+  <% if db_stats[:resident_memory_mb].to_i > 4096 %>
+    <% alerts << { type: :warning, message: "High resident memory usage (#{db_stats[:resident_memory_mb]} MB). Consider reviewing indexes and working set size." } %>
+  <% end %>
+<% end %>
 
 <% if alerts.any? %>
   <section aria-label="Alerts" class="space-y-3">

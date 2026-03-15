@@ -38,7 +38,7 @@
           <%= f.label :source_database_config_id, "Source Database", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
           <div class="relative">
             <%= f.collection_select :source_database_config_id,
-                current_user.database_configs, :id, :name,
+                current_user.database_configs, :id, ->(db) { "#{db.name} (#{db.display_engine_name}) \u2014 #{db.host}:#{db.port}" },
                 { prompt: "Select source database" },
                 class: "shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90",
                 data: { action: "change->sync-job-form#updateTargets", sync_job_form_target: "sourceSelect" } %>
@@ -77,10 +77,12 @@
     <div class="px-5 py-4 sm:px-6 sm:py-5">
       <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Target Databases</h3>
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Select one or more databases to sync data into. <strong class="text-red-600">Warning:</strong> target databases will be overwritten on each sync.
+        Select one or more databases to sync data into. Targets must be the same engine as the source. <strong class="text-red-600">Warning:</strong> target databases will be overwritten on each sync.
       </p>
     </div>
-    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800" data-sync-job-form-target="targetsContainer">
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800"
+         data-sync-job-form-target="targetsContainer"
+         data-sync-job-form-engine-map-value="<%= current_user.database_configs.pluck(:id, :database_type).to_h.to_json %>">
       <% all_databases = current_user.database_configs %>
       <% if all_databases.count < 2 %>
         <p class="text-sm text-gray-500 dark:text-gray-400">You need at least 2 database connections to configure sync targets. <%= link_to "Add a database", new_database_config_path, class: "text-primary-500 hover:text-primary-700" %>.</p>
@@ -88,7 +90,7 @@
         <div class="space-y-4" data-sync-job-form-target="targetsList">
           <% all_databases.each do |db| %>
             <% target_checked = sync_job.target_database_config_ids.include?(db.id) %>
-            <div class="target-item" data-db-id="<%= db.id %>" data-sync-job-form-target="targetItem">
+            <div class="target-item" data-db-id="<%= db.id %>" data-database-type="<%= db.database_type %>" data-sync-job-form-target="targetItem">
               <div data-controller="checkbox"
                    data-checkbox-checked-value="<%= target_checked %>"
                    data-checkbox-checked-class="border-brand-500 bg-brand-500"
@@ -108,7 +110,7 @@
                     </div>
                   </div>
                   <div>
-                    <span class="text-sm font-medium text-gray-800 dark:text-white/90"><%= db.name %></span>
+                    <span class="text-sm font-medium text-gray-800 dark:text-white/90"><%= db.name %> <%= engine_badge(db.database_type) %></span>
                     <p class="text-sm text-gray-500 dark:text-gray-400"><%= db.host %>:<%= db.port %> / <%= db.database_name %></p>
                   </div>
                 </label>

@@ -24,12 +24,14 @@
       <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Username</dt>
       <dd class="mt-1 text-sm text-gray-900 dark:text-white/90 font-mono"><%= database_config.username %></dd>
     </div>
+    <% unless database_config.database_type == "mongodb" %>
     <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
       <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">SSL Mode</dt>
       <dd class="mt-1 text-sm text-gray-900 dark:text-white/90"><%= database_config.ssl_mode %></dd>
     </div>
+    <% end %>
     <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
-      <dt class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= database_config.database_type.capitalize %> Version</dt>
+      <dt class="text-sm font-medium text-gray-500 dark:text-gray-400"><%= engine_label(database_config.database_type) %> Version</dt>
       <dd class="mt-1 text-sm text-gray-900 dark:text-white/90"><%= database_config.engine_version || "Not detected" %></dd>
     </div>
     <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30 sm:col-span-2">

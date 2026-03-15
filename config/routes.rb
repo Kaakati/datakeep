@@ -65,6 +65,8 @@ Rails.application.routes.draw do
     member do
       post :test_connection
       post :vacuum
+      post :optimize
+      post :compact
       post :kill_query
     end
     resources :health_checks, only: [ :index ]
@@ -122,6 +124,9 @@ Rails.application.routes.draw do
   get "billing", to: "billing#show"
   resource :subscription, only: [:create, :update, :destroy]
   post "stripe_portal", to: "stripe_portal#create"
+
+  # Profile
+  resource :profile, only: [:edit, :update]
 
   # Audit logs
   resources :audit_logs, only: [ :index, :show ]

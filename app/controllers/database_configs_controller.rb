@@ -3,7 +3,7 @@
 class DatabaseConfigsController < ApplicationController
   include PlanEnforcement
 
-  before_action :set_database_config, only: [ :show, :edit, :update, :destroy, :test_connection, :vacuum, :kill_query ]
+  before_action :set_database_config, only: [ :show, :edit, :update, :destroy, :test_connection, :vacuum, :optimize, :compact, :kill_query ]
   enforce_plan_limit :database_config, only: [ :new, :create ]
 
   def index
@@ -108,7 +108,7 @@ class DatabaseConfigsController < ApplicationController
     )
 
     if result[:success]
-      redirect_to @database_config, notice: "Connection successful! #{@database_config.database_type.capitalize} version: #{@database_config.engine_version}"
+      redirect_to @database_config, notice: "Connection successful! #{@database_config.display_engine_name} version: #{@database_config.engine_version}"
     else
       redirect_to @database_config, alert: "Connection failed: #{result[:error]}"
     end
@@ -129,6 +129,52 @@ class DatabaseConfigsController < ApplicationController
       redirect_to @database_config, notice: "VACUUM ANALYZE completed successfully."
     else
       redirect_to @database_config, alert: "VACUUM ANALYZE failed: #{result[:error]}"
+    end
+  end
+
+  def optimize
+    unless @database_config.database_type == "mysql"
+      redirect_to @database_config, alert: "OPTIMIZE TABLES is only supported for MySQL databases."
+      return
+    end
+
+    result = @database_config.adapter.optimize_tables
+
+    AuditLog.log(
+      action: "optimize_database",
+      user: current_user,
+      resource: @database_config,
+      details: result,
+      ip_address: request.remote_ip
+    )
+
+    if result[:success]
+      redirect_to @database_config, notice: "OPTIMIZE TABLES completed successfully."
+    else
+      redirect_to @database_config, alert: "OPTIMIZE TABLES failed: #{result[:error]}"
+    end
+  end
+
+  def compact
+    unless @database_config.database_type == "mongodb"
+      redirect_to @database_config, alert: "Compact is only supported for MongoDB databases."
+      return
+    end
+
+    result = @database_config.adapter.compact_database
+
+    AuditLog.log(
+      action: "compact_database",
+      user: current_user,
+      resource: @database_config,
+      details: result,
+      ip_address: request.remote_ip
+    )
+
+    if result[:success]
+      redirect_to @database_config, notice: "Database compact completed successfully."
+    else
+      redirect_to @database_config, alert: "Database compact failed: #{result[:error]}"
     end
   end
 
@@ -198,7 +244,7 @@ class DatabaseConfigsController < ApplicationController
     )
 
     if result[:success]
-      { notice: "Database saved and connection verified! #{@database_config.database_type.capitalize} #{@database_config.engine_version}", alert: nil }
+      { notice: "Database saved and connection verified! #{@database_config.display_engine_name} #{@database_config.engine_version}", alert: nil }
     else
       { notice: "Database saved.", alert: "Connection test failed: #{result[:error]}" }
     end

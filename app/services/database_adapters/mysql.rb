@@ -234,6 +234,23 @@ module DatabaseAdapters
     # MAINTENANCE OPERATIONS
     # =========================================================================
 
+    def optimize_tables
+      with_connection do |client|
+        tables = client.query("SHOW TABLES").map { |row| row.values.first }
+        return { success: true, message: "No tables to optimize" } if tables.empty?
+
+        results = []
+        tables.each do |table|
+          result = client.query("OPTIMIZE TABLE `#{client.escape(table)}`")
+          results << { table: table, status: result.first&.dig("Msg_text") || "OK" }
+        end
+
+        { success: true, tables_optimized: results.size, details: results }
+      end
+    rescue StandardError => e
+      { success: false, error: e.message }
+    end
+
     def terminate_connections(database_name = nil)
       db_name = database_name || config.database_name
       with_connection do |client|

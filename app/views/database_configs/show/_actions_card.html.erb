@@ -19,22 +19,58 @@
       </svg>
     <% end %>
 
-    <% if database_config.healthy? && database_config.database_type == "postgresql" %>
-      <%= button_to vacuum_database_config_path(database_config),
-          method: :post,
-          data: { turbo_confirm: "Run VACUUM ANALYZE on this database? This may take a while on large databases." },
-          class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors group",
-          aria: { label: "Run VACUUM ANALYZE" } do %>
-        <svg class="w-5 h-5 text-purple-500 dark:text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        <span class="flex-1 text-left min-w-0">
-          <span class="block text-sm font-medium text-gray-900 dark:text-white">Vacuum Analyze</span>
-          <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">Optimize performance</span>
-        </span>
-        <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
+    <% if database_config.healthy? %>
+      <% if database_config.database_type == "postgresql" %>
+        <%= button_to vacuum_database_config_path(database_config),
+            method: :post,
+            data: { turbo_confirm: "Run VACUUM ANALYZE on this database? This may take a while on large databases." },
+            class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors group",
+            aria: { label: "Run VACUUM ANALYZE" } do %>
+          <svg class="w-5 h-5 text-purple-500 dark:text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="flex-1 text-left min-w-0">
+            <span class="block text-sm font-medium text-gray-900 dark:text-white">Vacuum Analyze</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">Reclaim storage and update statistics</span>
+          </span>
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        <% end %>
+      <% elsif database_config.database_type == "mysql" %>
+        <%= button_to optimize_database_config_path(database_config),
+            method: :post,
+            data: { turbo_confirm: "Run OPTIMIZE TABLES on this database? This may take a while on large databases." },
+            class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors group",
+            aria: { label: "Run OPTIMIZE TABLES" } do %>
+          <svg class="w-5 h-5 text-orange-500 dark:text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="flex-1 text-left min-w-0">
+            <span class="block text-sm font-medium text-gray-900 dark:text-white">Optimize Tables</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">Defragment and reclaim space</span>
+          </span>
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        <% end %>
+      <% elsif database_config.database_type == "mongodb" %>
+        <%= button_to compact_database_config_path(database_config),
+            method: :post,
+            data: { turbo_confirm: "Run compact on this database? This may take a while on large databases." },
+            class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors group",
+            aria: { label: "Run compact database" } do %>
+          <svg class="w-5 h-5 text-green-500 dark:text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="flex-1 text-left min-w-0">
+            <span class="block text-sm font-medium text-gray-900 dark:text-white">Compact Database</span>
+            <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">Reclaim disk space and defragment</span>
+          </span>
+          <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        <% end %>
       <% end %>
     <% end %>
 

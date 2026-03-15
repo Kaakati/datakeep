@@ -2,7 +2,7 @@
   <div class="sm:flex sm:items-center sm:justify-between">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-white/90">Database Configurations</h1>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your PostgreSQL database connections</p>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your database connections</p>
     </div>
     <div class="mt-4 sm:mt-0">
       <%= link_to new_database_config_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
@@ -73,7 +73,12 @@
                     <% end %>
                     <div>
                       <%= link_to db.name, db, class: "text-sm font-medium text-gray-700 hover:text-primary-600" %>
-                      <p class="text-xs text-gray-500">SSL: <%= db.ssl_mode %></p>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <%= engine_badge(db.database_type) %>
+                        <% if db.ssl_mode.present? && db.database_type != "mongodb" %>
+                          <span class="text-xs text-gray-500">SSL: <%= db.ssl_mode %></span>
+                        <% end %>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -83,9 +88,9 @@
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap">
                   <% if db.engine_version.present? %>
-                    <p class="text-sm text-gray-700"><%= db.database_type.capitalize %> <%= db.engine_version %></p>
+                    <p class="text-sm text-gray-700"><%= engine_label(db.database_type) %> <%= db.engine_version %></p>
                   <% else %>
-                    <p class="text-sm text-gray-400"><%= db.database_type.capitalize %></p>
+                    <p class="text-sm text-gray-400"><%= engine_label(db.database_type) %></p>
                   <% end %>
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap">
@@ -126,7 +131,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
         </svg>
         <h3 class="mt-2 text-sm font-semibold text-gray-900">No databases</h3>
-        <p class="mt-1 text-sm text-gray-500">Get started by adding your first PostgreSQL database.</p>
+        <p class="mt-1 text-sm text-gray-500">Get started by adding your first database. Supports PostgreSQL, MySQL, and MongoDB.</p>
         <div class="mt-6">
           <%= link_to new_database_config_path, class: "inline-flex items-center rounded-lg bg-primary-500 px-3 py-2 text-sm font-medium text-white hover:bg-primary-600" do %>
             <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

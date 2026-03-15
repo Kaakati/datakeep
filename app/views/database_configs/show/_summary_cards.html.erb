@@ -25,25 +25,44 @@
     </div>
   </article>
 
-  <%# Cache Hit Ratio Card %>
+  <%# Cache / Memory Card (engine-specific) %>
   <article class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
     <div class="flex items-center gap-4">
-      <% cache_ratio = db_stats && !db_stats[:error] ? db_stats[:cache_hit_ratio] : nil %>
-      <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= cache_ratio && cache_ratio >= 99 ? 'bg-green-50 text-green-500 dark:bg-green-900/20 dark:text-green-400' : cache_ratio && cache_ratio >= 95 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : cache_ratio ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' %>">
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-        </svg>
-      </div>
-      <div>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Cache Hit Ratio</p>
-        <span class="text-lg font-semibold text-gray-800 dark:text-white/90">
-          <% if cache_ratio %>
-            <%= cache_ratio %>%
-          <% else %>
-            <span class="text-gray-400">-</span>
-          <% end %>
-        </span>
-      </div>
+      <% if database_config.database_type == "mongodb" %>
+        <% mem_value = db_stats && !db_stats[:error] ? db_stats[:resident_memory_mb] : nil %>
+        <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= mem_value ? 'bg-green-50 text-green-500 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' %>">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400"><%= engine_cache_label(database_config.database_type) %></p>
+          <span class="text-lg font-semibold text-gray-800 dark:text-white/90">
+            <% if mem_value %>
+              <%= mem_value %> MB
+            <% else %>
+              <span class="text-gray-400">-</span>
+            <% end %>
+          </span>
+        </div>
+      <% else %>
+        <% cache_ratio = db_stats && !db_stats[:error] ? (db_stats[:cache_hit_ratio] || db_stats[:buffer_hit_ratio]) : nil %>
+        <div class="inline-flex h-12 w-12 items-center justify-center rounded-lg <%= cache_ratio && cache_ratio >= 99 ? 'bg-green-50 text-green-500 dark:bg-green-900/20 dark:text-green-400' : cache_ratio && cache_ratio >= 95 ? 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/20 dark:text-yellow-400' : cache_ratio ? 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' %>">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-gray-400"><%= engine_cache_label(database_config.database_type) %></p>
+          <span class="text-lg font-semibold text-gray-800 dark:text-white/90">
+            <% if cache_ratio %>
+              <%= cache_ratio %>%
+            <% else %>
+              <span class="text-gray-400">-</span>
+            <% end %>
+          </span>
+        </div>
+      <% end %>
     </div>
   </article>
 
@@ -58,11 +77,15 @@
       <div class="flex-1">
         <p class="text-xs text-gray-500 dark:text-gray-400">Connections</p>
         <% if db_stats && !db_stats[:error] %>
-          <% conn_percent = (db_stats[:active_connections].to_f / db_stats[:max_connections] * 100).round(1) %>
-          <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= db_stats[:active_connections] %> / <%= db_stats[:max_connections] %></span>
-          <div class="mt-1 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700" role="progressbar" aria-valuenow="<%= conn_percent %>" aria-valuemin="0" aria-valuemax="100" aria-label="Connection usage">
-            <div class="h-1.5 rounded-full <%= conn_percent > 80 ? 'bg-red-500' : conn_percent > 60 ? 'bg-yellow-500' : 'bg-green-500' %>" style="width: <%= conn_percent %>%"></div>
-          </div>
+          <% if db_stats[:max_connections].to_i > 0 %>
+            <% conn_percent = (db_stats[:active_connections].to_f / db_stats[:max_connections] * 100).round(1) %>
+            <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= db_stats[:active_connections] %> / <%= db_stats[:max_connections] %></span>
+            <div class="mt-1 h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700" role="progressbar" aria-valuenow="<%= conn_percent %>" aria-valuemin="0" aria-valuemax="100" aria-label="Connection usage">
+              <div class="h-1.5 rounded-full <%= conn_percent > 80 ? 'bg-red-500' : conn_percent > 60 ? 'bg-yellow-500' : 'bg-green-500' %>" style="width: <%= conn_percent %>%"></div>
+            </div>
+          <% else %>
+            <span class="text-lg font-semibold text-gray-800 dark:text-white/90"><%= db_stats[:active_connections] %></span>
+          <% end %>
         <% else %>
           <span class="text-lg font-semibold text-gray-400">-</span>
         <% end %>
