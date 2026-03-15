@@ -459,7 +459,8 @@ module DatabaseAdapters
     end
 
     def build_pg_dump_command(output_path, format, options)
-      cmd = ["pg_dump"]
+      cmd = proxychains_prefix
+      cmd << "pg_dump"
       cmd << "--host=#{config.host}"
       cmd << "--port=#{config.port}"
       cmd << "--username=#{config.username}"
@@ -489,6 +490,14 @@ module DatabaseAdapters
       end
     end
 
+    # Prepend proxychains if a proxy is configured via env var
+    def proxychains_prefix
+      conf = ENV["DATAKEEP_PROXYCHAINS_CONF"]
+      return [] unless conf.present? && File.exist?(conf)
+
+      ["proxychains4", "-f", conf]
+    end
+
     # Check if backup file is plain SQL (not custom format)
     # Custom format starts with "PGDMP"
     def plain_sql_backup?(file_path)
@@ -509,7 +518,8 @@ module DatabaseAdapters
     end
 
     def build_pg_restore_command(backup_path, options)
-      cmd = ["pg_restore"]
+      cmd = proxychains_prefix
+      cmd << "pg_restore"
       cmd << "--host=#{config.host}"
       cmd << "--port=#{config.port}"
       cmd << "--username=#{config.username}"
@@ -525,7 +535,8 @@ module DatabaseAdapters
     end
 
     def build_psql_command(backup_path, options)
-      cmd = ["psql"]
+      cmd = proxychains_prefix
+      cmd << "psql"
       cmd << "--host=#{config.host}"
       cmd << "--port=#{config.port}"
       cmd << "--username=#{config.username}"

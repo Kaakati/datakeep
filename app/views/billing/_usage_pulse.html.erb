@@ -1,0 +1,46 @@
+<%# Usage Pulse Grid — Section 2 of billing redesign
+     Compact metric cards showing current resource usage against plan limits.
+
+     Expected instance variables:
+       @usage       — Hash with :database_configs, :backup_jobs, :sync_jobs, :restores_this_month, :storage_used_gb, etc.
+       @plan_limits — Hash with :max_database_configs, :max_backup_jobs, :max_sync_jobs, :max_storage_gb, etc.
+%>
+
+<section>
+  <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <%= usage_pulse_card("Databases",
+          icon_name: :database,
+          used: @usage[:database_configs],
+          limit: @plan_limits[:max_database_configs]) %>
+
+    <%= usage_pulse_card("Backup Jobs",
+          icon_name: :backup,
+          used: @usage[:backup_jobs],
+          limit: @plan_limits[:max_backup_jobs]) %>
+
+    <%= usage_pulse_card("Sync Jobs",
+          icon_name: :sync,
+          used: @usage[:sync_jobs],
+          limit: @plan_limits[:max_sync_jobs]) %>
+
+    <%= usage_pulse_card("Restores (30d)",
+          icon_name: :restore,
+          used: @usage[:restores_this_month],
+          limit: @plan_limits[:max_restores_per_month]) %>
+
+    <%= usage_pulse_card("Storage",
+          icon_name: :storage,
+          used: @usage[:storage_used_gb],
+          limit: @plan_limits[:default_size_gb]) %>
+
+    <%= usage_pulse_card("Retention",
+          icon_name: :retention,
+          used: @plan_limits[:max_retention_days],
+          limit: nil) %>
+
+    <%= usage_pulse_card("Cloud Storage",
+          icon_name: :s3,
+          used: @plan_limits[:s3_allowed] ? 1 : 0,
+          limit: nil) %>
+  </div>
+</section>

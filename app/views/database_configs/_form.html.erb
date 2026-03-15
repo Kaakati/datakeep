@@ -258,71 +258,8 @@
     </div>
   </div>
 
-  <%# VPN Configuration Section %>
-  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]" data-controller="vpn-toggle">
-    <div class="px-5 py-4 sm:px-6 sm:py-5">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">VPN Configuration</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Connect through a VPN tunnel to reach databases in private networks</p>
-        </div>
-        <label class="relative inline-flex cursor-pointer items-center">
-          <%= f.check_box :vpn_enabled,
-            class: "sr-only peer",
-            data: { vpn_checkbox: true, action: "change->vpn-toggle#toggle" } %>
-          <div class="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-3 peer-focus:ring-primary-500/10 dark:border-gray-700 dark:bg-gray-700"></div>
-        </label>
-      </div>
-    </div>
-
-    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800 <%= 'hidden' unless database_config.vpn_enabled? %>" data-vpn-toggle-target="fields">
-      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div>
-          <%= f.label :vpn_type, "VPN Protocol", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <div class="relative">
-            <%= f.select :vpn_type,
-              DatabaseConfig::VPN_TYPES.map { |t| [t == "openvpn" ? "OpenVPN" : "IPSec (strongSwan)", t] },
-              { include_blank: "Select protocol..." },
-              class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90",
-              disabled: !database_config.vpn_enabled? %>
-            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <%= f.label :vpn_gateway_ip, "VPN Gateway IP", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :vpn_gateway_ip,
-            placeholder: "10.0.0.1 or vpn.example.com",
-            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30",
-            disabled: !database_config.vpn_enabled? %>
-        </div>
-
-        <div>
-          <%= f.label :vpn_tunnel_name, "Tunnel Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_field :vpn_tunnel_name,
-            placeholder: "Auto-generated if blank",
-            maxlength: 15,
-            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30",
-            disabled: !database_config.vpn_enabled? %>
-          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Max 15 characters. Leave blank to auto-generate from database name.</p>
-        </div>
-
-        <div class="sm:col-span-2">
-          <%= f.label :vpn_config_data, "VPN Configuration", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
-          <%= f.text_area :vpn_config_data,
-            rows: 8,
-            placeholder: "Paste your OpenVPN (.ovpn) or swanctl configuration here...",
-            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 font-mono placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30",
-            disabled: !database_config.vpn_enabled? %>
-          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Configuration is encrypted at rest. For OpenVPN, paste the full .ovpn file content. For IPSec, paste the swanctl connection config.</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  <%# Connection Method Section — narrative UI: "How do I reach your database?" %>
+  <%= render "database_configs/connection_method", f: f, database_config: database_config %>
 
   <%# Step 5: Engine-aware submit button %>
   <div class="flex justify-end space-x-3">

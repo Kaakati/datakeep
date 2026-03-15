@@ -1,0 +1,87 @@
+<%# Enterprise Details — shown to enterprise-tier users in the What's Next section %>
+<% if @quote.present? %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="px-5 py-4 sm:px-6 sm:py-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Enterprise Plan</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Custom plan tailored to your needs</p>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">$<%= "%.2f" % (@quote.total_monthly_cents / 100.0) %></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">per month</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+      <%# Purchased Databases %>
+      <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Purchased Databases</h4>
+      <div class="space-y-2 mb-6">
+        <% databases = @quote.quote_params["databases"] || [] %>
+        <% databases.each_with_index do |db, idx| %>
+          <% assigned = current_user.database_configs.find_by(enterprise_quote_id: @quote.id, quote_database_index: idx) %>
+          <div class="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-700">
+            <div class="flex items-center gap-3">
+              <div class="flex h-8 w-8 items-center justify-center rounded-lg <%= assigned ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-800' %>">
+                <svg class="h-4 w-4 <%= assigned ? 'text-green-600 dark:text-green-400' : 'text-gray-400' %>" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-800 dark:text-white/90"><%= db["name"] %></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400"><%= (db["engine"] || "postgresql").capitalize %> &middot; <%= db["size_gb"] %> GB</p>
+              </div>
+            </div>
+            <div>
+              <% if assigned %>
+                <span class="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  <%= assigned.name %>
+                </span>
+              <% else %>
+                <span class="text-xs text-gray-400 dark:text-gray-500">Unassigned</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Stripe Subscription Details %>
+      <% if @quote.stripe_subscription_id.present? || @quote.stripe_hosted_invoice_url.present? %>
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Subscription Details</h4>
+        <div class="space-y-2 text-sm mb-6">
+          <% if @quote.paid_at %>
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Paid since</span>
+              <span class="text-gray-800 dark:text-white/90"><%= @quote.paid_at.strftime("%B %d, %Y") %></span>
+            </div>
+          <% end %>
+          <% if @quote.stripe_subscription_id.present? %>
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Subscription ID</span>
+              <span class="font-mono text-xs text-gray-600 dark:text-gray-400"><%= @quote.stripe_subscription_id %></span>
+            </div>
+          <% end %>
+          <% if @quote.stripe_hosted_invoice_url.present? %>
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Invoice</span>
+              <%= link_to "View Invoice", @quote.stripe_hosted_invoice_url, target: "_blank", rel: "noopener", class: "text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Contact CTA %>
+      <div class="rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Need to add more databases or change your plan?
+          <a href="mailto:support@datakeep.io" class="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">Contact us</a>
+          to modify your Enterprise plan.
+        </p>
+      </div>
+    </div>
+  </div>
+<% end %>

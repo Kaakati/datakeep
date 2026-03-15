@@ -77,6 +77,10 @@ Rails.application.routes.draw do
 
   # Database configurations
   resources :database_configs do
+    collection do
+      post :test_vpn
+      get :test_vpn_result
+    end
     member do
       post :test_connection
       post :vacuum

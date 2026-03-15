@@ -52,5 +52,10 @@ module Vpn
     # Register built-in connection types
     register :openvpn, OpenvpnConnection
     register :ipsec, IpsecConnection
+    register :wireguard, WireguardConnection
+    register :ipsec_simple, IpsecSimpleConnection
+    register :ssh_tunnel, SshTunnelConnection
+    register :socks5_proxy, ProxyConnection
+    register :http_proxy, ProxyConnection
   end
 end

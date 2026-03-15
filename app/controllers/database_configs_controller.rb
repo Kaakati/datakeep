@@ -178,6 +178,32 @@ class DatabaseConfigsController < ApplicationController
     end
   end
 
+  def test_vpn
+    request_id = SecureRandom.uuid
+    vpn_params = params.require(:database_config).permit(
+      :vpn_type, :vpn_config_data, :vpn_gateway_ip,
+      :host, :port,
+      :ssh_host, :ssh_port, :ssh_user, :ssh_private_key,
+      :proxy_host, :proxy_port, :proxy_username, :proxy_password,
+      :vpn_preshared_key, :vpn_username, :vpn_password
+    ).to_h
+
+    VpnConnectionTestJob.perform_later(request_id, vpn_params)
+
+    render json: { request_id: request_id }
+  end
+
+  def test_vpn_result
+    request_id = params[:request_id]
+    result = Rails.cache.read("vpn_test:#{request_id}")
+
+    if result
+      render json: result
+    else
+      render json: { status: "pending" }
+    end
+  end
+
   def kill_query
     pid = params[:pid].to_i
     if pid <= 0
@@ -213,7 +239,10 @@ class DatabaseConfigsController < ApplicationController
   def database_config_params
     params.require(:database_config).permit(
       :name, :host, :port, :database_name, :database_type, :username, :password, :ssl_mode,
-      :vpn_enabled, :vpn_type, :vpn_config_data, :vpn_gateway_ip, :vpn_tunnel_name
+      :vpn_enabled, :vpn_type, :vpn_config_data, :vpn_gateway_ip, :vpn_tunnel_name,
+      :ssh_host, :ssh_port, :ssh_user, :ssh_private_key,
+      :proxy_type, :proxy_host, :proxy_port, :proxy_username, :proxy_password,
+      :vpn_preshared_key, :vpn_username, :vpn_password
     )
   end
 

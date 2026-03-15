@@ -31,6 +31,19 @@
   --color-brand-900: #581c87;
   --color-brand-950: #3b0764;
 
+  /* Accent (Teal) */
+  --color-accent-50: #edfcfd;
+  --color-accent-100: #d2f7f9;
+  --color-accent-200: #a4eef3;
+  --color-accent-300: #6de1ea;
+  --color-accent-400: #38cfd9;
+  --color-accent-500: #2EBCC7;
+  --color-accent-600: #239da7;
+  --color-accent-700: #1a7d86;
+  --color-accent-800: #145f66;
+  --color-accent-900: #0e4549;
+  --color-accent-950: #072a2d;
+
   /* Success (Green) */
   --color-success-50: #f0fdf4;
   --color-success-100: #dcfce7;

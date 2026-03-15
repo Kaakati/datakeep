@@ -1,0 +1,268 @@
+<%# Connection Method Selector — narrative UI: "How do I reach your database?" %>
+<% current_method = if database_config.vpn_enabled?
+     database_config.vpn_type.presence || "openvpn"
+   else
+     "direct"
+   end %>
+
+<div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
+     data-controller="connection-method vpn-test"
+     data-connection-method-selected-value="<%= current_method %>"
+     data-vpn-test-test-url-value="<%= test_vpn_database_configs_path %>"
+     data-vpn-test-result-url-value="<%= test_vpn_result_database_configs_path %>">
+
+  <div class="px-5 py-4 sm:px-6 sm:py-5">
+    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">How do you reach this database?</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Select the connection method that matches your network setup</p>
+  </div>
+
+  <div class="border-t border-gray-100 p-5 sm:p-6 dark:border-gray-800">
+    <%# Hidden fields synced by Stimulus controller %>
+    <%= f.hidden_field :vpn_enabled, value: database_config.vpn_enabled? ? "1" : "0", data: { connection_method_target: "vpnEnabledField" } %>
+    <%= f.hidden_field :vpn_type, value: database_config.vpn_type, data: { connection_method_target: "vpnTypeField" } %>
+
+    <%# Connection method cards %>
+    <div role="radiogroup" aria-label="Connection method" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <%
+        methods = [
+          { key: "direct", icon: "globe", label: "Direct Connection", subtitle: "Database is publicly accessible" },
+          { key: "openvpn", icon: "shield", label: "OpenVPN", subtitle: "Connect through an OpenVPN tunnel" },
+          { key: "ipsec_simple", icon: "lock", label: "IPSec (Simple)", subtitle: "Pre-shared key + username/password" },
+          { key: "ipsec", icon: "lock", label: "IPSec (Advanced)", subtitle: "Custom swanctl configuration" },
+          { key: "wireguard", icon: "zap", label: "WireGuard", subtitle: "Fast, modern VPN protocol" },
+          { key: "ssh_tunnel", icon: "terminal", label: "SSH Tunnel", subtitle: "Port forward through a bastion host" },
+          { key: "socks5_proxy", icon: "arrow-right", label: "SOCKS5 Proxy", subtitle: "Route through a SOCKS5 proxy" },
+          { key: "http_proxy", icon: "arrow-right", label: "HTTP Proxy", subtitle: "Route through an HTTP proxy" }
+        ]
+      %>
+
+      <% methods.each do |method| %>
+        <% is_selected = current_method == method[:key] %>
+        <label
+          data-connection-method-target="card"
+          data-method="<%= method[:key] %>"
+          data-action="click->connection-method#select"
+          data-selected="<%= is_selected %>"
+          role="radio"
+          aria-checked="<%= is_selected %>"
+          aria-label="<%= method[:label] %>"
+          tabindex="0"
+          class="relative flex cursor-pointer rounded-xl border-2 p-4 transition-all duration-150
+            <%= is_selected ?
+              'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 dark:border-primary-700' :
+              'border-gray-200 dark:border-gray-700 hover:border-gray-300' %>"
+        >
+          <input type="radio" name="connection_method_card" value="<%= method[:key] %>" class="sr-only" <%= "checked" if is_selected %> tabindex="-1" />
+          <div class="flex w-full items-start gap-3">
+            <div class="shrink-0 mt-0.5">
+              <%= connection_method_icon(method[:icon]) %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-900 dark:text-white/90"><%= method[:label] %></span>
+                <svg data-check-icon class="h-5 w-5 text-primary-500" viewBox="0 0 20 20" fill="currentColor" <% unless is_selected %>style="display: none;"<% end %>>
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400"><%= method[:subtitle] %></p>
+            </div>
+          </div>
+        </label>
+      <% end %>
+    </div>
+
+    <%# ========== VPN Fields (OpenVPN / IPSec / WireGuard) ========== %>
+    <div class="mt-5 space-y-5 <%= 'hidden' unless %w[openvpn ipsec wireguard].include?(current_method) %>" data-connection-method-target="vpnFields">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :vpn_gateway_ip, "VPN Gateway", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :vpn_gateway_ip,
+            placeholder: "10.0.0.1 or vpn.example.com",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :vpn_tunnel_name, "Tunnel Name", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :vpn_tunnel_name,
+            placeholder: "Auto-generated if blank",
+            maxlength: 15,
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Max 15 characters. Auto-generated from database name if blank.</p>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :vpn_config_data, "Configuration", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+        <%= f.text_area :vpn_config_data,
+          rows: 8,
+          placeholder: "Paste your OpenVPN (.ovpn), swanctl, or WireGuard config here...",
+          class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 font-mono placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Configuration is encrypted at rest.</p>
+      </div>
+    </div>
+
+    <%# ========== IPSec Simple Fields (PSK + credentials) ========== %>
+    <div class="mt-5 space-y-5 <%= 'hidden' unless current_method == 'ipsec_simple' %>" data-connection-method-target="ipsecSimpleFields">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        Enter the credentials your network admin provided. DataKeep will auto-generate the VPN configuration.
+      </p>
+
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :vpn_gateway_ip, "VPN Gateway", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :vpn_gateway_ip,
+            placeholder: "vpn.company.com or 203.0.113.1",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :vpn_preshared_key, "Pre-Shared Key (PSK)", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.password_field :vpn_preshared_key,
+            autocomplete: "off",
+            placeholder: database_config.persisted? && database_config.vpn_preshared_key.present? ? "Leave blank to keep current" : "Shared secret from your admin",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Encrypted at rest.</p>
+        </div>
+
+        <div>
+          <%= f.label :vpn_username, "VPN Username (optional)", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :vpn_username,
+            placeholder: "deploy@company.com",
+            autocomplete: "off",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">For EAP/XAUTH authentication. Leave blank for PSK-only.</p>
+        </div>
+
+        <div>
+          <%= f.label :vpn_password, "VPN Password (optional)", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.password_field :vpn_password,
+            autocomplete: "new-password",
+            placeholder: database_config.persisted? && database_config.vpn_password.present? ? "Leave blank to keep current" : "",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Encrypted at rest.</p>
+        </div>
+      </div>
+
+      <%# Or import from config file %>
+      <details class="group">
+        <summary class="cursor-pointer text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400">
+          Or paste a config file to auto-extract credentials
+        </summary>
+        <div class="mt-3">
+          <textarea
+            id="ipsec_config_import"
+            rows="6"
+            placeholder="Paste an .ovpn, swanctl.conf, or strongswan.conf here and credentials will be extracted..."
+            data-action="input->connection-method#extractCredentials"
+            class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 font-mono placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"></textarea>
+          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+            Supports swanctl.conf, strongswan.conf, and .ovpn formats. Gateway, PSK, and username will be extracted automatically.
+          </p>
+        </div>
+      </details>
+    </div>
+
+    <%# ========== SSH Tunnel Fields ========== %>
+    <div class="mt-5 space-y-5 <%= 'hidden' unless current_method == 'ssh_tunnel' %>" data-connection-method-target="sshFields">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        Your database connection will be forwarded through this SSH server. DataKeep creates a local port forward to reach your private database.
+      </p>
+
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :ssh_host, "SSH Host", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :ssh_host,
+            placeholder: "bastion.example.com",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :ssh_port, "SSH Port", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.number_field :ssh_port,
+            placeholder: "22",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :ssh_user, "SSH Username", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :ssh_user,
+            placeholder: "deploy",
+            autocomplete: "off",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :ssh_private_key, "Private Key", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+        <%= f.text_area :ssh_private_key,
+          rows: 6,
+          placeholder: "-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----",
+          class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 font-mono placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Encrypted at rest. Paste the full private key including BEGIN/END markers.</p>
+      </div>
+    </div>
+
+    <%# ========== Proxy Fields ========== %>
+    <div class="mt-5 space-y-5 <%= 'hidden' unless %w[socks5_proxy http_proxy].include?(current_method) %>" data-connection-method-target="proxyFields">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <%= f.label :proxy_host, "Proxy Host", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :proxy_host,
+            placeholder: "proxy.example.com",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :proxy_port, "Proxy Port", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.number_field :proxy_port,
+            placeholder: "1080",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :proxy_username, "Username (optional)", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.text_field :proxy_username,
+            autocomplete: "off",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+
+        <div>
+          <%= f.label :proxy_password, "Password (optional)", class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400" %>
+          <%= f.password_field :proxy_password,
+            autocomplete: "new-password",
+            placeholder: database_config.persisted? ? "Leave blank to keep current" : "",
+            class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+        </div>
+      </div>
+    </div>
+
+    <%# ========== Test Connection Button ========== %>
+    <div class="mt-5 <%= 'hidden' if current_method == 'direct' %>" data-connection-method-target="testSection">
+      <div class="flex items-center gap-3">
+        <button type="button"
+          data-vpn-test-target="button"
+          data-action="click->vpn-test#test"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+          </svg>
+          Test Connection
+        </button>
+
+        <%# Spinner %>
+        <div class="hidden items-center gap-2 text-sm text-gray-500" data-vpn-test-target="spinner">
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          Testing connection...
+        </div>
+
+        <%# Result badge %>
+        <div class="hidden rounded-lg border px-3 py-1.5 text-sm font-medium" data-vpn-test-target="result">
+          <span data-vpn-test-target="resultText"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,162 @@
+<%# Plan Comparison — upgrade banner + feature table (for starter/professional users) %>
+<% current_def = @tier_definitions[@current_tier] || @tier_definitions[:free] %>
+<% next_def = @next_tier_definition %>
+
+<% if next_def.present? %>
+  <%# Upgrade banner %>
+  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-700 via-primary-800 to-accent-800 dark:from-primary-800 dark:via-primary-900 dark:to-accent-900">
+    <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10"></div>
+    <div class="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5"></div>
+
+    <div class="relative px-6 py-6 sm:px-8 sm:py-8">
+      <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-white">
+            Upgrade to <%= next_def[:label] %>
+          </h3>
+          <p class="mt-1.5 text-sm text-primary-200">
+            Get more out of DataKeep &mdash;
+            <%= next_def[:max_database_configs] %> databases,
+            <%= next_def[:max_retention_days] %>-day retention,
+            and <%= next_def[:max_sync_jobs] || "unlimited" %> sync jobs.
+          </p>
+
+          <div class="mt-4 flex flex-wrap items-center gap-3" data-controller="billing-toggle coupon-code">
+            <%= form_with url: subscription_path, method: :patch, data: { turbo: false }, class: "inline-flex" do |f| %>
+              <%= f.hidden_field :plan_tier, value: @next_tier %>
+              <input type="hidden" name="billing_interval" value="monthly" data-billing-toggle-target="intervalField">
+              <input type="hidden" name="coupon_code" value="" data-coupon-code-target="hiddenFields">
+              <%= f.submit "Upgrade to #{next_def[:label]} — $#{next_def[:monthly_price_cents] / 100}/mo",
+                class: "inline-flex items-center gap-2 rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-600 shadow-sm transition cursor-pointer" %>
+            <% end %>
+
+            <details class="group">
+              <summary class="cursor-pointer text-sm font-medium text-primary-300 hover:text-white transition select-none">
+                Have a coupon?
+              </summary>
+              <div class="mt-2 flex items-center gap-2" data-controller="coupon-code">
+                <input type="text" placeholder="Enter code" data-coupon-code-target="input"
+                  class="rounded-lg border border-primary-400/30 bg-white/15 px-3 py-1.5 text-sm uppercase text-white placeholder-primary-300 backdrop-blur focus:border-white/50 focus:ring focus:ring-white/20 focus:outline-none">
+                <button type="button" data-action="click->coupon-code#apply"
+                  class="rounded-lg bg-white/15 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/25 transition">
+                  Apply
+                </button>
+                <span data-coupon-code-target="feedback" class="hidden text-sm text-primary-200"></span>
+                <input type="hidden" value="" data-coupon-code-target="hiddenFields">
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <%# Price highlight %>
+        <div class="shrink-0 text-right">
+          <p class="text-3xl font-bold text-white">$<%= next_def[:monthly_price_cents] / 100 %></p>
+          <p class="text-sm text-primary-300">/month</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# Feature comparison table %>
+  <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-100 dark:border-gray-800">
+            <th class="px-6 py-4 text-left font-medium text-gray-500 dark:text-gray-400">Feature</th>
+            <th class="px-6 py-4 text-center font-medium text-gray-500 dark:text-gray-400"><%= current_def[:label] %></th>
+            <th class="px-6 py-4 text-center font-semibold text-accent-600 dark:text-accent-400"><%= next_def[:label] %></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
+          <%# Databases %>
+          <tr>
+            <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">Databases</td>
+            <td class="px-6 py-3.5 text-center text-gray-900 dark:text-white"><%= current_def[:max_database_configs] %></td>
+            <td class="px-6 py-3.5 text-center font-medium text-gray-900 dark:text-white">
+              <%= next_def[:max_database_configs] %>
+              <% if next_def[:max_database_configs] > current_def[:max_database_configs] %>
+                <span class="ml-1 text-accent-500">&uarr;</span>
+              <% end %>
+            </td>
+          </tr>
+          <%# Backup interval %>
+          <tr>
+            <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">Backup interval</td>
+            <td class="px-6 py-3.5 text-center text-gray-900 dark:text-white"><%= current_def[:min_backup_interval].to_s.humanize %></td>
+            <td class="px-6 py-3.5 text-center font-medium text-gray-900 dark:text-white">
+              <%= next_def[:min_backup_interval].to_s.humanize %>
+              <% if (next_def[:min_backup_interval_minutes] || Float::INFINITY) < (current_def[:min_backup_interval_minutes] || Float::INFINITY) %>
+                <span class="ml-1 text-accent-500">&uarr;</span>
+              <% end %>
+            </td>
+          </tr>
+          <%# Retention %>
+          <tr>
+            <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">Retention</td>
+            <td class="px-6 py-3.5 text-center text-gray-900 dark:text-white"><%= current_def[:max_retention_days] %> days</td>
+            <td class="px-6 py-3.5 text-center font-medium text-gray-900 dark:text-white">
+              <%= next_def[:max_retention_days] %> days
+              <% if next_def[:max_retention_days] > current_def[:max_retention_days] %>
+                <span class="ml-1 text-accent-500">&uarr;</span>
+              <% end %>
+            </td>
+          </tr>
+          <%# Sync jobs %>
+          <tr>
+            <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">Sync jobs</td>
+            <td class="px-6 py-3.5 text-center text-gray-900 dark:text-white"><%= current_def[:max_sync_jobs] || "Unlimited" %></td>
+            <td class="px-6 py-3.5 text-center font-medium text-gray-900 dark:text-white">
+              <%= next_def[:max_sync_jobs] || "Unlimited" %>
+              <% if (next_def[:max_sync_jobs] || Float::INFINITY) > (current_def[:max_sync_jobs] || Float::INFINITY) || (current_def[:max_sync_jobs] && !next_def[:max_sync_jobs]) %>
+                <span class="ml-1 text-accent-500">&uarr;</span>
+              <% end %>
+            </td>
+          </tr>
+          <%# Restores %>
+          <tr>
+            <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">Restores / month</td>
+            <td class="px-6 py-3.5 text-center text-gray-900 dark:text-white"><%= current_def[:max_restores_per_month] || "Unlimited" %></td>
+            <td class="px-6 py-3.5 text-center font-medium text-gray-900 dark:text-white">
+              <%= next_def[:max_restores_per_month] || "Unlimited" %>
+              <% if (next_def[:max_restores_per_month] || Float::INFINITY) > (current_def[:max_restores_per_month] || Float::INFINITY) || (current_def[:max_restores_per_month] && !next_def[:max_restores_per_month]) %>
+                <span class="ml-1 text-accent-500">&uarr;</span>
+              <% end %>
+            </td>
+          </tr>
+          <%# Cloud storage %>
+          <tr>
+            <td class="px-6 py-3.5 text-gray-700 dark:text-gray-300">Cloud storage (AWS/GCP)</td>
+            <td class="px-6 py-3.5 text-center">
+              <% if current_def[:s3_allowed] %>
+                <svg class="inline h-5 w-5 text-accent-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+              <% else %>
+                <svg class="inline h-5 w-5 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <% end %>
+            </td>
+            <td class="px-6 py-3.5 text-center">
+              <% if next_def[:s3_allowed] %>
+                <svg class="inline h-5 w-5 text-accent-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                <% unless current_def[:s3_allowed] %>
+                  <span class="ml-1 text-accent-500">&uarr;</span>
+                <% end %>
+              <% else %>
+                <svg class="inline h-5 w-5 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <% end %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%# See all plans %>
+  <details>
+    <summary class="cursor-pointer text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition">
+      See all plans
+    </summary>
+    <div class="mt-4" id="pricing-grid">
+      <%= render "billing/pricing_grid" %>
+    </div>
+  </details>
+<% end %>

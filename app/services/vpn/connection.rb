@@ -9,6 +9,7 @@ module Vpn
   class Connection
     class VpnError < StandardError; end
     class ConnectionTimeout < VpnError; end
+    class TunnelLostError < VpnError; end
 
     CONNECT_TIMEOUT = 30 # seconds
     LOCK_TIMEOUT = 300   # seconds
@@ -37,13 +38,24 @@ module Vpn
 
     # Yields with the VPN tunnel active, ensuring cleanup on exit.
     # Uses PostgreSQL advisory locks to serialize access per tunnel.
+    # Starts a health monitor that raises TunnelLostError if tunnel dies.
     def with_connection(&block)
       with_advisory_lock do
         connect
-        yield
+        monitor = ConnectionMonitor.new(self, interval: monitor_interval)
+        monitor.start
+        result = yield
+        raise TunnelLostError, "VPN tunnel #{tunnel_name} was lost during operation" if monitor.tunnel_lost?
+        result
       ensure
+        monitor&.stop
         safe_disconnect
       end
+    end
+
+    # Monitoring interval in seconds. Subclasses can override.
+    def monitor_interval
+      10
     end
 
     private

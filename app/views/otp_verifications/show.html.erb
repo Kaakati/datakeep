@@ -1,0 +1,77 @@
+<div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-lg">
+    <div class="flex justify-center">
+      <svg class="h-14 w-14 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    </div>
+    <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-800 dark:text-white/90">
+      Two-factor authentication
+    </h2>
+    <p class="mt-3 text-center text-base text-gray-600 dark:text-gray-400">
+      We sent a 6-digit code to <strong class="text-gray-800 dark:text-white/90"><%= @email %></strong>
+    </p>
+  </div>
+
+  <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-lg">
+    <div class="rounded-2xl border border-gray-200 bg-white py-10 px-8 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:px-12">
+      <% if flash[:alert] && !flash[:notice] %>
+        <div class="mb-6 rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+          <div class="flex">
+            <div class="shrink-0">
+              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-red-800 dark:text-red-200"><%= flash[:alert] %></p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= form_with url: otp_verification_path, method: :post, class: "space-y-6", data: { controller: "otp-input" } do |f| %>
+        <div>
+          <label for="otp_code" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Verification code</label>
+          <input
+            type="text"
+            name="otp_code"
+            id="otp_code"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            required
+            autofocus
+            placeholder="000000"
+            data-otp-input-target="input"
+            data-action="input->otp-input#handleInput"
+            class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-14 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-center text-2xl font-mono tracking-[0.5em] text-gray-800 placeholder:text-gray-300 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/20"
+          />
+          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">The code expires in 10 minutes.</p>
+        </div>
+
+        <div>
+          <button type="submit" class="flex w-full justify-center rounded-lg bg-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-theme-xs hover:bg-primary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 cursor-pointer transition-colors duration-150">
+            Verify
+          </button>
+        </div>
+      <% end %>
+
+      <div class="mt-6 text-center space-y-3">
+        <div data-controller="resend-cooldown">
+          <%= form_with url: resend_otp_verification_path, method: :post, class: "inline" do |f| %>
+            <%= f.submit "Resend code",
+              data: { resend_cooldown_target: "button", action: "click->resend-cooldown#startCooldown" },
+              class: "text-sm font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer bg-transparent border-0" %>
+          <% end %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" data-resend-cooldown-target="countdown" hidden></p>
+        </div>
+
+        <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+          <%= link_to "Back to login", login_path, class: "text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

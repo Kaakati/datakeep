@@ -1,0 +1,11 @@
+<%# Section 3: What's Next — dispatches to the appropriate sub-partial based on current tier %>
+<% if @current_tier == :free %>
+  <%= render "billing/upgrade_recommendation" %>
+<% elsif @current_tier == :enterprise %>
+  <%= render "billing/enterprise_details" %>
+<% elsif @current_tier == :business %>
+  <%= render "billing/top_tier_confirmation" %>
+<% else %>
+  <%# starter or professional with upgrade available %>
+  <%= render "billing/plan_comparison" %>
+<% end %>

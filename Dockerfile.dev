@@ -48,10 +48,13 @@ RUN ARCH=$(dpkg --print-architecture) && \
     rm -f /tmp/mongodb-tools.deb && \
     rm -rf /var/lib/apt/lists/*
 
-# Install VPN client tools (separate layer to isolate potential conflicts)
+# Install VPN and tunneling client tools
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-      openvpn strongswan strongswan-swanctl && \
+      openvpn strongswan strongswan-swanctl \
+      wireguard wireguard-tools \
+      openssh-client \
+      proxychains-ng && \
     rm -rf /var/lib/apt/lists/*
 
 # Set development environment

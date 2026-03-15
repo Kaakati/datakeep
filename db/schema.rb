@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_15_231809) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -130,7 +130,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_230000) do
     t.datetime "last_health_check_at"
     t.string "name", null: false
     t.integer "port", default: 5432, null: false
+    t.string "proxy_host"
+    t.text "proxy_password"
+    t.integer "proxy_port"
+    t.string "proxy_type"
+    t.string "proxy_username"
     t.integer "quote_database_index"
+    t.string "ssh_host"
+    t.integer "ssh_port", default: 22
+    t.text "ssh_private_key"
+    t.string "ssh_user"
     t.string "ssl_mode", default: "prefer"
     t.datetime "statistics_updated_at"
     t.datetime "updated_at", null: false
@@ -139,8 +148,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_230000) do
     t.text "vpn_config_data"
     t.boolean "vpn_enabled", default: false, null: false
     t.string "vpn_gateway_ip"
+    t.text "vpn_password"
+    t.text "vpn_preshared_key"
     t.string "vpn_tunnel_name"
     t.string "vpn_type"
+    t.string "vpn_username"
     t.index ["database_type"], name: "index_database_configs_on_database_type"
     t.index ["enterprise_quote_id", "quote_database_index"], name: "idx_database_configs_on_quote_slot", unique: true, where: "(enterprise_quote_id IS NOT NULL)"
     t.index ["enterprise_quote_id"], name: "index_database_configs_on_enterprise_quote_id"
