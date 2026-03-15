@@ -34,7 +34,7 @@ resource "aws_ecs_task_definition" "web" {
       { name = "HTTP_PORT", value = "8080" },
       { name = "APP_BASE_URL", value = "https://datakeep.ai" },
       { name = "APP_HOST", value = "datakeep.ai" },
-      { name = "SMTP_ADDRESS", value = "email-smtp.eu-south-1.amazonaws.com" },
+      { name = "AWS_SES_REGION", value = var.aws_region },
     ]
 
     secrets = [
@@ -51,8 +51,6 @@ resource "aws_ecs_task_definition" "web" {
       { name = "TURNSTILE_SECRET_KEY", valueFrom = aws_secretsmanager_secret.turnstile_secret_key.arn },
       { name = "GOOGLE_CLIENT_ID", valueFrom = aws_secretsmanager_secret.google_client_id.arn },
       { name = "GOOGLE_CLIENT_SECRET", valueFrom = aws_secretsmanager_secret.google_client_secret.arn },
-      { name = "SMTP_USERNAME", valueFrom = aws_secretsmanager_secret.smtp_username.arn },
-      { name = "SMTP_PASSWORD", valueFrom = aws_secretsmanager_secret.smtp_password.arn },
     ]
 
     mountPoints = [
