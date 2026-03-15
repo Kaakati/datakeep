@@ -26,7 +26,6 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
       curl \
       gnupg \
-      lsb-release \
       libjemalloc2 \
       libvips \
       # PostgreSQL client tools (pg_dump, pg_restore, psql)
@@ -46,8 +45,9 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install MongoDB Database Tools (mongodump, mongorestore)
+# Pin to bookworm repo — MongoDB doesn't publish packages for trixie yet
 RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/mongodb.gpg && \
-    echo "deb https://repo.mongodb.org/apt/debian $(lsb_release -cs)/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org.list && \
+    echo "deb https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" > /etc/apt/sources.list.d/mongodb-org.list && \
     apt-get update -qq && \
     apt-get install --no-install-recommends -y mongodb-database-tools && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
