@@ -2,7 +2,7 @@
 
 class SessionsController < ApplicationController
   allow_unauthenticated_access only: [ :new, :create ]
-  verify_turnstile_request only: [ :create ]
+  # verify_turnstile_request only: [ :create ] # Temporarily disabled — widget not loading on production
 
   def new
     if logged_in?
