@@ -103,7 +103,8 @@ class User < ApplicationRecord
       storage_backends: storage_backends.count,
       notification_channels: notification_channels.count,
       sync_jobs: sync_jobs.count,
-      restores_this_month: restores.where("created_at > ?", 30.days.ago).count
+      restores_this_month: restores.where("created_at > ?", 30.days.ago).count,
+      storage_used_gb: (Backup.where(backup_job_id: backup_job_ids).sum(:file_size) / 1.gigabyte.to_f).round(1)
     }
   end
 

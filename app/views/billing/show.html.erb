@@ -16,22 +16,17 @@
     </div>
   <% end %>
 
-  <% if current_user.enterprise_plan? %>
-    <%# Enterprise users see the existing enterprise card %>
-    <%= render "billing/enterprise_card" %>
-  <% else %>
-    <%# Section 1: Current Plan Card %>
-    <%= render "billing/current_plan_card",
-               plan_limits: @plan_limits,
-               usage: @usage,
-               current_tier: @current_tier,
-               tier_definitions: @tier_definitions,
-               subscription: @subscription %>
+  <%# Section 1: Plan Identity Banner %>
+  <%= render "billing/plan_identity_banner" %>
 
-    <%# Section 2: Pricing Grid %>
-    <%= render "billing/pricing_grid" %>
+  <%# Section 2: Usage Pulse Grid %>
+  <%= render "billing/usage_pulse" %>
 
-    <%# Section 3: Subscription Management (only for subscribed users) %>
-    <%= render "billing/subscription_management" %>
+  <%# Section 3: What's Next %>
+  <%= render "billing/whats_next" %>
+
+  <%# Section 4: Billing Management (paid/enterprise only) %>
+  <% if @subscription&.active_access? %>
+    <%= render "billing/billing_management" %>
   <% end %>
 </div>
