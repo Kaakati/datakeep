@@ -136,44 +136,30 @@ module BillingHelper
   end
 
   def render_retention_card(label, days)
-    icon_svg = pulse_icon_svg(:retention)
     display = days ? "#{days} days" : "Unlimited"
-
-    content_tag(:div, class: "rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-4 flex flex-col gap-2") do
-      safe_join([
-        content_tag(:div, class: "flex items-center gap-2") do
-          safe_join([
-            icon_svg,
-            content_tag(:span, label, class: "text-sm font-medium text-gray-700 dark:text-gray-300")
-          ])
-        end,
-        content_tag(:span, display, class: "text-2xl font-semibold text-gray-900 dark:text-white")
-      ])
-    end
+    render_simple_pulse_card(label, pulse_icon_svg(:retention), display)
   end
 
   def render_s3_card(label, allowed_flag)
     allowed = allowed_flag.present? && allowed_flag != false && allowed_flag != 0
-    icon_svg = s3_icon_svg(allowed)
     status_text = allowed ? "Enabled" : "Locked"
     status_class = allowed ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500 dark:text-gray-400"
+    render_simple_pulse_card(label, s3_icon_svg(allowed), status_text, status_class)
+  end
 
+  def render_simple_pulse_card(label, icon_svg, value_text, value_class = "text-gray-900 dark:text-white")
     content_tag(:div, class: "rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/[0.03] p-4 flex flex-col gap-2") do
       safe_join([
         content_tag(:div, class: "flex items-center gap-2") do
           safe_join([icon_svg, content_tag(:span, label, class: "text-sm font-medium text-gray-700 dark:text-gray-300")])
         end,
-        content_tag(:span, status_text, class: "text-2xl font-semibold #{status_class}")
+        content_tag(:span, value_text, class: "text-2xl font-semibold #{value_class}")
       ])
     end
   end
 
   def s3_icon_svg(allowed)
-    path_d = if allowed
-               "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-             else
-               "M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-             end
+    path_d = allowed ? "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" : "M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
     color = allowed ? "text-emerald-500" : "text-gray-400"
     content_tag(:svg, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24",
       stroke_width: "1.5", stroke: "currentColor", class: "h-5 w-5 #{color}") do
