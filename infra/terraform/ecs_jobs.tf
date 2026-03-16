@@ -11,7 +11,7 @@ data "aws_ssm_parameter" "ecs_ami" {
 resource "aws_launch_template" "jobs" {
   name_prefix   = "${local.name_prefix}-jobs-"
   image_id      = data.aws_ssm_parameter.ecs_ami.value
-  instance_type = "t3.small"
+  instance_type = "t3.large"
 
   iam_instance_profile {
     arn = aws_iam_instance_profile.ecs_ec2.arn
