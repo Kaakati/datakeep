@@ -6,10 +6,15 @@ class VpnConnectionTestJob
   # Don't retry — the user is waiting for the result
   sidekiq_options queue: :default, retry: 0
 
-  def perform(request_id, vpn_params)
-    start_time = Time.current
+  def perform(request_id)
+    vpn_params = Rails.cache.read("vpn_test_params:#{request_id}")
 
-    # Build a temporary struct that quacks like DatabaseConfig for VPN connections
+    unless vpn_params
+      Rails.cache.write(cache_key(request_id), { status: "failed", message: "Test request expired. Please try again." }, expires_in: 5.minutes)
+      return
+    end
+
+    start_time = Time.current
     config = build_test_config(vpn_params)
     connection = Vpn::ConnectionFactory.for(config)
 

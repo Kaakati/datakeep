@@ -188,7 +188,9 @@ class DatabaseConfigsController < ApplicationController
       :vpn_preshared_key, :vpn_username, :vpn_password
     ).to_h
 
-    VpnConnectionTestJob.perform_async(request_id, vpn_params)
+    # Store params in cache — too large for Sidekiq job args (strict JSON)
+    Rails.cache.write("vpn_test_params:#{request_id}", vpn_params, expires_in: 10.minutes)
+    VpnConnectionTestJob.perform_async(request_id)
 
     render json: { request_id: request_id }
   end
