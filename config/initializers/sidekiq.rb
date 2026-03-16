@@ -1,7 +1,12 @@
 # Be sure to restart your server when you modify this file.
 
+require "sidekiq-failures"
+
 Sidekiq.configure_server do |config|
   config.redis = { url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0") }
+
+  # Track all failed jobs in the Failures tab (default: tracks all)
+  config[:failures_default_mode] = :all
 
   config.on(:startup) do
     # Register cron jobs using sidekiq-cron

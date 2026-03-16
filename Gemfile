@@ -63,16 +63,19 @@ gem "solid_cache"
 gem "solid_cable"
 
 # Background job processing with Redis
-gem "sidekiq", "~> 8.0"
+gem "sidekiq", "~> 8.1"
 
 # Sidekiq recurring/cron jobs
 gem "sidekiq-cron", "~> 2.0"
 
+# Sidekiq failed job tracking UI
+gem "sidekiq-failures", "~> 1.0"
+
 # Redis client
 gem "redis", "~> 5.0"
 
-# Pin connection_pool for Sidekiq compatibility
-gem "connection_pool", "~> 2.4"
+# Connection pooling for Sidekiq (3.0+ required by Sidekiq 8.1)
+gem "connection_pool", "~> 3.0"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
