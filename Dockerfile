@@ -38,6 +38,13 @@ RUN apt-get update -qq && \
       gzip \
       bzip2 \
       xz-utils \
+      # VPN and tunneling tools (required by jobs container)
+      openvpn \
+      strongswan \
+      strongswan-swanctl \
+      wireguard-tools \
+      openssh-client \
+      proxychains-ng \
       # For file system operations
       coreutils && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \

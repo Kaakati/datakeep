@@ -13,14 +13,15 @@ module Vpn
   class WireguardConnection < Connection
     def connect
       @config_path = write_temp_config(database_config.vpn_config_data, extension: ".conf")
-      @wg_config_path = "/etc/wireguard/#{tunnel_name}.conf"
-
-      FileUtils.mkdir_p("/etc/wireguard")
+      @wg_config_dir = Rails.root.join("tmp", "vpn", "wireguard")
+      FileUtils.mkdir_p(@wg_config_dir)
+      @wg_config_path = File.join(@wg_config_dir, "#{tunnel_name}.conf")
       FileUtils.cp(@config_path, @wg_config_path)
+      File.chmod(0600, @wg_config_path)
 
       Rails.logger.info "[VPN/WireGuard] Starting tunnel #{tunnel_name}"
 
-      system("wg-quick", "up", tunnel_name, exception: false)
+      system("wg-quick", "up", @wg_config_path, exception: false)
 
       wait_until(timeout: 10) { connected? }
 
@@ -29,7 +30,7 @@ module Vpn
 
     def disconnect
       Rails.logger.info "[VPN/WireGuard] Stopping tunnel #{tunnel_name}"
-      system("wg-quick", "down", tunnel_name, exception: false)
+      system("wg-quick", "down", @wg_config_path || tunnel_name, exception: false)
     ensure
       cleanup_files
     end
