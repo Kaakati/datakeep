@@ -52,9 +52,15 @@ class CleanupJob
   private
 
   def delete_backup(backup)
-    # Delete from storage
-    if backup.file_path.present? && backup.storage_backend.exists?(backup.file_path)
-      backup.storage_backend.delete(backup.file_path)
+    # Delete from all storage backends (primary + any extras from the backup job)
+    if backup.file_path.present?
+      backends = backup.backup_job&.effective_storage_backends || []
+      backends << backup.storage_backend if backup.storage_backend.present?
+      backends.uniq(&:id).each do |backend|
+        backend.delete(backup.file_path) if backend.exists?(backup.file_path)
+      rescue StandardError => e
+        Rails.logger.warn "[CleanupJob] Failed to delete #{backup.file_name} from #{backend.name}: #{e.message}"
+      end
     end
 
     # Delete record
