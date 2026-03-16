@@ -14,7 +14,7 @@ module Vpn
   class TunnelPool
     include Singleton
 
-    TTL_SECONDS = 60 # Keep idle tunnels alive for 60s after last user
+    TTL_SECONDS = 5 # Disconnect quickly to free VPN license slots
 
     def initialize
       @mutex = Mutex.new
