@@ -70,8 +70,8 @@ resource "aws_ecs_task_definition" "jobs" {
   family                   = "${local.name_prefix}-jobs"
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
-  cpu                      = 1024
-  memory                   = 512
+  cpu                      = 2048
+  memory                   = 4096
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
 
@@ -96,7 +96,7 @@ resource "aws_ecs_task_definition" "jobs" {
     environment = [
       { name = "RAILS_ENV", value = "production" },
       { name = "RAILS_LOG_TO_STDOUT", value = "true" },
-      { name = "SIDEKIQ_CONCURRENCY", value = "5" },
+      { name = "SIDEKIQ_CONCURRENCY", value = "25" },
       { name = "SKIP_DB_PREPARE", value = "true" },
       { name = "APP_HOST", value = "datakeep.ai" },
       { name = "SMTP_ADDRESS", value = "email-smtp.eu-central-1.amazonaws.com" },
