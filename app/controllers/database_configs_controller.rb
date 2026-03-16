@@ -97,6 +97,13 @@ class DatabaseConfigsController < ApplicationController
   end
 
   def test_connection
+    if @database_config.vpn_enabled?
+      # VPN connections are slow — run async to avoid Cloudflare 504 timeout
+      HealthCheckJob.perform_async(@database_config.id)
+      redirect_to @database_config, notice: "Connection test queued — VPN tunnel setup required. Refresh in a moment to see results."
+      return
+    end
+
     result = @database_config.test_connection
 
     AuditLog.log(
