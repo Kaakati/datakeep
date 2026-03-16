@@ -66,7 +66,14 @@ module Vpn
     def connected?
       return false unless File.exist?("/sys/class/net/#{tunnel_name}")
 
-      # OpenVPN writes this after routes are installed (route-delay can be 5s+)
+      # Primary check: interface is operationally up
+      operstate_path = "/sys/class/net/#{tunnel_name}/operstate"
+      if File.exist?(operstate_path)
+        state = File.read(operstate_path).strip
+        return true if state == "unknown" || state == "up" # tun devices report "unknown" when up
+      end
+
+      # Fallback: check log for completion message
       File.exist?(log_path) &&
         File.read(log_path).include?("Initialization Sequence Completed")
     rescue StandardError

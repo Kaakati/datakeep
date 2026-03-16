@@ -76,9 +76,28 @@ module Vpn
       database_config.ssh_port.presence || 22
     end
 
-    # Deterministic local port from tunnel name to avoid collisions
+    # Deterministic local port from tunnel name, with retry on collision
+    MAX_PORT_RETRIES = 3
+
     def local_port
-      @local_port ||= (Zlib.crc32(tunnel_name) % 50_000) + 10_000
+      @local_port ||= find_available_port
+    end
+
+    def find_available_port
+      base_port = (Zlib.crc32(tunnel_name) % 50_000) + 10_000
+      MAX_PORT_RETRIES.times do |i|
+        candidate = base_port + i
+        return candidate if port_available?(candidate)
+      end
+      base_port # fall back to original, let SSH report the error
+    end
+
+    def port_available?(port)
+      server = TCPServer.new("127.0.0.1", port)
+      server.close
+      true
+    rescue Errno::EADDRINUSE
+      false
     end
 
     def kill_ssh_process

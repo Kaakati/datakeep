@@ -48,8 +48,11 @@ module Vpn
 
     def stop
       @mutex.synchronize { @running = false }
-      @thread&.join(5)
-      @thread = nil
+      if @thread
+        @thread.join(5)
+        @thread.kill if @thread.alive?
+        @thread = nil
+      end
     end
 
     def tunnel_lost?
