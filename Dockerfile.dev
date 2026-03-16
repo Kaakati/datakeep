@@ -54,7 +54,9 @@ RUN apt-get update -qq && \
       openvpn strongswan strongswan-swanctl \
       wireguard wireguard-tools \
       openssh-client \
-      proxychains-ng && \
+      proxychains-ng \
+      iproute2 \
+      netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
 # Set development environment

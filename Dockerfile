@@ -45,6 +45,7 @@ RUN apt-get update -qq && \
       wireguard-tools \
       openssh-client \
       proxychains-ng \
+      iproute2 \
       # For file system operations
       coreutils && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
