@@ -1,19 +1,35 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-gray-50">
   <head>
-    <title><%= content_for(:title) || "DataKeep" %></title>
+    <title><%= content_for(:title) || "DataKeep — Database Backup & Sync Platform" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="DataKeep">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="<%= content_for(:meta_description) || "Open-source database backup, sync, and monitoring platform. Automated backups, point-in-time restores, and real-time health monitoring for PostgreSQL, MySQL, and MongoDB." %>">
+
+    <%# Open Graph %>
+    <meta property="og:title" content="<%= content_for(:title) || "DataKeep — Database Backup & Sync Platform" %>">
+    <meta property="og:description" content="<%= content_for(:meta_description) || "Automated database backups, sync, and monitoring. Protect your data with scheduled backups, encryption, and multi-cloud storage." %>">
+    <meta property="og:image" content="<%= image_url("logo.jpg") %>">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DataKeep">
+    <meta property="og:url" content="<%= request.original_url %>">
+
+    <%# Twitter Card %>
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="<%= content_for(:title) || "DataKeep — Database Backup & Sync Platform" %>">
+    <meta name="twitter:description" content="<%= content_for(:meta_description) || "Automated database backups, sync, and monitoring for PostgreSQL, MySQL, and MongoDB." %>">
+    <meta name="twitter:image" content="<%= image_url("logo.jpg") %>">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="<%= image_path("logo.svg") %>" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
