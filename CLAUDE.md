@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DataKeep — open-source database backup, sync, and monitoring platform built with Ruby on Rails 8.1.
+DataKeep — database backup, sync, and monitoring platform built with Ruby on Rails 8.1.
 Multi-tenant: each user owns their own databases, backup jobs, storage backends, sync jobs, and notification channels.
 Supports PostgreSQL (implemented); MySQL, MongoDB, MSSQL, SQLite planned via adapter pattern.
 
