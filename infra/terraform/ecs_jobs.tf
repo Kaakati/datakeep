@@ -81,6 +81,8 @@ resource "aws_ecs_task_definition" "jobs" {
     essential = true
     command   = ["bundle", "exec", "sidekiq"]
 
+    user = "0:0" # Root required for VPN tunnel creation (TUNSETIFF ioctl)
+
     linuxParameters = {
       initProcessEnabled = true
       capabilities = {
