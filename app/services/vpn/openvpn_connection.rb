@@ -20,10 +20,9 @@ module Vpn
         "--config", @config_path,
         "--daemon", "datakeep_#{tunnel_name}",
         "--writepid", @pid_path,
-        "--dev", tunnel_name,
-        "--dev-type", "tun",
         "--connect-retry-max", "3",
         "--connect-timeout", CONNECT_TIMEOUT.to_s,
+        "--verb", "3",
         "--log", log_path
       ]
 
@@ -36,9 +35,13 @@ module Vpn
 
       system(*cmd, exception: false)
 
-      wait_until(timeout: CONNECT_TIMEOUT) { connected? }
-
-      Rails.logger.info "[VPN/OpenVPN] Tunnel #{tunnel_name} is up"
+      begin
+        wait_until(timeout: CONNECT_TIMEOUT) { connected? }
+        Rails.logger.info "[VPN/OpenVPN] Tunnel #{tunnel_name} is up"
+      rescue ConnectionTimeout => e
+        dump_openvpn_log
+        raise
+      end
     end
 
     def disconnect
@@ -64,18 +67,10 @@ module Vpn
     end
 
     def connected?
-      return false unless File.exist?("/sys/class/net/#{tunnel_name}")
+      return false unless File.exist?(log_path)
 
-      # Primary check: interface is operationally up
-      operstate_path = "/sys/class/net/#{tunnel_name}/operstate"
-      if File.exist?(operstate_path)
-        state = File.read(operstate_path).strip
-        return true if state == "unknown" || state == "up" # tun devices report "unknown" when up
-      end
-
-      # Fallback: check log for completion message
-      File.exist?(log_path) &&
-        File.read(log_path).include?("Initialization Sequence Completed")
+      log_content = File.read(log_path)
+      log_content.include?("Initialization Sequence Completed")
     rescue StandardError
       false
     end
@@ -103,9 +98,19 @@ module Vpn
     end
 
     def cleanup_files
-      [@config_path, @pid_path].compact.each do |path|
+      [@config_path, @pid_path, log_path].compact.each do |path|
         FileUtils.rm_f(path)
       end
+    end
+
+    def dump_openvpn_log
+      return unless File.exist?(log_path)
+
+      lines = File.readlines(log_path).last(30).map(&:chomp)
+      Rails.logger.error "[VPN/OpenVPN] Tunnel #{tunnel_name} failed. Last 30 lines of OpenVPN log:"
+      lines.each { |line| Rails.logger.error "[VPN/OpenVPN] #{line}" }
+    rescue StandardError => e
+      Rails.logger.error "[VPN/OpenVPN] Could not read log: #{e.message}"
     end
   end
 end
