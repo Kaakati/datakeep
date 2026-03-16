@@ -57,10 +57,19 @@ Rails.application.configure do
   # Use Sidekiq for background jobs
   config.active_job.queue_adapter = :sidekiq
 
-  # Action Mailer — configured in config/initializers/ses_mailer.rb
-  # Uses AWS SES API v2 (eu-south-1) via aws-sdk-rails gem
+  # Action Mailer — SMTP via AWS SES (configure after domain verification)
   config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "app.datakeep.ai") }
+
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch("SMTP_ADDRESS", "email-smtp.eu-central-1.amazonaws.com"),
+    port: 587,
+    user_name: ENV.fetch("SMTP_USERNAME", ""),
+    password: ENV.fetch("SMTP_PASSWORD", ""),
+    authentication: :login,
+    enable_starttls_auto: true
+  }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

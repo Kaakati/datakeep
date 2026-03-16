@@ -49,6 +49,10 @@
             <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Verified</span>
           <% else %>
             <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Unverified</span>
+            <%= button_to "Verify", verify_email_admin_user_path(@user),
+              method: :post,
+              class: "text-xs text-green-600 hover:text-green-800 font-medium",
+              data: { turbo_confirm: "Mark #{@user.name}'s email as verified?" } %>
             <%= button_to "Resend", resend_verification_admin_user_path(@user),
               method: :post,
               class: "text-xs text-primary-500 hover:text-primary-700 font-medium" %>

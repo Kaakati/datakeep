@@ -34,8 +34,6 @@ gem "mongo", "~> 2.20"
 # AWS S3 for cloud storage backend
 gem "aws-sdk-s3", "~> 1.143"
 
-# AWS SES for transactional email delivery (provides :ses_v2 delivery method)
-gem "aws-sdk-rails", "~> 5.0"
 
 # Cron expression parsing for scheduled backups
 gem "fugit", "~> 1.9"

@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     resources :users do
       member do
         post :resend_verification
+        post :verify_email
       end
     end
     resources :database_configs, only: [ :index, :show ]

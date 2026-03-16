@@ -2,7 +2,7 @@
 
 module Admin
   class UsersController < BaseController
-    before_action :set_user, only: [ :show, :edit, :update, :destroy, :resend_verification ]
+    before_action :set_user, only: [ :show, :edit, :update, :destroy, :resend_verification, :verify_email ]
 
     def index
       @users = User.includes(:subscription).order(created_at: :desc)
@@ -49,6 +49,12 @@ module Admin
         @user.send_verification_email
         redirect_to admin_user_path(@user), notice: "Verification email sent to #{@user.email}."
       end
+    end
+
+    # POST /admin/users/:id/verify_email
+    def verify_email
+      @user.verify_email!
+      redirect_to admin_user_path(@user), notice: "#{@user.name}'s email marked as verified."
     end
 
     def destroy
