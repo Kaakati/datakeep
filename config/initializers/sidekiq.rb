@@ -9,25 +9,8 @@ Sidekiq.configure_server do |config|
   config[:failures_default_mode] = :all
 
   config.on(:startup) do
-    # Register cron jobs using sidekiq-cron
-    schedule = [
-      {
-        "name" => "health_check_all",
-        "class" => "HealthCheckJob",
-        "cron" => "*/5 * * * *",
-        "queue" => "maintenance",
-        "description" => "Check health of all database connections"
-      },
-      {
-        "name" => "scheduler_check",
-        "class" => "SchedulerJob",
-        "cron" => "* * * * *",
-        "queue" => "scheduler",
-        "description" => "Check for due backup jobs and schedule them"
-      }
-    ]
-
-    Sidekiq::Cron::Job.load_from_array(schedule)
+    schedule = YAML.load_file(Rails.root.join("config", "sidekiq_cron.yml"))
+    Sidekiq::Cron::Job.load_from_hash(schedule)
   end
 end
 

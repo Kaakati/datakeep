@@ -1,0 +1,17 @@
+health_check_all:
+  cron: "*/5 * * * *"
+  class: HealthCheckJob
+  queue: maintenance
+  description: "Check health of all database connections"
+
+scheduler_check:
+  cron: "* * * * *"
+  class: SchedulerJob
+  queue: scheduler
+  description: "Check for due backup and sync jobs, enqueue those that are due"
+
+cleanup_expired:
+  cron: "0 3 * * *"
+  class: CleanupJob
+  queue: maintenance
+  description: "Clean up expired backups and old health check records (daily at 3 AM UTC)"
