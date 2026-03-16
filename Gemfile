@@ -32,7 +32,7 @@ gem "mysql2", "~> 0.5"
 gem "mongo", "~> 2.20"
 
 # AWS S3 for cloud storage backend
-gem "aws-sdk-s3", "~> 1.143"
+gem "aws-sdk-s3", "~> 1.213"
 
 
 # Cron expression parsing for scheduled backups
