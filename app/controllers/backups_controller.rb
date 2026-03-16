@@ -73,7 +73,7 @@ class BackupsController < ApplicationController
       status: :pending
     )
 
-    RestoreExecutionJob.perform_later(restore.id)
+    RestoreExecutionJob.perform_async(restore.id)
 
     AuditLog.log(
       action: "restore_backup",

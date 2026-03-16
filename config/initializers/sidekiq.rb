@@ -8,18 +8,16 @@ Sidekiq.configure_server do |config|
     schedule = [
       {
         "name" => "health_check_all",
-        "class" => "Sidekiq::ActiveJob::Wrapper",
-        "cron" => "*/5 * * * *", # Every 5 minutes
+        "class" => "HealthCheckJob",
+        "cron" => "*/5 * * * *",
         "queue" => "maintenance",
-        "args" => [{ "job_class" => "HealthCheckJob", "arguments" => [] }],
         "description" => "Check health of all database connections"
       },
       {
         "name" => "scheduler_check",
-        "class" => "Sidekiq::ActiveJob::Wrapper",
-        "cron" => "* * * * *", # Every minute
+        "class" => "SchedulerJob",
+        "cron" => "* * * * *",
         "queue" => "scheduler",
-        "args" => [{ "job_class" => "SchedulerJob", "arguments" => [] }],
         "description" => "Check for due backup jobs and schedule them"
       }
     ]

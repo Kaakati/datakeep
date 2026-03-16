@@ -58,7 +58,7 @@ class BackupJob < ApplicationRecord
     return false if running?
 
     # Don't set status here - let the job handle it to avoid race condition
-    BackupExecutionJob.perform_later(id)
+    BackupExecutionJob.perform_async(id)
     true
   end
 
@@ -118,7 +118,7 @@ class BackupJob < ApplicationRecord
       next if event == :success && !channel.notify_on_success?
       next if event == :failure && !channel.notify_on_failure?
 
-      NotificationJob.perform_later(channel.id, event.to_s, backup&.id)
+      NotificationJob.perform_async(channel.id, event.to_s, backup&.id)
     end
   end
 

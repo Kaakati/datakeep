@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-class HealthCheckJob < ApplicationJob
+class HealthCheckJob
+  include Sidekiq::Job
   include VpnConnectable
 
-  queue_as :maintenance
+  sidekiq_options queue: :maintenance, retry: 1
 
   def perform(database_config_id = nil)
     if database_config_id

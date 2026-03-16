@@ -53,7 +53,7 @@ module Admin
           return
         end
 
-        StripeInvoiceJob.perform_later(@quote)
+        StripeInvoiceJob.perform_async(@quote.id)
         redirect_to admin_enterprise_quote_path(@quote), notice: "Invoice is being sent via Stripe."
       end
 

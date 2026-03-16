@@ -1,7 +1,6 @@
-class ApplicationJob < ActiveJob::Base
-  # Automatically retry jobs that encountered a deadlock
-  # retry_on ActiveRecord::Deadlocked
+# frozen_string_literal: true
 
-  # Most jobs are safe to ignore if the underlying records are no longer available
-  # discard_on ActiveJob::DeserializationError
+# Kept for ActionMailer deliver_later compatibility.
+# All custom jobs use Sidekiq::Job directly.
+class ApplicationJob < ActiveJob::Base
 end

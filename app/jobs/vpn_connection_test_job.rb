@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-class VpnConnectionTestJob < ApplicationJob
-  queue_as :default
+class VpnConnectionTestJob
+  include Sidekiq::Job
 
   # Don't retry — the user is waiting for the result
-  retry_on StandardError, attempts: 1
+  sidekiq_options queue: :default, retry: 0
 
   def perform(request_id, vpn_params)
     start_time = Time.current

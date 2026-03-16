@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-class BackupExecutionJob < ApplicationJob
+class BackupExecutionJob
+  include Sidekiq::Job
   include VpnConnectable
 
-  queue_as :backups
-
-  retry_on StandardError, wait: :polynomially_longer, attempts: 3
-  discard_on ActiveJob::DeserializationError
+  sidekiq_options queue: :backups, retry: 3
 
   # Maximum time a backup job can be in "running" state before considered stale
   STALE_RUNNING_THRESHOLD = 30.minutes

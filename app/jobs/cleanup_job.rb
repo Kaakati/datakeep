@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-class CleanupJob < ApplicationJob
-  queue_as :maintenance
+class CleanupJob
+  include Sidekiq::Job
+
+  sidekiq_options queue: :maintenance, retry: 1
 
   HEALTH_CHECK_RETENTION_DAYS = 30
 

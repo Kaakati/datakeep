@@ -188,7 +188,7 @@ class DatabaseConfigsController < ApplicationController
       :vpn_preshared_key, :vpn_username, :vpn_password
     ).to_h
 
-    VpnConnectionTestJob.perform_later(request_id, vpn_params)
+    VpnConnectionTestJob.perform_async(request_id, vpn_params)
 
     render json: { request_id: request_id }
   end
@@ -258,7 +258,7 @@ class DatabaseConfigsController < ApplicationController
   def test_connection_after_save
     # VPN-enabled databases need async connection test — tunnel setup is too slow for HTTP
     if @database_config.vpn_enabled?
-      HealthCheckJob.perform_later(@database_config.id)
+      HealthCheckJob.perform_async(@database_config.id)
       return { notice: "Database saved. Connection test queued (VPN tunnel setup required).", alert: nil }
     end
 

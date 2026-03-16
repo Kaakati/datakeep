@@ -37,7 +37,7 @@ class NotificationService
 
     def notify_for_backup(backup, event)
       backup.backup_job.notification_channels.enabled.find_each do |channel|
-        NotificationJob.perform_later(channel.id, event.to_s, backup.id)
+        NotificationJob.perform_async(channel.id, event.to_s, backup.id)
       end
     end
 

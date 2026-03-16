@@ -44,7 +44,7 @@ class RestoresController < ApplicationController
       status: :pending
     )
 
-    RestoreExecutionJob.perform_later(restore.id)
+    RestoreExecutionJob.perform_async(restore.id)
 
     current_user.log_action("restore_started", restore, ip_address: request.remote_ip)
 
@@ -81,7 +81,7 @@ class RestoresController < ApplicationController
       status: :pending
     )
 
-    RestoreExecutionJob.perform_later(restore.id)
+    RestoreExecutionJob.perform_async(restore.id)
 
     current_user.log_action("restore_started", restore, ip_address: request.remote_ip)
 

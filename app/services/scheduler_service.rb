@@ -14,7 +14,7 @@ class SchedulerService
 
       Rails.logger.info "[SchedulerService] Scheduling backup job #{backup_job.id}: #{backup_job.name}"
 
-      BackupExecutionJob.perform_later(backup_job.id)
+      BackupExecutionJob.perform_async(backup_job.id)
     end
 
     def calculate_next_run(backup_job)

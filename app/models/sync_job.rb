@@ -24,7 +24,7 @@ class SyncJob < ApplicationRecord
   def run_now!
     return false if running?
 
-    SyncExecutionJob.perform_later(id)
+    SyncExecutionJob.perform_async(id)
     true
   end
 

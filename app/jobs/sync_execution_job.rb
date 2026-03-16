@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-class SyncExecutionJob < ApplicationJob
-  queue_as :sync
+class SyncExecutionJob
+  include Sidekiq::Job
 
-  retry_on StandardError, wait: :polynomially_longer, attempts: 3
-  discard_on ActiveJob::DeserializationError
+  sidekiq_options queue: :sync, retry: 3
 
   STALE_RUNNING_THRESHOLD = 60.minutes
 

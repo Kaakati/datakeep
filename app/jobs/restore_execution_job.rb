@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-class RestoreExecutionJob < ApplicationJob
+class RestoreExecutionJob
+  include Sidekiq::Job
   include VpnConnectable
 
-  queue_as :restores
-
-  retry_on StandardError, wait: 5.seconds, attempts: 2
-  discard_on ActiveJob::DeserializationError
+  sidekiq_options queue: :restores, retry: 2
 
   def perform(restore_id, options = {})
     restore = Restore.find(restore_id)
@@ -68,7 +66,7 @@ class RestoreExecutionJob < ApplicationJob
 
     # Send notification on success
     if restore.backup&.backup_job&.notification_channels&.any?
-      NotificationJob.perform_later(
+      NotificationJob.perform_async(
         restore.backup.backup_job.id,
         "restore_completed",
         {
@@ -102,7 +100,7 @@ class RestoreExecutionJob < ApplicationJob
 
       # Send notification on failure
       if restore.backup&.backup_job&.notification_channels&.any?
-        NotificationJob.perform_later(
+        NotificationJob.perform_async(
           restore.backup.backup_job.id,
           "restore_failed",
           {

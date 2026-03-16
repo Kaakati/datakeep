@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-class NotificationJob < ApplicationJob
-  queue_as :notifications
+class NotificationJob
+  include Sidekiq::Job
 
-  retry_on StandardError, wait: 30.seconds, attempts: 3
-  discard_on ActiveJob::DeserializationError
+  sidekiq_options queue: :notifications, retry: 3
 
   def perform(notification_channel_id, event, backup_id = nil)
     channel = NotificationChannel.find(notification_channel_id)

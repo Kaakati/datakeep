@@ -1,12 +1,21 @@
 # frozen_string_literal: true
 
-class StripeInvoiceJob < ApplicationJob
-  queue_as :default
+class StripeInvoiceJob
+  include Sidekiq::Job
 
-  retry_on Stripe::RateLimitError, Stripe::APIConnectionError, wait: 30.seconds, attempts: 3
-  discard_on Stripe::InvalidRequestError
+  sidekiq_options queue: :default, retry: 3
 
-  def perform(enterprise_quote)
-    DataKeep::Stripe::InvoiceService.new(enterprise_quote).create_and_send
+  sidekiq_retry_in do |_count, exception, _jobhash|
+    case exception
+    when Stripe::InvalidRequestError
+      :discard
+    when Stripe::RateLimitError, Stripe::APIConnectionError
+      30
+    end
+  end
+
+  def perform(enterprise_quote_id)
+    quote = EnterpriseQuote.find(enterprise_quote_id)
+    DataKeep::Stripe::InvoiceService.new(quote).create_and_send
   end
 end
