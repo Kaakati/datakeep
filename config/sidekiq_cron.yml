@@ -2,7 +2,13 @@ health_check_all:
   cron: "*/5 * * * *"
   class: HealthCheckJob
   queue: maintenance
-  description: "Check health of all database connections"
+  description: "Check health of non-VPN database connections (every 5 min)"
+
+vpn_health_check:
+  cron: "*/30 * * * *"
+  class: VpnHealthCheckJob
+  queue: maintenance
+  description: "Check health of VPN-enabled databases (every 30 min, sequential)"
 
 scheduler_check:
   cron: "* * * * *"

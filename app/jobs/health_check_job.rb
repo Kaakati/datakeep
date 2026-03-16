@@ -32,9 +32,14 @@ class HealthCheckJob
     results = []
 
     DatabaseConfig.find_each do |config|
-      result = with_vpn_for(config) do
-        HealthCheckService.new(config).check_and_record!
+      # Skip VPN databases in the scheduled sweep — they run on a separate,
+      # less frequent schedule to avoid hogging limited VPN license slots.
+      if config.vpn_enabled?
+        Rails.logger.info "[HealthCheckJob] Skipping #{config.name} (VPN — checked separately)"
+        next
       end
+
+      result = HealthCheckService.new(config).check_and_record!
       results << { database_config_id: config.id, database_name: config.name, **result }
     rescue StandardError => e
       Rails.logger.error "[HealthCheckJob] Failed for #{config.name}: #{e.message}"
