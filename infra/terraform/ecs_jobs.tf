@@ -101,7 +101,7 @@ resource "aws_ecs_task_definition" "jobs" {
       { name = "SIDEKIQ_CONCURRENCY", value = "25" },
       { name = "SKIP_DB_PREPARE", value = "true" },
       { name = "APP_HOST", value = "datakeep.ai" },
-      { name = "SMTP_ADDRESS", value = "email-smtp.eu-central-1.amazonaws.com" },
+      { name = "SMTP_ADDRESS", value = "email-smtp.eu-west-1.amazonaws.com" },
     ]
 
     secrets = [

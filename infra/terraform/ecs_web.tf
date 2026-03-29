@@ -34,7 +34,7 @@ resource "aws_ecs_task_definition" "web" {
       { name = "HTTP_PORT", value = "8080" },
       { name = "APP_BASE_URL", value = "https://datakeep.ai" },
       { name = "APP_HOST", value = "datakeep.ai" },
-      { name = "SMTP_ADDRESS", value = "email-smtp.eu-central-1.amazonaws.com" },
+      { name = "SMTP_ADDRESS", value = "email-smtp.eu-west-1.amazonaws.com" },
     ]
 
     secrets = [
