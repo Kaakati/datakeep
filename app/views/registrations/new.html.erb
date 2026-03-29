@@ -1,138 +1,190 @@
-<%= render "shared/landing_nav" %>
-<div class="flex min-h-full flex-col justify-center pt-24 pb-12 sm:px-6 lg:px-8">
-  <div class="sm:mx-auto sm:w-full sm:max-w-lg">
-    <div class="flex justify-center">
-      <%= image_tag "logo.svg", class: "h-14 w-14", alt: "DataKeep" %>
+<%= render "shared/session_nav", context: :signup %>
+
+<div class="flex min-h-screen">
+  <%# Left panel — value proposition storytelling %>
+  <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-gray-900 via-gray-800 to-primary-900 px-12 pt-24 pb-12">
+    <div class="max-w-md">
+      <h1 class="text-3xl font-bold text-white leading-tight">
+        Start protecting your<br>
+        <span class="bg-gradient-to-r from-primary-300 to-blue-300 bg-clip-text text-transparent">databases in minutes.</span>
+      </h1>
+      <p class="mt-4 text-base text-gray-300 leading-relaxed">
+        Connect your database, set a schedule, and DataKeep handles the rest. No agents to install, no infrastructure to manage.
+      </p>
     </div>
-    <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-800 dark:text-white/90">
-      Create your account
-    </h2>
-    <p class="mt-3 text-center text-base text-gray-600 dark:text-gray-400">
-      Already have an account?
-      <%= link_to "Sign in", login_path, class: "font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400" %>
-    </p>
+
+    <%# Feature highlights %>
+    <div class="space-y-4">
+      <div class="flex items-start gap-4">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500/20">
+          <svg class="h-5 w-5 text-primary-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Scheduled backups</p>
+          <p class="mt-0.5 text-sm text-gray-400">Cron-based or interval scheduling. Never miss a backup window.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500/20">
+          <svg class="h-5 w-5 text-primary-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">End-to-end encryption</p>
+          <p class="mt-0.5 text-sm text-gray-400">AES-256 encryption at rest. Your data stays yours.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500/20">
+          <svg class="h-5 w-5 text-primary-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Instant alerts</p>
+          <p class="mt-0.5 text-sm text-gray-400">Slack, Discord, email, or webhook. Know the moment something fails.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500/20">
+          <svg class="h-5 w-5 text-primary-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">VPN & private networks</p>
+          <p class="mt-0.5 text-sm text-gray-400">Connect through OpenVPN, WireGuard, or SSH tunnels.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-lg">
-    <div class="rounded-2xl border border-gray-200 bg-white py-10 px-8 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:px-12">
-      <div class="mb-8">
-        <%= render "shared/google_oauth_button" %>
+  <%# Right panel — signup form %>
+  <div class="flex w-full flex-col justify-center px-6 pt-24 pb-12 sm:px-12 lg:w-1/2 lg:px-16">
+    <div class="mx-auto w-full max-w-md">
+      <%# Mobile-only logo %>
+      <div class="mb-8 flex justify-center lg:hidden">
+        <%= image_tag "logo.svg", class: "h-12 w-12", alt: "DataKeep" %>
       </div>
 
-      <div class="relative mb-8">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-          <span class="bg-white px-4 text-gray-500 dark:bg-gray-900 dark:text-gray-400">Or sign up with email</span>
-        </div>
-      </div>
+      <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Create your account
+      </h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        Free to start. No credit card required.
+      </p>
 
-      <%= form_with model: @user, url: signup_path, class: "space-y-6" do |f| %>
-        <% if @user.errors.any? %>
-          <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
-            <div class="flex">
-              <div class="shrink-0">
-                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800 dark:text-red-200">There were errors with your submission</h3>
-                <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-                  <ul class="list-disc space-y-1 pl-5">
-                    <% @user.errors.full_messages.each do |message| %>
-                      <li><%= message %></li>
-                    <% end %>
-                  </ul>
-                </div>
-              </div>
+      <div class="mt-8">
+        <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+          <%# Google OAuth first — lowest friction %>
+          <div class="mb-6">
+            <%= render "shared/google_oauth_button" %>
+          </div>
+
+          <div class="relative mb-6">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+            <div class="relative flex justify-center text-xs">
+              <span class="bg-white px-3 text-gray-500 dark:bg-gray-900 dark:text-gray-400">or sign up with email</span>
             </div>
           </div>
-        <% end %>
 
-        <div>
-          <%= f.label :name, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
-          <%= f.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Your name", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+          <%= form_with model: @user, url: signup_path, class: "space-y-4" do |f| %>
+            <% if @user.errors.any? %>
+              <div class="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+                <div class="flex">
+                  <svg class="h-5 w-5 shrink-0 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                  </svg>
+                  <div class="ml-3">
+                    <ul class="text-sm text-red-700 dark:text-red-300 space-y-1">
+                      <% @user.errors.full_messages.each do |message| %>
+                        <li><%= message %></li>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+            <div>
+              <%= f.label :name, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+              <%= f.text_field :name, required: true, autofocus: true, autocomplete: "name", placeholder: "Your name", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+            </div>
+
+            <div>
+              <%= f.label :email, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+              <%= f.email_field :email, required: true, autocomplete: "email", placeholder: "you@example.com", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
+            </div>
+
+            <div x-data="{ showPassword: false }">
+              <%= f.label :password, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+              <div class="relative">
+                <input type="password" name="user[password]" id="user_password" required autocomplete="new-password"
+                  placeholder="Create a password (min 8 characters)"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                <button type="button" @click="showPassword = !showPassword"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <svg x-show="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <svg x-show="showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div x-data="{ showPassword: false }">
+              <%= f.label :password_confirmation, class: "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+              <div class="relative">
+                <input type="password" name="user[password_confirmation]" id="user_password_confirmation" required
+                  autocomplete="new-password" placeholder="Confirm your password"
+                  :type="showPassword ? 'text' : 'password'"
+                  class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" />
+                <button type="button" @click="showPassword = !showPassword"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <svg x-show="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <svg x-show="showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <%= turnstile_tag %>
+
+            <p class="text-xs text-center text-gray-500 dark:text-gray-400">
+              By creating an account, you agree to our
+              <%= link_to "Terms", terms_path, class: "text-primary-500 hover:text-primary-600 underline", target: "_blank" %>
+              and
+              <%= link_to "Privacy Policy", privacy_path, class: "text-primary-500 hover:text-primary-600 underline", target: "_blank" %>.
+            </p>
+
+            <div class="pt-1">
+              <%= f.submit "Create account", class: "flex w-full justify-center rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 cursor-pointer transition-colors duration-150" %>
+            </div>
+          <% end %>
         </div>
 
-        <div>
-          <%= f.label :email, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
-          <%= f.email_field :email, required: true, autocomplete: "email", placeholder: "you@example.com", class: "shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30" %>
-        </div>
-
-        <div x-data="{ showPassword: false }">
-          <%= f.label :password, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
-          <div class="relative">
-            <input
-              type="password"
-              name="user[password]"
-              id="user_password"
-              required
-              autocomplete="new-password"
-              placeholder="Create a password"
-              :type="showPassword ? 'text' : 'password'"
-              class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-            />
-            <button
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <svg x-show="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <svg x-show="showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-              </svg>
-            </button>
-          </div>
-          <p class="mt-1.5 text-sm text-gray-500 dark:text-gray-400">Minimum 8 characters</p>
-        </div>
-
-        <div x-data="{ showPassword: false }">
-          <%= f.label :password_confirmation, class: "mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300" %>
-          <div class="relative">
-            <input
-              type="password"
-              name="user[password_confirmation]"
-              id="user_password_confirmation"
-              required
-              autocomplete="new-password"
-              placeholder="Confirm your password"
-              :type="showPassword ? 'text' : 'password'"
-              class="shadow-theme-xs focus:border-primary-300 focus:ring-primary-500/10 dark:focus:border-primary-800 h-12 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-3 pr-12 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-            />
-            <button
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <svg x-show="!showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <svg x-show="showPassword" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <%= turnstile_tag %>
-
-        <p class="text-xs text-center text-gray-500 dark:text-gray-400">
-          By creating an account, you agree to our
-          <%= link_to "Terms of Service", terms_path, class: "text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 underline", target: "_blank" %>
-          and
-          <%= link_to "Privacy Policy", privacy_path, class: "text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 underline", target: "_blank" %>.
+        <%# Mobile-only login CTA %>
+        <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400 lg:hidden">
+          Already have an account?
+          <%= link_to "Sign in", login_path, class: "font-medium text-primary-500 hover:text-primary-600" %>
         </p>
-
-        <div>
-          <%= f.submit "Create account", class: "flex w-full justify-center rounded-lg bg-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-theme-xs hover:bg-primary-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 cursor-pointer transition-colors duration-150" %>
-        </div>
-      <% end %>
+      </div>
     </div>
   </div>
 </div>

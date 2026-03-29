@@ -1,0 +1,37 @@
+<%# Session navbar — context-aware navigation for login/signup pages.
+     Renders a clean, solid navbar (not transparent like landing) with
+     the opposite CTA: login page shows "Get Started", signup shows "Sign In". %>
+<% is_login = local_assigns[:context] == :login %>
+
+<nav class="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-800 dark:bg-gray-900/80">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 items-center justify-between">
+      <%# Logo — links home %>
+      <%= link_to root_path, class: "flex items-center gap-2.5 group" do %>
+        <%= image_tag "logo.svg", class: "h-8 w-8 transition-transform group-hover:scale-105", alt: "DataKeep" %>
+        <span class="text-xl font-bold text-gray-900 dark:text-white">DataKeep</span>
+      <% end %>
+
+      <%# Center: trust signal %>
+      <div class="hidden items-center gap-2 text-sm text-gray-500 dark:text-gray-400 md:flex">
+        <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+        </svg>
+        <span>256-bit encrypted &middot; SOC 2 ready</span>
+      </div>
+
+      <%# Right: contextual CTA %>
+      <div class="flex items-center gap-3">
+        <% if is_login %>
+          <span class="hidden text-sm text-gray-500 dark:text-gray-400 sm:inline">No account?</span>
+          <%= link_to "Get Started", signup_path,
+            class: "rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition shadow-sm" %>
+        <% else %>
+          <span class="hidden text-sm text-gray-500 dark:text-gray-400 sm:inline">Already have an account?</span>
+          <%= link_to "Sign In", login_path,
+            class: "rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</nav>
